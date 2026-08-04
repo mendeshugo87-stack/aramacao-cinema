@@ -37,3 +37,7 @@ Thumbs.db
 *.zip
 *.rar
 *.7z
+# Documentos internos locales
+AGENTS.md
+LEEME_CAMBIOS_V6.md
+LEEME_INSTALACION.md

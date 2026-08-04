@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Taquilla | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/taquilla.css">
+  <script src="../../assets/js/cinema-store.js" defer></script>
+  <script src="../../assets/js/taquilla.js" defer></script>
+</head>
+<body class="ticket-office-body">
+  <a class="skip-link" href="#taquilla-main">Saltar a la venta</a>
+
+  <!--
+    BACKEND: el acceso final a esta ruta debe requerir una sesión de empleado
+    con permiso de venta en taquilla. Ocultar la URL o el menú no es seguridad.
+  -->
+  <header class="ticket-office-header">
+    <div class="ticket-office-brand">
+      <a class="back-home" href="../empleados/login.html" aria-label="Volver al acceso de empleados">←</a>
+      <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="210" height="72">
+      <div>
+        <strong>Ventanilla</strong>
+        <span>Venta física de boletos</span>
+      </div>
+    </div>
+    <div class="employee-session">
+      <span class="connection-dot" aria-hidden="true"></span>
+      <div>
+        <!-- BACKEND: mostrar aquí el nombre y usuario del empleado autenticado. -->
+        <strong>Empleado autenticado</strong>
+        <span>Sesión protegida por backend</span>
+      </div>
+      <button class="session-button" type="button" disabled>Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="ticket-office-main" id="taquilla-main">
+    <div class="demo-banner" id="demo-banner">
+      <strong>Vista de frontend:</strong> esta versión no guarda ventas ni reserva asientos.
+      El backend aplicará los cambios de estado después del pago y del escaneo del boleto.
+    </div>
+
+    <section class="sale-toolbar" aria-labelledby="sale-title">
+      <div>
+        <p class="eyebrow">Nueva operación</p>
+        <h1 id="sale-title">Venta de boletos</h1>
+      </div>
+      <div class="toolbar-fields">
+        <label class="field">
+          <span>Fecha de función</span>
+          <input id="sale-date" type="date" required>
+        </label>
+        <label class="field field-movie">
+          <span>Película</span>
+          <select id="movie-select" required>
+            <option value="">Cargando cartelera…</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <div class="ticket-office-layout">
+      <div class="sale-workspace">
+        <section class="sale-panel" aria-labelledby="showtimes-title">
+          <div class="panel-heading">
+            <span class="step-number">1</span>
+            <div>
+              <h2 id="showtimes-title">Selecciona la función</h2>
+              <p>Los horarios provienen de la misma cartelera que se muestra en Inicio.</p>
+            </div>
+          </div>
+
+          <!-- BACKEND: cada botón representará una función real con su ID, sala, precio y disponibilidad. -->
+          <div class="ticket-showtimes" id="ticket-showtimes" aria-live="polite"></div>
+        </section>
+
+        <section class="sale-panel" aria-labelledby="seats-title">
+          <div class="panel-heading panel-heading-between">
+            <div class="panel-heading-copy">
+              <span class="step-number">2</span>
+              <div>
+                <h2 id="seats-title">Selecciona los asientos</h2>
+                <p id="seat-instruction">Primero selecciona una función.</p>
+              </div>
+            </div>
+            <div class="seat-legend" role="group" aria-label="Leyenda de asientos">
+              <span><i class="legend-box available"></i>Disponible</span>
+              <span><i class="legend-box selected"></i>Seleccionado</span>
+              <span><i class="legend-box reserved"></i>Reservado</span>
+              <span><i class="legend-box occupied"></i>Ocupado</span>
+            </div>
+          </div>
+
+          <div class="screen-wrap" aria-hidden="true">
+            <div class="cinema-screen"></div>
+            <span>Pantalla</span>
+          </div>
+
+          <!--
+            BACKEND: la maqueta representa la distribución actual de 8 filas y
+            14 asientos. La distribución y el estado real de cada asiento deben
+            llegar desde la sala y la función seleccionadas.
+
+            Flujo esperado: seleccionar no reserva; pago confirmado = reservado;
+            boleto escaneado en la entrada = ocupado.
+          -->
+          <div class="seat-map-scroll" tabindex="0" aria-label="Desplaza horizontalmente para ver todos los asientos">
+            <div class="seat-map" id="seat-map" role="group" aria-label="Mapa de asientos"></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="sale-summary" aria-labelledby="summary-title">
+        <div class="summary-heading">
+          <div>
+            <p class="eyebrow">Resumen</p>
+            <h2 id="summary-title">Venta actual</h2>
+          </div>
+          <button class="clear-sale" id="clear-sale" type="button">Limpiar</button>
+        </div>
+
+        <dl class="selection-details">
+          <div><dt>Película</dt><dd id="summary-movie">Sin seleccionar</dd></div>
+          <div><dt>Función</dt><dd id="summary-showtime">Sin seleccionar</dd></div>
+          <div><dt>Sala</dt><dd id="summary-room">—</dd></div>
+          <div><dt>Asientos</dt><dd id="summary-seats">Ninguno</dd></div>
+        </dl>
+
+        <div class="promotion-box" id="promotion-box">
+          <label class="promotion-toggle">
+            <span>
+              <strong>Aplicar promoción 2x1</strong>
+              <small id="promotion-status">Disponible lunes, martes y miércoles.</small>
+            </span>
+            <input id="promotion-toggle" type="checkbox" role="switch">
+            <i aria-hidden="true"></i>
+          </label>
+        </div>
+
+        <div class="price-breakdown" aria-live="polite">
+          <div><span>Admisiones</span><strong id="admission-count">0</strong></div>
+          <div><span>Subtotal</span><strong id="subtotal">L 0.00</strong></div>
+          <div class="discount-row"><span>Descuento 2x1</span><strong id="discount">−L 0.00</strong></div>
+          <div class="total-row"><span>Total</span><strong id="total">L 0.00</strong></div>
+        </div>
+
+        <div class="payment-section">
+          <p class="summary-label">Método de pago</p>
+          <div class="payment-options">
+            <label><input type="radio" name="payment" value="efectivo" checked><span>Efectivo</span></label>
+            <label><input type="radio" name="payment" value="tarjeta"><span>Tarjeta</span></label>
+            <label><input type="radio" name="payment" value="transferencia"><span>Transferencia</span></label>
+          </div>
+
+          <div class="field cash-field" id="cash-field">
+            <label for="cash-received">Dinero recibido</label>
+            <div class="money-input"><span>L</span><input id="cash-received" type="number" min="0" step="1" inputmode="decimal" placeholder="0.00"></div>
+          </div>
+          <div class="change-row"><span>Cambio</span><strong id="change">L 0.00</strong></div>
+        </div>
+
+        <p class="sale-error" id="sale-error" role="alert"></p>
+        <!--
+          BACKEND: este botón solamente inicia la confirmación del pago.
+          El backend decidirá cómo generar los boletos y el comprobante final.
+        -->
+        <button class="button button-primary confirm-sale" id="confirm-sale" type="button">Registrar pago</button>
+      </aside>
+    </div>
+  </main>
+
+  <noscript>
+    <div class="noscript-message">Activa JavaScript para utilizar la taquilla.</div>
+  </noscript>
+</body>
+</html>

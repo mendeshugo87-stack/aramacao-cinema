@@ -1,0 +1,39 @@
+# Entornos y secretos
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+
+# Python y Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+db.sqlite3
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node.js futuro
+node_modules/
+dist/
+build/
+
+# Archivos generados por Django
+staticfiles/
+Backend/media/
+
+# Editores
+.vscode/
+.idea/
+
+# Sistema y temporales
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Paquetes comprimidos
+*.zip
+*.rar
+*.7z

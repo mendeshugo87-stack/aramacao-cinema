@@ -1,0 +1,14 @@
+Conserva en esta carpeta las imágenes oficiales que ya copiaste:
+
+- AraMacao Completo Degradado (3).png
+- Paleta de Colores AraMacao.png
+- PFP AraMacao Azul (1).png
+- PFP AraMacao Contorno (1).png
+- PFP AraMacao Negro.png
+- facebook.png
+- instagram.png
+- telefonica.png
+- ubicacion.png
+- whatsapp.png
+
+El código utiliza esos nombres exactamente. No los cambies por ahora.

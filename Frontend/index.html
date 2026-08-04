@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cartelera, próximos estrenos y servicios de Aramacao Cinema en Intibucá.">
+  <title>Aramacao Cinema | Inicio</title>
+
+  <link rel="icon" href="assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script src="assets/js/cinema-store.js" defer></script>
+  <script src="assets/js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido</a>
+
+  <header class="site-header" id="inicio">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Ir al inicio de Aramacao Cinema">
+        <img
+          src="assets/images/AraMacao%20Completo%20Degradado%20(3).png"
+          alt="Aramacao Cinema"
+          width="260"
+          height="90"
+        >
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">
+        <span></span><span></span><span></span>
+        <span class="sr-only">Abrir menú</span>
+      </button>
+
+      <nav class="main-navigation" id="main-navigation" aria-label="Navegación principal">
+        <a class="active" href="index.html">Inicio</a>
+        <a href="pages/cartelera/">Cartelera</a>
+        <a href="pages/proximamente/">Próximamente</a>
+        <a href="pages/dulceria/">Dulcería</a>
+        <a href="pages/servicios/">Servicios</a>
+        <a href="pages/contacto/">Contacto</a>
+        <a class="nav-account" href="pages/cuenta/iniciar-sesion.html">Mi cuenta</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido-principal">
+    <!--
+      BACKEND: este bloque no contiene una película fija. main.js obtiene las
+      películas destacadas desde cartelera.json. Cuando exista la API de Django,
+      solo se sustituirá esa fuente de datos; la estructura visual puede conservarse.
+    -->
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+      <div class="hero-backdrop" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow" id="hero-eyebrow">Ahora en cartelera</p>
+          <h1 id="hero-title">Cargando cartelera…</h1>
+          <p class="hero-description" id="hero-description">Estamos preparando las películas disponibles.</p>
+
+          <div class="movie-meta" id="hero-meta"></div>
+
+          <div class="hero-actions">
+            <a class="button button-primary" id="hero-buy" href="pages/cuenta/iniciar-sesion.html">Comprar boletos</a>
+            <button class="button button-trailer" id="hero-trailer" type="button" hidden>Ver tráiler</button>
+            <button class="button button-ghost" id="hero-details" type="button">Más información</button>
+          </div>
+
+          <div class="hero-controls" role="group" aria-label="Cambiar película destacada">
+            <button class="circle-button" id="hero-prev" type="button" aria-label="Película anterior">←</button>
+            <div class="hero-dots" id="hero-dots"></div>
+            <button class="circle-button" id="hero-next" type="button" aria-label="Película siguiente">→</button>
+          </div>
+        </div>
+
+        <div class="hero-poster" id="hero-poster" aria-hidden="true">
+          <img id="hero-poster-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" hidden>
+          <span id="hero-poster-label">Aramacao</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="benefits" aria-label="Beneficios del cine">
+      <div class="container benefits-grid">
+        <article>
+          <span class="benefit-icon">2×1</span>
+          <div>
+            <strong>Lunes, martes y miércoles</strong>
+            <p>Promoción opcional en funciones participantes.</p>
+          </div>
+        </article>
+        <article>
+          <span class="benefit-icon">🎟</span>
+          <div>
+            <strong>Compra sencilla</strong>
+            <p>Consulta funciones y prepara tu visita.</p>
+          </div>
+        </article>
+        <article>
+          <span class="benefit-icon">★</span>
+          <div>
+            <strong>Estrenos cada semana</strong>
+            <p>Historias para disfrutar en familia.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="cartelera" aria-labelledby="cartelera-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Elige tu próxima historia</p>
+            <h2 id="cartelera-title">Películas en cartelera</h2>
+          </div>
+          <a class="text-link" href="pages/cartelera/">Ver cartelera completa <span aria-hidden="true">→</span></a>
+        </div>
+
+        <!-- BACKEND: los botones se crean con las fechas y funciones publicadas por administración. -->
+        <div class="date-tabs" id="date-tabs" role="group" aria-label="Seleccionar fecha de cartelera"></div>
+
+        <!-- BACKEND: cada tarjeta se genera con los datos recibidos de la API. -->
+        <div class="movie-grid" id="movie-grid" aria-live="polite">
+          <p class="loading-message">Cargando películas…</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="promo-section" aria-labelledby="promo-title">
+      <div class="container promo-card">
+        <div class="promo-badge" aria-hidden="true">
+          <span>2</span><small>×</small><span>1</span>
+        </div>
+        <div class="promo-copy">
+          <p class="eyebrow">Una entrada, dos experiencias</p>
+          <h2 id="promo-title">Comparte el cine de lunes a miércoles</h2>
+          <p>En funciones participantes, selecciona dos asientos y paga uno. La activación depende de las condiciones vigentes de la promoción.</p>
+        </div>
+        <a class="button button-light" href="pages/cartelera/">Consultar funciones</a>
+      </div>
+    </section>
+
+    <section class="section section-muted" id="proximamente" aria-labelledby="upcoming-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Lo que viene</p>
+            <h2 id="upcoming-title">Próximamente</h2>
+          </div>
+          <a class="text-link" href="pages/proximamente/">Ver próximos estrenos <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="upcoming-grid" id="upcoming-grid"></div>
+      </div>
+    </section>
+
+    <section class="section" id="servicios" aria-labelledby="services-title">
+      <div class="container">
+        <div class="section-heading centered-heading">
+          <div>
+            <p class="eyebrow">Más que una película</p>
+            <h2 id="services-title">Una experiencia para compartir</h2>
+            <p>Funciones especiales, atención para grupos y los estrenos que espera nuestra comunidad.</p>
+          </div>
+        </div>
+
+        <div class="services-grid">
+          <article class="service-card">
+            <span class="service-number">01</span>
+            <h3>Funciones especiales</h3>
+            <p>Consulta disponibilidad para actividades, centros educativos y grupos.</p>
+          </article>
+          <article class="service-card featured-service">
+            <span class="service-number">02</span>
+            <h3>Celebraciones</h3>
+            <p>Haz del cine el punto de encuentro para una ocasión diferente.</p>
+          </article>
+          <article class="service-card">
+            <span class="service-number">03</span>
+            <h3>Dulcería</h3>
+            <p>Consulta las opciones disponibles para acompañar tu función.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="account-banner" id="cuenta" aria-labelledby="account-title">
+      <div class="container account-inner">
+        <div>
+          <p class="eyebrow">Tu cine, más cerca</p>
+          <h2 id="account-title">Crea tu cuenta y guarda tus boletos</h2>
+          <p>Esta función se habilitará cuando backend conecte el registro, la verificación por correo y el historial de compras.</p>
+        </div>
+        <div class="account-actions">
+          <a class="button button-primary" href="pages/cuenta/crear.html">Crear cuenta</a>
+          <a class="button button-ghost" href="pages/cuenta/iniciar-sesion.html">Iniciar sesión</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="contacto">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="240" height="84">
+        <p>Experiencias de entretenimiento para toda la familia en Intibucá, Honduras.</p>
+      </div>
+
+      <div>
+        <h2 class="footer-title">Encuéntranos</h2>
+        <ul class="contact-list">
+          <li><img src="assets/images/ubicacion.png" alt="" width="22" height="22"><span>Centro Comercial Esperanzano, segundo nivel, Intibucá</span></li>
+          <li><img src="assets/images/telefonica.png" alt="" width="22" height="22"><a href="tel:+50497891997">+504&nbsp;9789&#8209;1997</a></li>
+          <li><span class="contact-symbol" aria-hidden="true">@</span><a href="mailto:aramacaocinemacce@gmail.com">aramacaocinemacce@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-title">Síguenos</h2>
+        <div class="social-links">
+          <a href="https://www.facebook.com/aramacaocinema/" target="_blank" rel="noopener noreferrer" aria-label="Facebook de Aramacao Cinema">
+            <img src="assets/images/facebook.png" alt="" width="28" height="28">
+          </a>
+          <a href="https://www.instagram.com/aramacao_cinema/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Aramacao Cinema">
+            <img src="assets/images/instagram.png" alt="" width="28" height="28">
+          </a>
+          <a href="https://wa.me/50497891997" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp de Aramacao Cinema">
+            <img src="assets/images/whatsapp.png" alt="" width="28" height="28">
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© <span id="current-year"></span> Aramacao Cinema. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <div class="modal" id="movie-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title" inert>
+    <div class="modal-overlay" data-close-modal></div>
+    <div class="modal-card" role="document">
+      <button class="modal-close" type="button" data-close-modal aria-label="Cerrar ventana">×</button>
+      <p class="eyebrow">Detalles de la película</p>
+      <h2 id="modal-title">Película</h2>
+      <p id="modal-description"></p>
+      <dl class="modal-details" id="modal-details"></dl>
+      <div class="modal-actions">
+        <a class="button button-primary" id="modal-buy" href="pages/cuenta/iniciar-sesion.html">Comprar boletos</a>
+        <button class="button button-trailer" id="modal-trailer" type="button" hidden>Ver tráiler</button>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    BACKEND: el administrador guardará el enlace original de YouTube. main.js
+    extrae el identificador seguro y lo muestra aquí. En producción puede
+    conservarse este modal; no es necesario enviar al cliente fuera del sitio.
+  -->
+  <div class="modal trailer-modal" id="trailer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="trailer-modal-title" inert>
+    <div class="modal-overlay" data-close-trailer></div>
+    <div class="modal-card trailer-modal-card" role="document">
+      <button class="modal-close" type="button" data-close-trailer aria-label="Cerrar tráiler">×</button>
+      <p class="eyebrow">Tráiler oficial</p>
+      <h2 id="trailer-modal-title">Película</h2>
+      <div class="trailer-frame">
+        <iframe
+          id="trailer-player"
+          title="Reproductor del tráiler"
+          src="about:blank"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+        ></iframe>
+      </div>
+      <div class="modal-actions trailer-actions">
+        <a class="button button-primary" id="trailer-buy" href="pages/cuenta/iniciar-sesion.html">Comprar boletos</a>
+      </div>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="noscript-message">Activa JavaScript para consultar la cartelera y los horarios.</div>
+  </noscript>
+</body>
+</html>

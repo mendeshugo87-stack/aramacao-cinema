@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Acceso privado de administración de Aramacao Cinema.">
+  <title>Acceso de administración | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/personal.css">
+  <script src="../../assets/js/gestion-login.js" defer></script>
+</head>
+<body class="staff-access-body">
+  <a class="skip-link" href="#admin-login">Saltar al formulario</a>
+
+  <main class="staff-access-layout">
+    <section class="staff-brand-panel" aria-labelledby="admin-welcome-title">
+      <a class="staff-public-link" href="../../index.html">← Volver al sitio público</a>
+      <div class="staff-brand-copy">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="260" height="90">
+        <p class="eyebrow">Administración privada</p>
+        <h1 id="admin-welcome-title">Control operativo del cine</h1>
+        <p>Gestiona cartelera, funciones, promociones y cuentas de vendedores con permisos separados.</p>
+      </div>
+      <ul class="staff-access-notes" aria-label="Protecciones del panel">
+        <li><span>01</span> Acceso exclusivo para administradores autorizados.</li>
+        <li><span>02</span> Cada cambio debe quedar asociado a su usuario.</li>
+        <li><span>03</span> El panel técnico del superadministrador es independiente.</li>
+      </ul>
+    </section>
+
+    <section class="staff-form-panel" id="admin-login" aria-labelledby="admin-login-title">
+      <div class="staff-form-card">
+        <div class="staff-form-heading">
+          <p class="eyebrow">Inicio de sesión</p>
+          <h2 id="admin-login-title">Ingresa al panel</h2>
+          <p>Utiliza tu cuenta de administrador operativo.</p>
+        </div>
+
+        <!--
+          BACKEND: enviar por POST seguro, comprobar contraseña, cuenta activa,
+          rol y permisos. Solo el servidor puede autorizar la redirección al panel.
+        -->
+        <form class="staff-form" id="admin-login-form" novalidate>
+          <label class="staff-field" for="admin-username">
+            <span>Usuario</span>
+            <input id="admin-username" name="username" type="text" autocomplete="username" minlength="4" maxlength="40" required>
+            <small class="field-error" data-error-for="admin-username"></small>
+          </label>
+          <label class="staff-field" for="admin-password">
+            <span>Contraseña</span>
+            <div class="password-control">
+              <input id="admin-password" name="password" type="password" autocomplete="current-password" minlength="8" required>
+              <button class="password-toggle" type="button" data-password-toggle="admin-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <small class="field-error" data-error-for="admin-password"></small>
+          </label>
+          <p class="form-status" id="admin-login-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary staff-submit" type="submit">Ingresar a Administración</button>
+        </form>
+        <p class="staff-help">En la maqueta ningún usuario obtiene acceso real. El backend habilitará esta entrada.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Recupera el acceso a tu cuenta de Aramacao Cinema.">
+  <title>Recuperar contraseña | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/auth.js" defer></script>
+</head>
+<body class="customer-account-body">
+  <a class="skip-link" href="#recovery-form">Saltar al formulario</a>
+
+  <main class="customer-account-layout">
+    <section class="customer-account-intro" aria-labelledby="recovery-welcome-title">
+      <a class="account-back-link" href="../../index.html">← Volver a Inicio</a>
+      <div class="account-intro-copy">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="250" height="86">
+        <p class="eyebrow">Recuperación segura</p>
+        <h1 id="recovery-welcome-title">Vuelve a tu cuenta</h1>
+        <p>Solicita un código para recuperar el acceso sin perder la película que habías elegido.</p>
+      </div>
+      <div class="account-helper-box">
+        <strong>El código llegará a tu correo registrado.</strong>
+        <p>Por seguridad, la página no confirmará públicamente si una cuenta existe.</p>
+      </div>
+    </section>
+
+    <section class="customer-account-panel" aria-labelledby="recovery-title">
+      <div class="customer-account-card compact-card">
+        <div class="account-form-heading">
+          <p class="eyebrow">Ayuda con tu cuenta</p>
+          <h2 id="recovery-title">Recuperar contraseña</h2>
+          <p id="purchase-context">Escribe el dato asociado a tu cuenta.</p>
+        </div>
+
+        <!-- BACKEND: generar un código de un solo uso, con vencimiento y límite de intentos. -->
+        <form class="customer-account-form" id="recovery-form" data-auth-form="recover" novalidate>
+          <div class="account-field">
+            <label for="recovery-identity">Correo o nombre de usuario *</label>
+            <input id="recovery-identity" name="identity" type="text" autocomplete="username" maxlength="160" required>
+            <small>Si la cuenta es válida, recibirás las instrucciones en el correo registrado.</small>
+            <small class="account-field-error" data-error-for="recovery-identity"></small>
+          </div>
+
+          <p class="account-form-status" id="account-form-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary account-submit" type="submit">Enviar código de recuperación</button>
+        </form>
+
+        <nav class="account-related-links" aria-label="Otras opciones de cuenta">
+          <p><a href="iniciar-sesion.html" data-preserve-query>Volver a Iniciar sesión</a></p>
+          <a href="crear.html" data-preserve-query>Crear una cuenta nueva</a>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

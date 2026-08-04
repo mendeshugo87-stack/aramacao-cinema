@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Administración privada de cuentas de vendedores de Aramacao Cinema.">
+  <title>Crear cuenta de personal | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/personal.css">
+  <script src="../../assets/js/personal-admin.js" defer></script>
+</head>
+<body class="staff-management-body">
+  <a class="skip-link" href="#personal-form">Saltar al formulario</a>
+
+  <!--
+    BACKEND: toda esta página debe exigir una sesión de administrador operativo
+    con permiso para gestionar personal. El enlace no debe existir en el sitio público.
+  -->
+  <header class="management-header">
+    <a class="management-brand" href="../../index.html" aria-label="Aramacao Cinema">
+      <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="210" height="72">
+    </a>
+    <div class="management-session">
+      <div>
+        <strong>Administrador operativo</strong>
+        <span>Gestión de personal</span>
+      </div>
+      <button class="session-button" type="button" disabled>Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="management-main">
+    <nav class="management-breadcrumb" aria-label="Ruta de navegación">
+      <span>Administración</span><span aria-hidden="true">/</span><strong>Personal</strong>
+    </nav>
+
+    <div class="management-title-row">
+      <div>
+        <p class="eyebrow">Cuentas y permisos</p>
+        <h1>Crear cuenta de personal</h1>
+        <p>Registra a un vendedor para que pueda ingresar únicamente al módulo de Taquilla.</p>
+      </div>
+      <span class="private-badge">Acceso privado</span>
+    </div>
+
+    <div class="management-grid">
+      <section class="management-card" aria-labelledby="personal-form-title">
+        <div class="management-card-heading">
+          <span class="step-number">1</span>
+          <div>
+            <h2 id="personal-form-title">Información del empleado</h2>
+            <p>Los campos marcados con * son obligatorios.</p>
+          </div>
+        </div>
+
+        <!--
+          BACKEND:
+          - Enviar este formulario a un endpoint protegido, por ejemplo POST /api/gestion/personal/.
+          - Volver a validar todos los datos en el servidor aunque el navegador los acepte.
+          - Verificar que usuario y correo no estén registrados.
+          - Cifrar la contraseña; nunca almacenarla como texto visible.
+          - Asignar el rol vendedor desde el servidor, no desde datos manipulables del formulario.
+          - Registrar qué administrador creó o modificó la cuenta.
+        -->
+        <form class="staff-form management-form" id="personal-form" novalidate>
+          <div class="form-grid">
+            <label class="staff-field form-span-2" for="staff-full-name">
+              <span>Nombre completo *</span>
+              <input id="staff-full-name" name="full_name" type="text" autocomplete="name" minlength="3" maxlength="100" required>
+              <small class="field-error" data-error-for="staff-full-name"></small>
+            </label>
+
+            <label class="staff-field" for="staff-username">
+              <span>Nombre de usuario *</span>
+              <input id="staff-username" name="username" type="text" autocomplete="off" minlength="4" maxlength="40" pattern="[A-Za-z0-9._-]+" required>
+              <small>Solo letras, números, punto, guion o guion bajo.</small>
+              <small class="field-error" data-error-for="staff-username"></small>
+            </label>
+
+            <label class="staff-field" for="staff-email">
+              <span>Correo electrónico *</span>
+              <input id="staff-email" name="email" type="email" autocomplete="email" maxlength="120" required>
+              <small class="field-error" data-error-for="staff-email"></small>
+            </label>
+
+            <label class="staff-field" for="staff-phone">
+              <span>Teléfono</span>
+              <input id="staff-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="+504 9999-9999">
+              <small class="field-error" data-error-for="staff-phone"></small>
+            </label>
+
+            <label class="staff-field" for="staff-role">
+              <span>Rol asignado</span>
+              <input id="staff-role" name="role_display" type="text" value="Vendedor de taquilla" readonly>
+              <small>El backend asignará este permiso de forma segura.</small>
+            </label>
+
+            <label class="staff-field" for="staff-password">
+              <span>Contraseña temporal *</span>
+              <div class="password-control">
+                <input id="staff-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                <button class="password-toggle" type="button" data-password-toggle="staff-password" aria-label="Mostrar contraseña">Mostrar</button>
+              </div>
+              <small>Mínimo 8 caracteres, con letra y número.</small>
+              <small class="field-error" data-error-for="staff-password"></small>
+            </label>
+
+            <label class="staff-field" for="staff-password-confirmation">
+              <span>Confirmar contraseña *</span>
+              <div class="password-control">
+                <input id="staff-password-confirmation" name="password_confirmation" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                <button class="password-toggle" type="button" data-password-toggle="staff-password-confirmation" aria-label="Mostrar contraseña">Mostrar</button>
+              </div>
+              <small class="field-error" data-error-for="staff-password-confirmation"></small>
+            </label>
+          </div>
+
+          <div class="account-settings">
+            <label class="setting-check">
+              <input id="staff-active" name="is_active" type="checkbox" checked>
+              <span><strong>Cuenta activa</strong><small>Permite iniciar sesión cuando backend cree la cuenta.</small></span>
+            </label>
+            <label class="setting-check">
+              <input id="staff-force-change" name="force_password_change" type="checkbox" checked>
+              <span><strong>Cambiar contraseña al ingresar</strong><small>Recomendado para proteger la cuenta del empleado.</small></span>
+            </label>
+          </div>
+
+          <p class="form-status" id="personal-form-status" role="status" aria-live="polite"></p>
+
+          <div class="form-actions">
+            <button class="button button-ghost" id="clear-personal-form" type="button">Limpiar</button>
+            <button class="button button-primary" type="submit">Crear cuenta de vendedor</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="management-help" aria-labelledby="permissions-title">
+        <p class="eyebrow">Permisos</p>
+        <h2 id="permissions-title">¿Qué podrá hacer?</h2>
+        <ul class="permissions-list">
+          <li><span>✓</span> Ingresar a la pantalla de Taquilla.</li>
+          <li><span>✓</span> Consultar cartelera, funciones y asientos.</li>
+          <li><span>✓</span> Registrar ventas autorizadas.</li>
+          <li><span>✓</span> Cerrar su propia sesión.</li>
+          <li class="permission-denied"><span>×</span> No puede cambiar cartelera ni precios.</li>
+          <li class="permission-denied"><span>×</span> No puede crear administradores.</li>
+          <li class="permission-denied"><span>×</span> No puede entrar al panel técnico.</li>
+        </ul>
+        <div class="security-note">
+          <strong>Validación obligatoria</strong>
+          <p>El backend confirmará identidad, duplicados, contraseña, rol, estado y permisos antes de guardar la cuenta.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

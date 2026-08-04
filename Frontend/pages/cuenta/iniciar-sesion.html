@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Inicia sesión para comprar boletos y consultar tus compras en Aramacao Cinema.">
+  <title>Iniciar sesión | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/auth.js" defer></script>
+</head>
+<body class="customer-account-body">
+  <a class="skip-link" href="#login-form">Saltar al formulario</a>
+
+  <main class="customer-account-layout">
+    <section class="customer-account-intro" aria-labelledby="login-welcome-title">
+      <a class="account-back-link" href="../../index.html">← Volver a Inicio</a>
+      <div class="account-intro-copy">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="250" height="86">
+        <p class="eyebrow">Mi cuenta</p>
+        <h1 id="login-welcome-title">Continúa tu experiencia</h1>
+        <p>Inicia sesión para comprar boletos, consultar tus compras y recuperar tus entradas cuando las necesites.</p>
+      </div>
+      <ol class="account-purchase-steps">
+        <li class="active"><span>01</span> Cuenta</li>
+        <li><span>02</span> Función y asientos</li>
+        <li><span>03</span> Pago</li>
+        <li><span>04</span> Boleto</li>
+      </ol>
+    </section>
+
+    <section class="customer-account-panel" aria-labelledby="login-title">
+      <div class="customer-account-card compact-card">
+        <div class="account-form-heading">
+          <p class="eyebrow">Acceso de clientes</p>
+          <h2 id="login-title">Iniciar sesión</h2>
+          <p id="purchase-context">Accede a tu cuenta para continuar.</p>
+        </div>
+
+        <!-- BACKEND: Django validará credenciales, cuenta activa, correo verificado y sesión segura. -->
+        <form class="customer-account-form" id="login-form" data-auth-form="login" novalidate>
+          <input id="selected-movie" name="movie" type="hidden">
+          <input id="selected-date" name="date" type="hidden">
+          <input id="selected-time" name="time" type="hidden">
+
+          <div class="account-form-grid">
+            <div class="account-field account-single-field">
+              <label for="login-identity">Correo o nombre de usuario *</label>
+              <input id="login-identity" name="identity" type="text" autocomplete="username" maxlength="160" required>
+              <small class="account-field-error" data-error-for="login-identity"></small>
+            </div>
+            <div class="account-field account-single-field">
+              <label for="login-password">Contraseña *</label>
+              <div class="account-password-control">
+                <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+                <button type="button" data-password-toggle="login-password" aria-label="Mostrar contraseña">Mostrar</button>
+              </div>
+              <small class="account-field-error" data-error-for="login-password"></small>
+            </div>
+          </div>
+
+          <p class="account-form-status" id="account-form-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary account-submit" type="submit">Iniciar sesión y continuar</button>
+        </form>
+
+        <nav class="account-related-links" aria-label="Otras opciones de cuenta">
+          <p>¿Aún no tienes cuenta? <a href="crear.html" data-preserve-query>Crear cuenta</a></p>
+          <a href="recuperar.html" data-preserve-query>¿Olvidaste tu contraseña?</a>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

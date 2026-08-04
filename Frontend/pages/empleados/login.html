@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Acceso privado para empleados de Aramacao Cinema.">
+  <title>Acceso de empleados | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/personal.css">
+  <script src="../../assets/js/empleados-login.js" defer></script>
+</head>
+<body class="staff-access-body">
+  <a class="skip-link" href="#acceso-personal">Saltar al formulario</a>
+
+  <main class="staff-access-layout">
+    <section class="staff-brand-panel" aria-labelledby="staff-welcome-title">
+      <a class="staff-public-link" href="../../index.html">← Volver al sitio público</a>
+
+      <div class="staff-brand-copy">
+        <img
+          src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png"
+          alt="Aramacao Cinema"
+          width="260"
+          height="90"
+        >
+        <p class="eyebrow">Área privada</p>
+        <h1 id="staff-welcome-title">Acceso para personal autorizado</h1>
+        <p>Este ingreso es exclusivo para empleados de Aramacao Cinema. Las cuentas son creadas por administración.</p>
+      </div>
+
+      <ul class="staff-access-notes" aria-label="Condiciones de acceso">
+        <li><span>01</span> Cada empleado utiliza su propia cuenta.</li>
+        <li><span>02</span> El vendedor solo accede a Taquilla.</li>
+        <li><span>03</span> Todas las ventas quedan asociadas al empleado.</li>
+      </ul>
+    </section>
+
+    <section class="staff-form-panel" id="acceso-personal" aria-labelledby="login-title">
+      <div class="staff-form-card">
+        <div class="staff-form-heading">
+          <p class="eyebrow">Inicio de sesión</p>
+          <h2 id="login-title">Ingresa a tu cuenta</h2>
+          <p>Utiliza las credenciales entregadas por el administrador.</p>
+        </div>
+
+        <!--
+          BACKEND:
+          - Sustituir la demostración de empleados-login.js por un POST seguro.
+          - Validar usuario, contraseña, cuenta activa y rol en el servidor.
+          - Si el rol es vendedor, redirigir únicamente a /empleados/taquilla/.
+          - Nunca confiar en un rol enviado desde el navegador.
+        -->
+        <form class="staff-form" id="employee-login-form" novalidate>
+          <label class="staff-field" for="employee-username">
+            <span>Usuario</span>
+            <input
+              id="employee-username"
+              name="username"
+              type="text"
+              autocomplete="username"
+              minlength="4"
+              maxlength="40"
+              required
+              aria-describedby="username-error"
+            >
+            <small class="field-error" id="username-error"></small>
+          </label>
+
+          <label class="staff-field" for="employee-password">
+            <span>Contraseña</span>
+            <div class="password-control">
+              <input
+                id="employee-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                minlength="8"
+                required
+                aria-describedby="password-error"
+              >
+              <button class="password-toggle" type="button" data-password-toggle="employee-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <small class="field-error" id="password-error"></small>
+          </label>
+
+          <p class="form-status" id="employee-login-status" role="status" aria-live="polite"></p>
+
+          <button class="button button-primary staff-submit" type="submit">Ingresar a Taquilla</button>
+        </form>
+
+        <p class="staff-help">¿No puedes ingresar? Solicita al administrador que revise el estado de tu cuenta.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

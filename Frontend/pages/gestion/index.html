@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Panel operativo para administrar la cartelera de Aramacao Cinema.">
+  <title>Administración de cartelera | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/gestion.css">
+  <script src="../../assets/js/cinema-store.js" defer></script>
+  <script src="../../assets/js/gestion-cartelera.js" defer></script>
+</head>
+<body class="admin-body">
+  <a class="skip-link" href="#admin-content">Saltar al contenido</a>
+
+  <!--
+    BACKEND: esta ruta debe exigir una sesión activa con rol de administrador
+    operativo. Ocultarla del menú público no sustituye la validación del servidor.
+  -->
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="../../index.html" aria-label="Aramacao Cinema">
+      <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="190" height="66">
+    </a>
+
+    <nav class="admin-nav" aria-label="Navegación de administración">
+      <a class="active" href="#resumen"><span>▦</span> Resumen</a>
+      <a href="#peliculas"><span>▶</span> Películas</a>
+      <a href="#funciones"><span>◷</span> Funciones</a>
+      <a href="#promociones"><span>%</span> Promociones</a>
+      <a href="personal.html"><span>♙</span> Personal</a>
+      <span class="admin-nav-disabled"><span>▤</span> Ventas <small>Backend</small></span>
+    </nav>
+
+    <div class="admin-sidebar-note">
+      <strong>Panel operativo</strong>
+      <p>No incluye la administración técnica del superadministrador.</p>
+    </div>
+  </aside>
+
+  <div class="admin-shell">
+    <header class="admin-topbar">
+      <button class="admin-menu-button" id="admin-menu-button" type="button" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      <div>
+        <strong>Administrador operativo</strong>
+        <span>Contenido y funciones</span>
+      </div>
+      <button class="admin-session-button" type="button" disabled>Cerrar sesión</button>
+    </header>
+
+    <main class="admin-content" id="admin-content">
+      <section class="admin-welcome" id="resumen">
+        <div>
+          <p class="eyebrow">Control de la semana</p>
+          <h1>Cartelera y estrenos</h1>
+          <p>Publica películas, agrega imágenes, enlaza tráilers y organiza sus funciones desde un solo lugar.</p>
+        </div>
+        <div class="demo-badge"><span></span> Datos de prueba locales</div>
+      </section>
+
+      <div class="admin-metrics" role="group" aria-label="Resumen de contenido">
+        <article><span>En cartelera</span><strong id="metric-billboard">0</strong><small>películas publicadas</small></article>
+        <article><span>Próximamente</span><strong id="metric-upcoming">0</strong><small>estrenos anunciados</small></article>
+        <article><span>En carrusel</span><strong id="metric-featured">0</strong><small>películas destacadas</small></article>
+        <article><span>Funciones</span><strong id="metric-showtimes">0</strong><small>horarios configurados</small></article>
+      </div>
+
+      <section class="admin-panel" id="peliculas" aria-labelledby="movies-admin-title">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="eyebrow">Contenido público</p>
+            <h2 id="movies-admin-title">Películas</h2>
+            <p>Los cambios guardados aquí se reflejan en Inicio al actualizar la página.</p>
+          </div>
+          <button class="button button-primary" id="new-movie-button" type="button">+ Nueva película</button>
+        </div>
+
+        <div class="admin-filter-row">
+          <label for="movie-search">Buscar película</label>
+          <input id="movie-search" type="search" placeholder="Título, género o clasificación">
+          <label for="movie-status-filter">Mostrar</label>
+          <select id="movie-status-filter">
+            <option value="all">Todas</option>
+            <option value="cartelera">En cartelera</option>
+            <option value="proximamente">Próximamente</option>
+            <option value="retirada">Retiradas</option>
+          </select>
+        </div>
+
+        <div class="admin-movie-list" id="admin-movie-list" aria-live="polite"></div>
+      </section>
+
+      <section class="admin-panel movie-editor" id="movie-editor" aria-labelledby="movie-form-title" hidden>
+        <div class="admin-panel-heading compact-heading">
+          <div>
+            <p class="eyebrow">Edición sencilla</p>
+            <h2 id="movie-form-title">Nueva película</h2>
+          </div>
+          <button class="icon-close" id="close-movie-editor" type="button" aria-label="Cerrar formulario">×</button>
+        </div>
+
+        <!--
+          BACKEND:
+          - Crear o actualizar la película mediante un endpoint protegido.
+          - Validar formatos y tamaños de las imágenes en el servidor.
+          - Guardar archivos en el almacenamiento definido por backend, no en la base de datos.
+          - Registrar qué administrador realizó cada cambio.
+          - No eliminar definitivamente películas que ya tengan funciones o ventas.
+        -->
+        <form id="movie-form" class="movie-form" novalidate>
+          <input id="movie-id" name="movie_id" type="hidden">
+
+          <fieldset>
+            <legend>Información principal</legend>
+            <div class="admin-form-grid">
+              <label class="admin-field span-2" for="movie-title">
+                <span>Título *</span>
+                <input id="movie-title" name="title" type="text" maxlength="120" required>
+                <small class="admin-field-error" data-error-for="movie-title"></small>
+              </label>
+
+              <label class="admin-field span-2" for="movie-short-synopsis">
+                <span>Descripción breve *</span>
+                <textarea id="movie-short-synopsis" name="short_synopsis" rows="3" maxlength="240" required></textarea>
+                <small>Se mostrará en Inicio y en las tarjetas.</small>
+                <small class="admin-field-error" data-error-for="movie-short-synopsis"></small>
+              </label>
+
+              <label class="admin-field span-2" for="movie-full-synopsis">
+                <span>Sinopsis completa</span>
+                <textarea id="movie-full-synopsis" name="full_synopsis" rows="4" maxlength="1000"></textarea>
+              </label>
+
+              <label class="admin-field" for="movie-duration">
+                <span>Duración en minutos *</span>
+                <input id="movie-duration" name="duration" type="number" min="1" max="500" required>
+                <small class="admin-field-error" data-error-for="movie-duration"></small>
+              </label>
+
+              <label class="admin-field" for="movie-classification">
+                <span>Clasificación *</span>
+                <select id="movie-classification" name="classification" required>
+                  <option value="">Seleccionar</option>
+                  <option>A</option><option>B</option><option>B15</option><option>C</option><option>D</option>
+                </select>
+                <small class="admin-field-error" data-error-for="movie-classification"></small>
+              </label>
+
+              <label class="admin-field" for="movie-genres">
+                <span>Géneros *</span>
+                <input id="movie-genres" name="genres" type="text" placeholder="Aventura, Familiar" maxlength="120" required>
+                <small>Separados por comas.</small>
+                <small class="admin-field-error" data-error-for="movie-genres"></small>
+              </label>
+
+              <label class="admin-field" for="movie-language">
+                <span>Idioma *</span>
+                <input id="movie-language" name="language" type="text" placeholder="Doblada al español" maxlength="80" required>
+                <small class="admin-field-error" data-error-for="movie-language"></small>
+              </label>
+
+              <label class="admin-field" for="movie-director">
+                <span>Dirección</span>
+                <input id="movie-director" name="director" type="text" maxlength="120">
+              </label>
+
+              <label class="admin-field" for="movie-cast">
+                <span>Reparto</span>
+                <input id="movie-cast" name="cast" type="text" placeholder="Actor 1, Actor 2" maxlength="280">
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Publicación e imágenes</legend>
+            <div class="admin-form-grid">
+              <label class="admin-field" for="movie-status">
+                <span>Sección *</span>
+                <select id="movie-status" name="status" required>
+                  <option value="cartelera">Películas en cartelera</option>
+                  <option value="proximamente">Próximamente</option>
+                </select>
+              </label>
+
+              <label class="admin-field" for="movie-release-date">
+                <span>Fecha de estreno</span>
+                <input id="movie-release-date" name="release_date" type="date">
+              </label>
+
+              <label class="admin-field span-2" for="movie-trailer">
+                <span>Enlace del tráiler</span>
+                <input id="movie-trailer" name="trailer_url" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=...">
+                <small class="admin-field-error" data-error-for="movie-trailer"></small>
+              </label>
+
+              <label class="admin-field" for="movie-accent">
+                <span>Color de apoyo</span>
+                <input id="movie-accent" name="accent" type="color" value="#0877d1">
+              </label>
+
+              <label class="admin-check">
+                <input id="movie-active" name="active" type="checkbox" checked>
+                <span><strong>Publicada</strong><small>Visible en la web pública.</small></span>
+              </label>
+
+              <label class="admin-check">
+                <input id="movie-featured" name="featured" type="checkbox">
+                <span><strong>Mostrar en carrusel</strong><small>Solo aplica a películas en cartelera.</small></span>
+              </label>
+
+              <div class="image-upload-field">
+                <label for="movie-poster"><strong>Póster vertical</strong><small>Se encuadrará a 2:3. PNG, JPG o WebP. Máximo 4 MB.</small></label>
+                <input id="movie-poster" name="poster" type="file" accept="image/png,image/jpeg,image/webp">
+                <div class="image-preview poster-preview" id="poster-preview"><span>Sin póster</span></div>
+                <button class="reframe-button" id="reframe-poster" type="button" hidden>Volver a encuadrar</button>
+              </div>
+
+              <div class="image-upload-field">
+                <label for="movie-banner"><strong>Imagen del carrusel</strong><small>Se encuadrará a 16:7 para Inicio. PNG, JPG o WebP. Máximo 4 MB.</small></label>
+                <input id="movie-banner" name="banner" type="file" accept="image/png,image/jpeg,image/webp">
+                <div class="image-preview banner-preview" id="banner-preview"><span>Sin imagen</span></div>
+                <button class="reframe-button" id="reframe-banner" type="button" hidden>Volver a encuadrar</button>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset id="funciones">
+            <legend>Funciones y precios</legend>
+            <div class="fieldset-heading">
+              <p>Agrega únicamente los horarios disponibles. Próximamente puede quedar sin funciones.</p>
+              <button class="button button-ghost" id="add-showtime" type="button">+ Agregar función</button>
+            </div>
+            <div class="showtime-editor-list" id="showtime-editor-list"></div>
+          </fieldset>
+
+          <p class="admin-form-status" id="movie-form-status" role="status" aria-live="polite"></p>
+          <div class="admin-form-actions">
+            <button class="button button-ghost" id="cancel-movie-edit" type="button">Cancelar</button>
+            <button class="button button-primary" type="submit">Guardar película</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="admin-panel promo-admin-panel" id="promociones" aria-labelledby="promotion-title">
+        <div>
+          <p class="eyebrow">Regla comercial</p>
+          <h2 id="promotion-title">Promoción 2x1</h2>
+          <p>Actívala o retírala de la información compartida con Inicio y Taquilla.</p>
+        </div>
+        <form id="promotion-form" class="promotion-form">
+          <label class="switch-control">
+            <input id="promotion-enabled" type="checkbox">
+            <span aria-hidden="true"></span>
+            <strong>Promoción activa</strong>
+          </label>
+          <label class="admin-field" for="promotion-description">
+            <span>Condiciones visibles</span>
+            <textarea id="promotion-description" rows="3" maxlength="300"></textarea>
+          </label>
+          <button class="button button-primary" type="submit">Guardar promoción</button>
+          <p class="admin-form-status" id="promotion-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="admin-panel backend-note">
+        <div>
+          <p class="eyebrow">Para la integración</p>
+          <h2>Qué controlará el backend</h2>
+        </div>
+        <ul>
+          <li>Autenticación, roles y permisos del administrador.</li>
+          <li>Almacenamiento definitivo de imágenes y películas.</li>
+          <li>Validación de salas, cruces de horarios y precios.</li>
+          <li>Historial de publicaciones, funciones y usuario responsable.</li>
+          <li>Sincronización con Inicio, compra en línea y Taquilla.</li>
+        </ul>
+        <button class="admin-reset-button" id="reset-demo-data" type="button">Restablecer datos de prueba</button>
+      </section>
+    </main>
+  </div>
+
+  <!--
+    BACKEND: esta maqueta genera una copia ya recortada. En producción backend
+    puede recibir esa copia o guardar la imagen original junto con coordenadas
+    de recorte; debe volver a validar formato, tamaño y permisos.
+  -->
+  <div class="crop-modal" id="image-crop-modal" role="dialog" aria-modal="true" aria-labelledby="crop-modal-title" aria-hidden="true" inert>
+    <div class="crop-modal-overlay" data-cancel-crop></div>
+    <div class="crop-modal-card">
+      <button class="icon-close crop-close" type="button" data-cancel-crop aria-label="Cancelar encuadre">×</button>
+      <p class="eyebrow">Vista exacta</p>
+      <h2 id="crop-modal-title">Encuadrar imagen</h2>
+      <p id="crop-modal-help">Arrastra la imagen y usa el zoom para elegir la parte que se mostrará.</p>
+
+      <div class="crop-stage" id="crop-stage">
+        <img id="crop-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Imagen seleccionada para encuadrar" draggable="false">
+        <span class="crop-guide" aria-hidden="true"></span>
+      </div>
+
+      <label class="crop-zoom" for="crop-zoom">
+        <span>Zoom</span>
+        <input id="crop-zoom" type="range" min="1" max="3" step="0.01" value="1">
+      </label>
+
+      <p class="crop-status" id="crop-status" role="status" aria-live="polite"></p>
+      <div class="crop-actions">
+        <button class="button button-ghost" type="button" data-cancel-crop>Cancelar</button>
+        <button class="button button-primary" id="apply-crop" type="button">Usar este encuadre</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Consulta películas, fechas y horarios disponibles en Aramacao Cinema.">
+  <title>Cartelera | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/public-pages.css">
+  <script src="../../assets/js/cinema-store.js" defer></script>
+  <script src="../../assets/js/public-pages.js" defer></script>
+</head>
+<body class="public-page-body" data-cinema-view="cartelera">
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../../index.html" aria-label="Ir al inicio de Aramacao Cinema">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="260" height="90">
+      </a>
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">
+        <span></span><span></span><span></span><span class="sr-only">Abrir menú</span>
+      </button>
+      <nav class="main-navigation" id="main-navigation" aria-label="Navegación principal">
+        <a href="../../index.html">Inicio</a>
+        <a class="active" href="../cartelera/">Cartelera</a>
+        <a href="../proximamente/">Próximamente</a>
+        <a href="../dulceria/">Dulcería</a>
+        <a href="../servicios/">Servicios</a>
+        <a href="../contacto/">Contacto</a>
+        <a class="nav-account" href="../cuenta/iniciar-sesion.html">Mi cuenta</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido-principal">
+    <section class="page-hero" aria-labelledby="page-title">
+      <div class="page-hero-content">
+        <nav class="page-breadcrumb" aria-label="Ruta de navegación"><a href="../../index.html">Inicio</a><span>/</span><span>Cartelera</span></nav>
+        <p class="eyebrow">Películas y funciones</p>
+        <h1 id="page-title">Cartelera</h1>
+        <p class="page-hero-description">Elige la fecha, consulta los horarios disponibles e inicia sesión para comprar tus boletos.</p>
+      </div>
+    </section>
+
+    <section class="page-section" aria-labelledby="movies-title">
+      <div class="container">
+        <div class="page-toolbar">
+          <div><h2 id="movies-title">Funciones disponibles</h2><p>La cartelera y los horarios se actualizan desde el panel del administrador.</p></div>
+        </div>
+        <!-- BACKEND: Django reemplazará CinemaStore por la API de películas y funciones publicadas. -->
+        <div class="date-tabs" id="public-date-tabs" role="group" aria-label="Seleccionar fecha"></div>
+        <div class="movie-grid" id="public-movie-grid" aria-live="polite"><p class="loading-message">Cargando cartelera…</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand"><img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="240" height="84"><p>Experiencias de entretenimiento para toda la familia en Intibucá, Honduras.</p></div>
+      <div><h2 class="footer-title">Explora</h2><ul class="footer-links"><li><a href="../cartelera/">Cartelera</a></li><li><a href="../proximamente/">Próximamente</a></li><li><a href="../dulceria/">Dulcería</a></li><li><a href="../servicios/">Servicios</a></li></ul></div>
+      <div><h2 class="footer-title">Encuéntranos</h2><ul class="contact-list"><li><img src="../../assets/images/ubicacion.png" alt="" width="22" height="22"><span>Centro Comercial Esperanzano, segundo nivel, Intibucá</span></li><li><img src="../../assets/images/telefonica.png" alt="" width="22" height="22"><a href="tel:+50497891997">+504&nbsp;9789&#8209;1997</a></li><li><span class="contact-symbol" aria-hidden="true">@</span><a href="mailto:aramacaocinemacce@gmail.com">aramacaocinemacce@gmail.com</a></li></ul></div>
+      <div><h2 class="footer-title">Síguenos</h2><div class="social-links"><a href="https://www.facebook.com/aramacaocinema/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><img src="../../assets/images/facebook.png" alt="" width="28" height="28"></a><a href="https://www.instagram.com/aramacao_cinema/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><img src="../../assets/images/instagram.png" alt="" width="28" height="28"></a><a href="https://wa.me/50497891997" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><img src="../../assets/images/whatsapp.png" alt="" width="28" height="28"></a></div></div>
+    </div>
+    <div class="container footer-bottom"><p>© <span data-current-year></span> Aramacao Cinema. Todos los derechos reservados.</p><a href="../cuenta/iniciar-sesion.html">Mi cuenta</a></div>
+  </footer>
+
+  <div class="modal trailer-modal" id="trailer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="trailer-modal-title" inert>
+    <div class="modal-overlay" data-close-trailer></div>
+    <div class="modal-card trailer-modal-card" role="document">
+      <button class="modal-close" type="button" data-close-trailer aria-label="Cerrar tráiler">×</button>
+      <p class="eyebrow">Tráiler oficial</p><h2 id="trailer-modal-title">Película</h2>
+      <div class="trailer-frame"><iframe id="trailer-player" title="Reproductor del tráiler" src="about:blank" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crea tu cuenta de cliente para comprar boletos en Aramacao Cinema.">
+  <title>Crear cuenta | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/auth.js" defer></script>
+</head>
+<body class="customer-account-body">
+  <a class="skip-link" href="#customer-account-form">Saltar al formulario</a>
+
+  <main class="customer-account-layout">
+    <section class="customer-account-intro" aria-labelledby="account-welcome-title">
+      <a class="account-back-link" href="../../index.html">← Volver a Inicio</a>
+
+      <div class="account-intro-copy">
+        <img
+          src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png"
+          alt="Aramacao Cinema"
+          width="250"
+          height="86"
+        >
+        <p class="eyebrow">Compra en línea</p>
+        <h1 id="account-welcome-title">Tu entrada comienza aquí</h1>
+        <p>Crea una cuenta para continuar con la película elegida, guardar tus boletos y recuperarlos si los necesitas.</p>
+      </div>
+
+      <ol class="account-purchase-steps">
+        <li class="active"><span>01</span> Cuenta</li>
+        <li><span>02</span> Función y asientos</li>
+        <li><span>03</span> Pago</li>
+        <li><span>04</span> Boleto</li>
+      </ol>
+    </section>
+
+    <section class="customer-account-panel" aria-labelledby="create-account-title">
+      <div class="customer-account-card">
+        <div class="account-form-heading">
+          <p class="eyebrow">Cuenta de cliente</p>
+          <h2 id="create-account-title">Crea tu cuenta</h2>
+          <p id="purchase-context">Después del registro continuarás con tu compra.</p>
+        </div>
+
+        <!--
+          BACKEND:
+          - Comprobar correo y usuario duplicados en el servidor.
+          - Cifrar la contraseña; nunca guardarla como texto visible.
+          - Enviar un código de verificación al correo.
+          - Crear una sesión segura y regresar al paso de compra solicitado.
+          - Los parámetros movie, date y time solo orientan el regreso; backend
+            debe validar nuevamente que la película y la función sigan disponibles.
+        -->
+        <form class="customer-account-form" id="customer-account-form" data-auth-form="register" novalidate>
+          <input id="selected-movie" name="movie" type="hidden">
+          <input id="selected-date" name="date" type="hidden">
+          <input id="selected-time" name="time" type="hidden">
+
+          <div class="account-form-grid">
+            <div class="account-field span-2">
+              <label for="customer-name">Nombre completo *</label>
+              <input id="customer-name" name="full_name" type="text" autocomplete="name" maxlength="120" required>
+              <small class="account-field-error" data-error-for="customer-name"></small>
+            </div>
+
+            <div class="account-field">
+              <label for="customer-email">Correo electrónico *</label>
+              <input id="customer-email" name="email" type="email" autocomplete="email" maxlength="160" required>
+              <small>Recibirás aquí la verificación y tus boletos.</small>
+              <small class="account-field-error" data-error-for="customer-email"></small>
+            </div>
+
+            <div class="account-field">
+              <label for="customer-username">Nombre de usuario *</label>
+              <input id="customer-username" name="username" type="text" autocomplete="username" minlength="4" maxlength="40" required>
+              <small>También ayudará a localizar una compra en ventanilla.</small>
+              <small class="account-field-error" data-error-for="customer-username"></small>
+            </div>
+
+            <div class="account-field span-2">
+              <label for="customer-phone">Teléfono</label>
+              <input id="customer-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="+504 9999-9999">
+              <small class="account-field-error" data-error-for="customer-phone"></small>
+            </div>
+
+            <div class="account-field">
+              <label for="customer-password">Contraseña *</label>
+              <div class="account-password-control">
+                <input id="customer-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+                <button type="button" data-password-toggle="customer-password" aria-label="Mostrar contraseña">Mostrar</button>
+              </div>
+              <small>Mínimo 8 caracteres, una mayúscula y un número.</small>
+              <small class="account-field-error" data-error-for="customer-password"></small>
+            </div>
+
+            <div class="account-field">
+              <label for="customer-password-confirmation">Confirmar contraseña *</label>
+              <div class="account-password-control">
+                <input id="customer-password-confirmation" name="password_confirmation" type="password" autocomplete="new-password" minlength="8" required>
+                <button type="button" data-password-toggle="customer-password-confirmation" aria-label="Mostrar contraseña">Mostrar</button>
+              </div>
+              <small class="account-field-error" data-error-for="customer-password-confirmation"></small>
+            </div>
+          </div>
+
+          <label class="account-consent">
+            <input id="customer-terms" name="terms" type="checkbox" required>
+            <span>Acepto el uso de mis datos para administrar mi cuenta, compras y boletos.</span>
+          </label>
+          <small class="account-field-error" data-error-for="customer-terms"></small>
+
+          <p class="account-form-status" id="account-form-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary account-submit" type="submit">Crear cuenta y continuar</button>
+        </form>
+
+        <nav class="account-related-links" aria-label="Otras opciones de cuenta">
+          <p>¿Ya tienes una cuenta? <a href="iniciar-sesion.html" data-preserve-query>Inicia sesión</a></p>
+          <a href="recuperar.html" data-preserve-query>¿Olvidaste tu contraseña?</a>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

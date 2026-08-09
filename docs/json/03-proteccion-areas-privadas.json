@@ -1,0 +1,40 @@
+{
+  "modulo": "Protección de áreas privadas",
+  "paginas": [
+    {
+      "ruta": "/pages/taquilla/",
+      "rol": "VENDEDOR_TAQUILLA",
+      "permiso": "ventas.crear_venta",
+      "sin_sesion_ir_a": "/pages/empleados/login.html"
+    },
+    {
+      "ruta": "/pages/gestion/",
+      "rol": "ADMINISTRADOR_OPERATIVO",
+      "permiso": "cartelera.gestionar",
+      "sin_sesion_ir_a": "/pages/gestion/login.html"
+    },
+    {
+      "ruta": "/pages/gestion/personal.html",
+      "rol": "ADMINISTRADOR_OPERATIVO",
+      "permiso": "personal.gestionar",
+      "sin_sesion_ir_a": "/pages/gestion/login.html"
+    },
+    {
+      "ruta": "/pages/empleados/cambiar-contrasena.html",
+      "roles": [
+        "VENDEDOR_TAQUILLA",
+        "ADMINISTRADOR_OPERATIVO"
+      ],
+      "requiere_sesion": true
+    }
+  ],
+  "reglas_backend": [
+    "Proteger las vistas HTML y todos los endpoints; ocultar enlaces no es seguridad.",
+    "Comprobar sesión, cuenta activa, rol y permiso en cada solicitud.",
+    "Si debe_cambiar_contrasena es verdadero, permitir solamente cambio de contraseña y cierre de sesión.",
+    "El vendedor no entra a Gestión y el administrador operativo no entra a Django Admin.",
+    "Cerrar sesión invalida la sesión en el servidor.",
+    "Registrar accesos y cambios sin guardar contraseñas."
+  ],
+  "nota_frontend": "staff-private.js muestra la sesión y guía las redirecciones, pero Django aplica la autorización real."
+}

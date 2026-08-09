@@ -1,0 +1,34 @@
+{
+  "modulo": "Historial de compras del cliente",
+  "estado": "DOCUMENTADO_PARA_IMPLEMENTAR_DESPUES_DE_VENTAS",
+  "acceso": "Sesión del mismo cliente dueño de la compra",
+  "endpoints": [
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/compras/?pagina=1&estado=PAGADA",
+      "respuesta_200": {
+        "total": 0,
+        "pagina": 1,
+        "resultados": []
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/compras/{id}/",
+      "respuesta_200": {
+        "compra": "orden del cliente con funciones, asientos, productos, pago y boletos"
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/boletos/{id}/descargar/",
+      "respuesta_200": "PDF del boleto si sigue vigente y pertenece al cliente"
+    }
+  ],
+  "reglas": [
+    "No devolver compras de otro cliente aunque se conozca su ID.",
+    "Una compra pendiente no se presenta como pagada ni genera boleto.",
+    "El historial depende de terminar ventas, pagos y boletos.",
+    "El frontend actual muestra un estado vacío hasta que existan compras reales."
+  ]
+}

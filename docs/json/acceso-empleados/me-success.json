@@ -1,0 +1,16 @@
+{
+  "autenticado": true,
+  "debe_cambiar_contrasena": false,
+  "empleado": {
+    "id": "7a9db0fe-0765-4e2b-b4a0-ea900e2f7820",
+    "codigo_empleado": "TAQ-001",
+    "usuario": "hugo69",
+    "nombre_completo": "Hugo Méndez",
+    "rol": "VENDEDOR_TAQUILLA",
+    "nombre_rol": "Vendedor de taquilla",
+    "permisos": [
+      "ventas.crear_venta",
+      "ventas.consultar_turno_propio"
+    ]
+  }
+}

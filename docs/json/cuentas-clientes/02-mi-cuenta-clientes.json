@@ -1,0 +1,79 @@
+{
+  "modulo": "Mi cuenta del cliente",
+  "estado": "LISTO_PARA_BACKEND",
+  "acceso": "Sesión de cliente activa y correo verificado",
+  "si_no_recuerda_contrasena_actual": {
+    "pantalla_origen": "/pages/cuenta/seguridad.html",
+    "reutiliza": [
+      "POST /api/v1/autenticacion/clientes/solicitar-recuperacion/",
+      "POST /api/v1/autenticacion/clientes/verificar-codigo/",
+      "POST /api/v1/autenticacion/clientes/restablecer-contrasena/"
+    ],
+    "resultado": "La contraseña anterior no se muestra; se reemplaza después de comprobar el código enviado al correo verificado."
+  },
+  "endpoints": [
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/",
+      "respuesta_200": {
+        "cliente": "objeto_cliente con identificación enmascarada"
+      }
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/v1/clientes/mi-cuenta/",
+      "entrada_posible": {
+        "telefono": "+504 9999-9999",
+        "usuario": "usuario_nuevo",
+        "contrasena_actual": "obligatoria si cambia el usuario"
+      },
+      "respuesta_200": {
+        "mensaje": "Datos actualizados.",
+        "cliente": "objeto_cliente"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/clientes/mi-cuenta/cambiar-contrasena/",
+      "entrada": {
+        "contrasena_actual": "contraseña actual",
+        "contrasena_nueva": "contraseña nueva"
+      },
+      "respuesta_200": {
+        "mensaje": "Contraseña actualizada."
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/clientes/mi-cuenta/cambiar-correo/",
+      "entrada": {
+        "correo_nuevo": "nuevo@example.com",
+        "contrasena_actual": "contraseña actual"
+      },
+      "respuesta_200": {
+        "mensaje": "Revisa el correo nuevo.",
+        "flujo_verificacion_id": "identificador opaco"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/clientes/mi-cuenta/verificar-correo/",
+      "entrada": {
+        "flujo_verificacion_id": "identificador opaco",
+        "codigo": "123456"
+      },
+      "respuesta_200": {
+        "mensaje": "Correo actualizado.",
+        "cliente": "objeto_cliente"
+      }
+    }
+  ],
+  "reglas": [
+    "El ID interno del cliente no cambia aunque cambie el usuario o el correo.",
+    "Nombre legal e identificación no se editan desde la web; requieren corrección asistida y auditoría.",
+    "La identificación completa nunca se devuelve al navegador.",
+    "El correo anterior sigue activo hasta verificar el correo nuevo.",
+    "El cambio normal exige la contraseña actual; si no la recuerda, debe usar la recuperación por correo.",
+    "Cambios sensibles pueden invalidar otras sesiones activas."
+  ]
+}

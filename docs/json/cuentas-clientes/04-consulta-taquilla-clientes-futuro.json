@@ -1,0 +1,19 @@
+{
+  "modulo": "Consulta de clientes y reposición de boletos en Taquilla",
+  "estado": "NO_IMPLEMENTAR_HASTA_TERMINAR_VENTAS_Y_BOLETOS",
+  "acceso": "Vendedor autenticado con permiso boletos.consultar_y_reemitir",
+  "endpoints_futuros": [
+    "GET /api/v1/taquilla/clientes/?buscar=...",
+    "GET /api/v1/taquilla/clientes/{id}/compras/",
+    "GET /api/v1/taquilla/compras/{id}/boletos/",
+    "POST /api/v1/taquilla/boletos/{id}/reemitir/"
+  ],
+  "reglas": [
+    "No cargar automáticamente a todos los clientes; exigir una búsqueda.",
+    "Buscar por identificación, usuario, correo o número de compra, pero nunca colocar la identificación en la URL completa.",
+    "Mostrar identificación enmascarada y nunca contraseñas.",
+    "El vendedor verifica físicamente el documento antes de reemitir.",
+    "Reemitir anula el QR anterior, crea uno nuevo y registra vendedor, fecha y motivo.",
+    "Solo puede quedar un QR válido por boleto."
+  ]
+}

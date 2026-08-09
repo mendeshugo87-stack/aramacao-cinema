@@ -1,0 +1,141 @@
+{
+  "modulo": "Autenticación de clientes",
+  "estado": "LISTO_PARA_BACKEND",
+  "sesion": "Cookie segura de Django; no guardar tokens, identificación ni contraseñas en el navegador",
+  "cliente": {
+    "id": "uuid interno",
+    "nombre_corto": "Hugo",
+    "nombre_completo": "Hugo Méndez",
+    "usuario": "hugomendez",
+    "correo": "hugo@example.com",
+    "telefono": "+504 9999-9999",
+    "tipo_identificacion": "IDENTIDAD_HN",
+    "identificacion_enmascarada": "0801-••••-•2345",
+    "correo_verificado": true,
+    "activo": true
+  },
+  "endpoints": [
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/crear-cuenta/",
+      "entrada": {
+        "nombre_completo": "Hugo Méndez",
+        "tipo_identificacion": "IDENTIDAD_HN",
+        "numero_identificacion": "0801199012345",
+        "usuario": "hugomendez",
+        "correo": "hugo@example.com",
+        "telefono": "+504 9999-9999",
+        "contrasena": "solo_por_https",
+        "acepta_terminos": true,
+        "acepta_tratamiento_datos": true
+      },
+      "respuesta_201": {
+        "mensaje": "Cuenta creada. Revisa tu correo.",
+        "flujo_verificacion_id": "identificador opaco y temporal",
+        "ruta_siguiente": "/pages/cuenta/verificar-correo.html"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/verificar-correo/",
+      "entrada": {
+        "flujo_verificacion_id": "identificador opaco",
+        "codigo": "123456"
+      },
+      "respuesta_200": {
+        "mensaje": "Correo verificado.",
+        "cliente": "objeto_cliente",
+        "ruta_siguiente": "/pages/cuenta/mi-cuenta.html"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/reenviar-codigo/",
+      "entrada": {
+        "flujo_verificacion_id": "identificador opaco"
+      },
+      "respuesta_200": {
+        "mensaje": "Si el flujo sigue vigente, se envió un código nuevo."
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/iniciar-sesion/",
+      "entrada": {
+        "identidad": "correo o usuario",
+        "contrasena": "solo_por_https"
+      },
+      "respuesta_200": {
+        "cliente": "objeto_cliente",
+        "ruta_siguiente": "/pages/cuenta/mi-cuenta.html"
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/autenticacion/clientes/sesion-actual/",
+      "respuesta_200": {
+        "autenticado": true,
+        "cliente": "objeto_cliente"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/cerrar-sesion/",
+      "respuesta_200": {
+        "mensaje": "Sesión cerrada correctamente."
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/solicitar-recuperacion/",
+      "entrada": {
+        "identidad": "correo o usuario"
+      },
+      "respuesta_200": {
+        "mensaje": "Si existe una cuenta válida, se enviaron instrucciones.",
+        "flujo_recuperacion_id": "identificador opaco, real o simulado",
+        "ruta_siguiente": "/pages/cuenta/verificar-codigo.html"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/verificar-codigo/",
+      "entrada": {
+        "flujo_recuperacion_id": "identificador opaco",
+        "codigo": "123456"
+      },
+      "respuesta_200": {
+        "token_restablecimiento": "token temporal de un solo uso",
+        "ruta_siguiente": "/pages/cuenta/nueva-contrasena.html"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/restablecer-contrasena/",
+      "entrada": {
+        "token_restablecimiento": "token temporal",
+        "contrasena_nueva": "solo_por_https"
+      },
+      "respuesta_200": {
+        "mensaje": "Contraseña actualizada.",
+        "ruta_siguiente": "/pages/cuenta/iniciar-sesion.html"
+      }
+    }
+  ],
+  "errores_principales": {
+    "400": "ERROR_VALIDACION, CODIGO_INVALIDO o CODIGO_VENCIDO",
+    "401": "CREDENCIALES_INVALIDAS o AUTENTICACION_REQUERIDA",
+    "403": "CUENTA_INACTIVA o CORREO_NO_VERIFICADO",
+    "409": "USUARIO_OCUPADO, CORREO_OCUPADO o IDENTIFICACION_OCUPADA",
+    "429": "DEMASIADOS_INTENTOS"
+  },
+  "reglas": [
+    "Tipo y número de identificación forman una combinación única.",
+    "Identidad hondureña se normaliza a 13 dígitos; pasaporte se normaliza en mayúsculas.",
+    "Usuario y correo son únicos sin distinguir mayúsculas.",
+    "Los códigos vencen, tienen límite de intentos y son de un solo uso.",
+    "La recuperación siempre devuelve un mensaje genérico para no revelar si la cuenta existe.",
+    "Al restablecer la contraseña, invalidar todas las sesiones activas del cliente y exigir un nuevo inicio de sesión.",
+    "Después del restablecimiento, enviar al correo verificado un aviso de que la contraseña fue cambiada."
+  ]
+}

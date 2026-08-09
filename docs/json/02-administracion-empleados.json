@@ -1,0 +1,101 @@
+{
+  "modulo": "Administración de empleados",
+  "acceso_requerido": {
+    "rol": "ADMINISTRADOR_OPERATIVO",
+    "permiso": "personal.gestionar"
+  },
+  "alta_administrador_operativo": {
+    "responsable": "SUPERADMINISTRADOR_TECNICO",
+    "medio": "Django Admin o proceso interno protegido del backend",
+    "regla": "La pantalla Personal crea y administra vendedores; nunca permite que un administrador operativo cree otro administrador."
+  },
+  "empleado": {
+    "id": "uuid",
+    "codigo_empleado": "TAQ-001",
+    "nombre_completo": "Hugo Méndez",
+    "usuario": "hugo69",
+    "correo": "hugo@example.com",
+    "telefono": "+504 9999-9999",
+    "rol": "VENDEDOR_TAQUILLA",
+    "nombre_rol": "Vendedor de taquilla",
+    "activo": true,
+    "debe_cambiar_contrasena": true,
+    "ultimo_acceso": null
+  },
+  "endpoints": [
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/administracion/empleados/?buscar=&estado=ACTIVO",
+      "hace": "Lista y filtra vendedores.",
+      "respuesta_200": {
+        "total": 1,
+        "resultados": [
+          "objeto_empleado"
+        ]
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/administracion/empleados/",
+      "hace": "Crea una cuenta de vendedor.",
+      "entrada": {
+        "nombre_completo": "Hugo Méndez",
+        "usuario": "hugo69",
+        "correo": "hugo@example.com",
+        "telefono": "+504 9999-9999",
+        "contrasena_temporal": "solo_por_https",
+        "activo": true,
+        "cambio_contrasena_obligatorio": true
+      },
+      "respuesta_201": {
+        "mensaje": "Cuenta creada correctamente.",
+        "empleado": "objeto_empleado_sin_contrasena"
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/administracion/empleados/{id}/",
+      "hace": "Consulta una cuenta.",
+      "respuesta_200": {
+        "empleado": "objeto_empleado"
+      }
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/v1/administracion/empleados/{id}/",
+      "hace": "Edita datos o activa y desactiva la cuenta.",
+      "entrada_posible": {
+        "nombre_completo": "Nombre actualizado",
+        "correo": "nuevo@example.com",
+        "telefono": null,
+        "activo": false,
+        "cambio_contrasena_obligatorio": false
+      },
+      "respuesta_200": {
+        "mensaje": "Cuenta actualizada correctamente.",
+        "empleado": "objeto_empleado"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/administracion/empleados/{id}/contrasena-temporal/",
+      "hace": "Invalida la contraseña anterior y asigna una temporal.",
+      "entrada": {
+        "contrasena_temporal": "solo_por_https"
+      },
+      "respuesta_200": {
+        "mensaje": "Contraseña temporal asignada.",
+        "debe_cambiar_contrasena": true
+      }
+    }
+  ],
+  "reglas": [
+    "El formulario no puede crear administradores.",
+    "Usuario y correo no se repiten.",
+    "El usuario se guarda en minúsculas y comienza con una letra.",
+    "La contraseña nunca aparece en listados ni respuestas.",
+    "Asignar una contraseña temporal invalida las sesiones anteriores y obliga a cambiarla al ingresar.",
+    "Las cuentas con historial se desactivan; no se eliminan.",
+    "Cada cambio registra administrador, fecha y acción."
+  ]
+}

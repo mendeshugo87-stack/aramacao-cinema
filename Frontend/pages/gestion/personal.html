@@ -5,157 +5,223 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="Administración privada de cuentas de vendedores de Aramacao Cinema.">
-  <title>Crear cuenta de personal | Aramacao Cinema</title>
+  <title>Administración de empleados | Aramacao Cinema</title>
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
-  <link rel="stylesheet" href="../../assets/css/styles.css">
-  <link rel="stylesheet" href="../../assets/css/personal.css">
-  <script src="../../assets/js/personal-admin.js" defer></script>
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/personal.css?v=8">
+  <script src="../../assets/js/staff-api.js?v=8" defer></script>
+  <script src="../../assets/js/staff-private.js?v=8" defer></script>
+  <script src="../../assets/js/personal-admin.js?v=8" defer></script>
 </head>
-<body class="staff-management-body">
-  <a class="skip-link" href="#personal-form">Saltar al formulario</a>
+<body
+  class="staff-management-body"
+  data-area-privada="gestion-personal"
+  data-roles-permitidos="ADMINISTRADOR_OPERATIVO"
+  data-permiso-requerido="personal.gestionar"
+  data-login-url="/pages/gestion/login.html"
+>
+  <a class="skip-link" href="#personal-list-section">Saltar al listado</a>
 
   <!--
-    BACKEND: toda esta página debe exigir una sesión de administrador operativo
-    con permiso para gestionar personal. El enlace no debe existir en el sitio público.
+    BACKEND: Django debe exigir sesión de ADMINISTRADOR_OPERATIVO y el permiso
+    personal.gestionar en cada endpoint. La comprobación de JavaScript no
+    reemplaza la autorización del servidor.
   -->
   <header class="management-header">
-    <a class="management-brand" href="../../index.html" aria-label="Aramacao Cinema">
+    <a class="management-brand" href="index.html" aria-label="Volver al panel de Gestión">
       <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="210" height="72">
     </a>
     <div class="management-session">
       <div>
-        <strong>Administrador operativo</strong>
-        <span>Gestión de personal</span>
+        <strong data-session-name>Comprobando sesión…</strong>
+        <span data-session-role>Gestión de personal</span>
       </div>
-      <button class="session-button" type="button" disabled>Cerrar sesión</button>
+      <button class="session-button" type="button" data-logout-button disabled>Cerrar sesión</button>
     </div>
   </header>
 
   <main class="management-main">
     <nav class="management-breadcrumb" aria-label="Ruta de navegación">
-      <span>Administración</span><span aria-hidden="true">/</span><strong>Personal</strong>
+      <a href="index.html">Administración</a><span aria-hidden="true">/</span><strong>Empleados</strong>
     </nav>
 
     <div class="management-title-row">
       <div>
         <p class="eyebrow">Cuentas y permisos</p>
-        <h1>Crear cuenta de personal</h1>
-        <p>Registra a un vendedor para que pueda ingresar únicamente al módulo de Taquilla.</p>
+        <h1>Administración de empleados</h1>
+        <p>Crea, consulta y actualiza las cuentas que pueden ingresar a Taquilla.</p>
       </div>
-      <span class="private-badge">Acceso privado</span>
+      <button class="button button-primary" id="new-personal-button" type="button">+ Nueva cuenta</button>
     </div>
 
-    <div class="management-grid">
+    <p class="form-status management-global-status" id="personal-global-status" role="status" aria-live="polite"></p>
+
+    <section class="employee-metrics" aria-label="Resumen de cuentas">
+      <article><span>Total</span><strong id="employee-total">0</strong><small>cuentas registradas</small></article>
+      <article><span>Activas</span><strong id="employee-active">0</strong><small>pueden iniciar sesión</small></article>
+      <article><span>Inactivas</span><strong id="employee-inactive">0</strong><small>acceso bloqueado</small></article>
+    </section>
+
+    <section class="management-card employee-list-card" id="personal-list-section" aria-labelledby="personal-list-title">
+      <div class="management-card-heading employee-list-heading">
+        <div>
+          <h2 id="personal-list-title">Vendedores de Taquilla</h2>
+          <p>Editar una cuenta no permite cambiarla a administrador.</p>
+        </div>
+        <span class="private-badge">Acceso privado</span>
+      </div>
+
+      <div class="employee-filters">
+        <label class="staff-field" for="employee-search">
+          <span>Buscar</span>
+          <input id="employee-search" type="search" placeholder="Nombre, usuario, correo o código">
+        </label>
+        <label class="staff-field" for="employee-status-filter">
+          <span>Estado</span>
+          <select id="employee-status-filter">
+            <option value="TODOS">Todas las cuentas</option>
+            <option value="ACTIVO">Activas</option>
+            <option value="INACTIVO">Inactivas</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="employee-list" id="employee-list" aria-live="polite"></div>
+    </section>
+
+    <section class="management-grid employee-editor" id="personal-editor" hidden>
       <section class="management-card" aria-labelledby="personal-form-title">
         <div class="management-card-heading">
           <span class="step-number">1</span>
           <div>
-            <h2 id="personal-form-title">Información del empleado</h2>
-            <p>Los campos marcados con * son obligatorios.</p>
+            <h2 id="personal-form-title">Nueva cuenta de vendedor</h2>
+            <p id="personal-form-help">Los campos marcados con * son obligatorios.</p>
           </div>
         </div>
 
-        <!--
-          BACKEND:
-          - Enviar este formulario a un endpoint protegido, por ejemplo POST /api/gestion/personal/.
-          - Volver a validar todos los datos en el servidor aunque el navegador los acepte.
-          - Verificar que usuario y correo no estén registrados.
-          - Cifrar la contraseña; nunca almacenarla como texto visible.
-          - Asignar el rol vendedor desde el servidor, no desde datos manipulables del formulario.
-          - Registrar qué administrador creó o modificó la cuenta.
-        -->
         <form class="staff-form management-form" id="personal-form" novalidate>
+          <input id="staff-id" name="empleado_id" type="hidden">
           <div class="form-grid">
             <label class="staff-field form-span-2" for="staff-full-name">
               <span>Nombre completo *</span>
-              <input id="staff-full-name" name="full_name" type="text" autocomplete="name" minlength="3" maxlength="100" required>
+              <input id="staff-full-name" name="nombre_completo" type="text" autocomplete="name" minlength="3" maxlength="100" required>
               <small class="field-error" data-error-for="staff-full-name"></small>
             </label>
 
             <label class="staff-field" for="staff-username">
               <span>Nombre de usuario *</span>
-              <input id="staff-username" name="username" type="text" autocomplete="off" minlength="4" maxlength="40" pattern="[A-Za-z0-9._-]+" required>
-              <small>Solo letras, números, punto, guion o guion bajo.</small>
+              <input id="staff-username" name="usuario" type="text" autocomplete="off" minlength="4" maxlength="40" pattern="[A-Za-z][A-Za-z0-9]*" autocapitalize="none" spellcheck="false" required>
+              <small>Solo letras y números, comenzando con una letra.</small>
               <small class="field-error" data-error-for="staff-username"></small>
             </label>
 
             <label class="staff-field" for="staff-email">
               <span>Correo electrónico *</span>
-              <input id="staff-email" name="email" type="email" autocomplete="email" maxlength="120" required>
+              <input id="staff-email" name="correo" type="email" autocomplete="email" maxlength="120" required>
               <small class="field-error" data-error-for="staff-email"></small>
             </label>
 
             <label class="staff-field" for="staff-phone">
               <span>Teléfono</span>
-              <input id="staff-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="+504 9999-9999">
+              <input id="staff-phone" name="telefono" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="+504 9999-9999">
               <small class="field-error" data-error-for="staff-phone"></small>
             </label>
 
             <label class="staff-field" for="staff-role">
               <span>Rol asignado</span>
-              <input id="staff-role" name="role_display" type="text" value="Vendedor de taquilla" readonly>
-              <small>El backend asignará este permiso de forma segura.</small>
+              <input id="staff-role" name="rol_mostrado" type="text" value="Vendedor de taquilla" readonly>
+              <small>Django asignará VENDEDOR_TAQUILLA desde el servidor.</small>
             </label>
 
-            <label class="staff-field" for="staff-password">
-              <span>Contraseña temporal *</span>
-              <div class="password-control">
-                <input id="staff-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
-                <button class="password-toggle" type="button" data-password-toggle="staff-password" aria-label="Mostrar contraseña">Mostrar</button>
-              </div>
-              <small>Mínimo 8 caracteres, con letra y número.</small>
-              <small class="field-error" data-error-for="staff-password"></small>
-            </label>
+            <div class="password-fields form-span-2" id="new-account-passwords">
+              <label class="staff-field" for="staff-password">
+                <span>Contraseña temporal *</span>
+                <div class="password-control">
+                  <input id="staff-password" name="contrasena_temporal" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+                  <button class="password-toggle" type="button" data-password-toggle="staff-password" aria-label="Mostrar contraseña">Mostrar</button>
+                </div>
+                <small>Mínimo 8 caracteres, con letra y número.</small>
+                <small class="field-error" data-error-for="staff-password"></small>
+              </label>
 
-            <label class="staff-field" for="staff-password-confirmation">
-              <span>Confirmar contraseña *</span>
-              <div class="password-control">
-                <input id="staff-password-confirmation" name="password_confirmation" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
-                <button class="password-toggle" type="button" data-password-toggle="staff-password-confirmation" aria-label="Mostrar contraseña">Mostrar</button>
-              </div>
-              <small class="field-error" data-error-for="staff-password-confirmation"></small>
-            </label>
+              <label class="staff-field" for="staff-password-confirmation">
+                <span>Confirmar contraseña *</span>
+                <div class="password-control">
+                  <input id="staff-password-confirmation" name="confirmacion_contrasena" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+                  <button class="password-toggle" type="button" data-password-toggle="staff-password-confirmation" aria-label="Mostrar contraseña">Mostrar</button>
+                </div>
+                <small class="field-error" data-error-for="staff-password-confirmation"></small>
+              </label>
+            </div>
           </div>
 
           <div class="account-settings">
             <label class="setting-check">
-              <input id="staff-active" name="is_active" type="checkbox" checked>
-              <span><strong>Cuenta activa</strong><small>Permite iniciar sesión cuando backend cree la cuenta.</small></span>
+              <input id="staff-active" name="activo" type="checkbox" checked>
+              <span><strong>Cuenta activa</strong><small>Permite iniciar sesión en Taquilla.</small></span>
             </label>
             <label class="setting-check">
-              <input id="staff-force-change" name="force_password_change" type="checkbox" checked>
-              <span><strong>Cambiar contraseña al ingresar</strong><small>Recomendado para proteger la cuenta del empleado.</small></span>
+              <input id="staff-force-change" name="cambio_contrasena_obligatorio" type="checkbox" checked disabled>
+              <span><strong>Cambio de contraseña controlado</strong><small>Se activa automáticamente al entregar una contraseña temporal.</small></span>
             </label>
           </div>
 
           <p class="form-status" id="personal-form-status" role="status" aria-live="polite"></p>
 
           <div class="form-actions">
-            <button class="button button-ghost" id="clear-personal-form" type="button">Limpiar</button>
-            <button class="button button-primary" type="submit">Crear cuenta de vendedor</button>
+            <button class="button button-ghost" id="cancel-personal-form" type="button">Cancelar</button>
+            <button class="button button-primary" id="save-personal-button" type="submit">Crear cuenta</button>
           </div>
+        </form>
+
+        <form class="temporary-password-panel" id="temporary-password-form" hidden novalidate>
+          <div>
+            <p class="eyebrow">Acceso del empleado</p>
+            <h3>Asignar contraseña temporal</h3>
+            <p>La contraseña anterior dejará de funcionar y el empleado tendrá que cambiar la nueva al ingresar.</p>
+          </div>
+          <div class="password-fields">
+            <label class="staff-field" for="temporary-password">
+              <span>Nueva contraseña temporal</span>
+              <div class="password-control">
+                <input id="temporary-password" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+                <button class="password-toggle" type="button" data-password-toggle="temporary-password" aria-label="Mostrar contraseña">Mostrar</button>
+              </div>
+              <small class="field-error" data-error-for="temporary-password"></small>
+            </label>
+            <label class="staff-field" for="temporary-password-confirmation">
+              <span>Confirmar contraseña</span>
+              <div class="password-control">
+                <input id="temporary-password-confirmation" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+                <button class="password-toggle" type="button" data-password-toggle="temporary-password-confirmation" aria-label="Mostrar contraseña">Mostrar</button>
+              </div>
+              <small class="field-error" data-error-for="temporary-password-confirmation"></small>
+            </label>
+          </div>
+          <button class="button button-ghost" id="save-temporary-password" type="submit">Guardar contraseña temporal</button>
+          <p class="form-status" id="temporary-password-status" role="status" aria-live="polite"></p>
         </form>
       </section>
 
       <aside class="management-help" aria-labelledby="permissions-title">
-        <p class="eyebrow">Permisos</p>
-        <h2 id="permissions-title">¿Qué podrá hacer?</h2>
+        <p class="eyebrow">Permisos fijos</p>
+        <h2 id="permissions-title">Vendedor de Taquilla</h2>
         <ul class="permissions-list">
-          <li><span>✓</span> Ingresar a la pantalla de Taquilla.</li>
+          <li><span>✓</span> Ingresar a Taquilla.</li>
           <li><span>✓</span> Consultar cartelera, funciones y asientos.</li>
           <li><span>✓</span> Registrar ventas autorizadas.</li>
           <li><span>✓</span> Cerrar su propia sesión.</li>
-          <li class="permission-denied"><span>×</span> No puede cambiar cartelera ni precios.</li>
-          <li class="permission-denied"><span>×</span> No puede crear administradores.</li>
-          <li class="permission-denied"><span>×</span> No puede entrar al panel técnico.</li>
+          <li class="permission-denied"><span>×</span> No cambia cartelera ni precios.</li>
+          <li class="permission-denied"><span>×</span> No crea administradores.</li>
+          <li class="permission-denied"><span>×</span> No entra al panel técnico.</li>
         </ul>
         <div class="security-note">
-          <strong>Validación obligatoria</strong>
-          <p>El backend confirmará identidad, duplicados, contraseña, rol, estado y permisos antes de guardar la cuenta.</p>
+          <strong>Sin borrar historial</strong>
+          <p>Una cuenta se desactiva; no se elimina si ya tiene ventas o acciones registradas.</p>
         </div>
       </aside>
-    </div>
+    </section>
   </main>
 </body>
 </html>

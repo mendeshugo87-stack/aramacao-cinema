@@ -8,9 +8,10 @@
   <title>Acceso de empleados | Aramacao Cinema</title>
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
-  <link rel="stylesheet" href="../../assets/css/styles.css">
-  <link rel="stylesheet" href="../../assets/css/personal.css">
-  <script src="../../assets/js/empleados-login.js" defer></script>
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/personal.css?v=8">
+  <script src="../../assets/js/staff-api.js?v=8" defer></script>
+  <script src="../../assets/js/empleados-login.js?v=8" defer></script>
 </head>
 <body class="staff-access-body">
   <a class="skip-link" href="#acceso-personal">Saltar al formulario</a>
@@ -48,9 +49,10 @@
 
         <!--
           BACKEND:
-          - Sustituir la demostración de empleados-login.js por un POST seguro.
+          - empleados-login.js envía un POST a /api/v1/autenticacion/empleados/iniciar-sesion/.
           - Validar usuario, contraseña, cuenta activa y rol en el servidor.
-          - Si el rol es vendedor, redirigir únicamente a /empleados/taquilla/.
+          - Crear la sesión con una cookie HttpOnly y devolver ruta_siguiente según el rol.
+          - Proteger también el endpoint sesion-actual y el cierre de sesión.
           - Nunca confiar en un rol enviado desde el navegador.
         -->
         <form class="staff-form" id="employee-login-form" novalidate>
@@ -58,11 +60,14 @@
             <span>Usuario</span>
             <input
               id="employee-username"
-              name="username"
+              name="usuario"
               type="text"
               autocomplete="username"
               minlength="4"
               maxlength="40"
+              pattern="[A-Za-z][A-Za-z0-9]*"
+              autocapitalize="none"
+              spellcheck="false"
               required
               aria-describedby="username-error"
             >
@@ -74,7 +79,7 @@
             <div class="password-control">
               <input
                 id="employee-password"
-                name="password"
+                name="contrasena"
                 type="password"
                 autocomplete="current-password"
                 minlength="8"
@@ -88,7 +93,7 @@
 
           <p class="form-status" id="employee-login-status" role="status" aria-live="polite"></p>
 
-          <button class="button button-primary staff-submit" type="submit">Ingresar a Taquilla</button>
+          <button class="button button-primary staff-submit" id="employee-login-submit" type="submit">Ingresar a Taquilla</button>
         </form>
 
         <p class="staff-help">¿No puedes ingresar? Solicita al administrador que revise el estado de tu cuenta.</p>

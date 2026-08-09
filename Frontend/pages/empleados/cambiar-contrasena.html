@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Cambio obligatorio de contraseña para empleados de Aramacao Cinema.">
+  <title>Cambiar contraseña | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/personal.css?v=8">
+  <script src="../../assets/js/staff-api.js?v=8" defer></script>
+  <script src="../../assets/js/staff-private.js?v=8" defer></script>
+  <script src="../../assets/js/cambiar-contrasena.js?v=8" defer></script>
+</head>
+<body
+  class="staff-access-body"
+  data-area-privada="cambio-contrasena"
+  data-roles-permitidos="VENDEDOR_TAQUILLA,ADMINISTRADOR_OPERATIVO"
+  data-login-url="/pages/empleados/login.html"
+  data-cambio-contrasena="true"
+>
+  <a class="skip-link" href="#password-change">Saltar al formulario</a>
+
+  <main class="staff-access-layout">
+    <section class="staff-brand-panel" aria-labelledby="password-welcome-title">
+      <div class="staff-brand-copy">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="260" height="90">
+        <p class="eyebrow">Protección de cuenta</p>
+        <h1 id="password-welcome-title">Crea tu contraseña personal</h1>
+        <p>La contraseña temporal entregada por administración debe sustituirse antes de entrar al área de trabajo.</p>
+      </div>
+
+      <ul class="staff-access-notes" aria-label="Condiciones de la contraseña">
+        <li><span>01</span> Usa al menos ocho caracteres.</li>
+        <li><span>02</span> Incluye por lo menos una letra y un número.</li>
+        <li><span>03</span> No compartas tu contraseña con otro empleado.</li>
+      </ul>
+    </section>
+
+    <section class="staff-form-panel" id="password-change" aria-labelledby="password-change-title">
+      <div class="staff-form-card">
+        <div class="staff-form-heading">
+          <p class="eyebrow">Primer ingreso</p>
+          <h2 id="password-change-title">Cambiar contraseña</h2>
+          <p>Sesión de <strong data-session-name>empleado</strong>.</p>
+        </div>
+
+        <form class="staff-form" id="password-change-form" novalidate>
+          <label class="staff-field" for="current-password">
+            <span>Contraseña temporal</span>
+            <div class="password-control">
+              <input id="current-password" type="password" autocomplete="current-password" minlength="8" required>
+              <button class="password-toggle" type="button" data-password-toggle="current-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <small class="field-error" data-error-for="current-password"></small>
+          </label>
+
+          <label class="staff-field" for="new-password">
+            <span>Nueva contraseña</span>
+            <div class="password-control">
+              <input id="new-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+              <button class="password-toggle" type="button" data-password-toggle="new-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <small>Mínimo 8 caracteres, con letra y número.</small>
+            <small class="field-error" data-error-for="new-password"></small>
+          </label>
+
+          <label class="staff-field" for="confirm-new-password">
+            <span>Confirmar nueva contraseña</span>
+            <div class="password-control">
+              <input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+              <button class="password-toggle" type="button" data-password-toggle="confirm-new-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <small class="field-error" data-error-for="confirm-new-password"></small>
+          </label>
+
+          <p class="form-status" id="password-change-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary staff-submit" id="password-change-submit" type="submit">Guardar y continuar</button>
+          <button class="button button-ghost staff-submit" type="button" data-logout-button disabled>Cancelar y cerrar sesión</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

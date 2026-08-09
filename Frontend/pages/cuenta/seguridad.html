@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Seguridad y credenciales de tu cuenta de Aramacao Cinema.">
+  <title>Seguridad | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
+  <script src="../../assets/js/customer-session.js" defer></script>
+</head>
+<body class="customer-dashboard-body" data-customer-protected data-account-view="security">
+  <a class="skip-link" href="#account-content">Saltar al contenido</a>
+  <header class="customer-dashboard-header">
+    <a class="customer-dashboard-brand" href="../../index.html"><img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="210" height="72"></a>
+    <div class="customer-dashboard-user"><span class="customer-avatar" data-customer-avatar>AM</span><div><small>Sesión de cliente</small><strong>Hola, <span data-customer-name>cliente</span></strong></div><button type="button" data-customer-logout>Cerrar sesión</button></div>
+  </header>
+  <div class="customer-dashboard-layout">
+    <aside class="customer-dashboard-sidebar">
+      <nav aria-label="Opciones de Mi cuenta">
+        <a href="mi-cuenta.html"><span>01</span> Mi cuenta</a>
+        <a href="mis-compras.html"><span>02</span> Mis compras</a>
+        <a class="active" href="seguridad.html"><span>03</span> Seguridad</a>
+        <a href="../../index.html"><span>04</span> Volver al cine</a>
+      </nav>
+      <div class="account-sidebar-note"><strong>Protección importante</strong><p>Nunca compartas tu contraseña ni códigos enviados al correo.</p></div>
+    </aside>
+    <main class="customer-dashboard-content" id="account-content">
+      <div class="account-demo-notice" data-local-preview hidden><strong>Vista local de demostración</strong><span>Los formularios no cambian datos reales mientras Django no esté conectado.</span></div>
+      <header class="account-dashboard-heading"><div><p class="eyebrow">Protección de la cuenta</p><h1>Seguridad</h1><p>Actualiza tu contraseña o verifica un correo nuevo.</p></div></header>
+      <p class="account-form-status account-page-status" id="customer-page-status" role="status" aria-live="polite"></p>
+
+      <div class="account-security-grid">
+        <section class="account-dashboard-card" aria-labelledby="password-title">
+          <div class="account-card-heading"><div><p class="eyebrow">Credencial</p><h2 id="password-title">Cambiar contraseña</h2></div></div>
+          <form class="customer-account-form account-dashboard-form" data-customer-form="password" novalidate>
+            <div class="account-field">
+              <label for="security-current-password">Contraseña actual *</label>
+              <div class="account-password-control"><input id="security-current-password" type="password" autocomplete="current-password" required><button type="button" data-password-toggle="security-current-password">Mostrar</button></div>
+              <small class="account-field-error" data-error-for="security-current-password"></small>
+              <!-- Reutiliza el flujo de recuperación existente; no crea otro endpoint. -->
+              <a class="account-secondary-button" href="recuperar.html?origen=seguridad">¿No recuerdas tu contraseña actual?</a>
+            </div>
+            <div class="account-field">
+              <label for="security-new-password">Contraseña nueva *</label>
+              <div class="account-password-control"><input id="security-new-password" type="password" autocomplete="new-password" minlength="8" required><button type="button" data-password-toggle="security-new-password">Mostrar</button></div>
+              <small>Mínimo 8 caracteres, una mayúscula y un número.</small>
+              <small class="account-field-error" data-error-for="security-new-password"></small>
+            </div>
+            <div class="account-field">
+              <label for="security-confirm-password">Confirmar contraseña *</label>
+              <div class="account-password-control"><input id="security-confirm-password" type="password" autocomplete="new-password" minlength="8" required><button type="button" data-password-toggle="security-confirm-password">Mostrar</button></div>
+              <small class="account-field-error" data-error-for="security-confirm-password"></small>
+            </div>
+            <p class="account-form-status" data-form-status role="status" aria-live="polite"></p>
+            <button class="button button-primary" type="submit">Actualizar contraseña</button>
+          </form>
+        </section>
+
+        <section class="account-dashboard-card" aria-labelledby="email-title">
+          <div class="account-card-heading"><div><p class="eyebrow">Correo verificado</p><h2 id="email-title">Cambiar correo</h2></div></div>
+          <p class="account-current-value">Correo actual: <strong id="security-current-email">Cargando…</strong></p>
+          <form class="customer-account-form account-dashboard-form" data-customer-form="email" novalidate>
+            <div class="account-field">
+              <label for="security-new-email">Correo nuevo *</label>
+              <input id="security-new-email" type="email" autocomplete="email" maxlength="160" required>
+              <small>El correo actual seguirá activo hasta verificar el nuevo.</small>
+              <small class="account-field-error" data-error-for="security-new-email"></small>
+            </div>
+            <div class="account-field">
+              <label for="security-email-password">Contraseña actual *</label>
+              <div class="account-password-control"><input id="security-email-password" type="password" autocomplete="current-password" required><button type="button" data-password-toggle="security-email-password">Mostrar</button></div>
+              <small class="account-field-error" data-error-for="security-email-password"></small>
+            </div>
+            <p class="account-form-status" data-form-status role="status" aria-live="polite"></p>
+            <button class="button button-primary" type="submit">Enviar código al correo nuevo</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="account-dashboard-card account-email-verification" id="new-email-verification-panel" aria-labelledby="new-email-code-title" hidden>
+        <div class="account-card-heading"><div><p class="eyebrow">Confirmación pendiente</p><h2 id="new-email-code-title">Verificar correo nuevo</h2></div></div>
+        <form class="customer-account-form account-dashboard-form" data-customer-form="verify-new-email" novalidate>
+          <input id="new-email-flow-id" type="hidden">
+          <div class="account-field">
+            <label for="new-email-code">Código de 6 dígitos *</label>
+            <input class="account-code-input" id="new-email-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+            <small class="account-field-error" data-error-for="new-email-code"></small>
+          </div>
+          <p class="account-form-status" data-form-status role="status" aria-live="polite"></p>
+          <button class="button button-primary" type="submit">Verificar correo nuevo</button>
+        </form>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crea una contraseña nueva para tu cuenta de Aramacao Cinema.">
+  <title>Nueva contraseña | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
+  <script src="../../assets/js/auth.js" defer></script>
+</head>
+<body class="customer-account-body">
+  <a class="skip-link" href="#reset-password-form">Saltar al formulario</a>
+  <main class="customer-account-layout">
+    <section class="customer-account-intro" aria-labelledby="new-password-welcome-title">
+      <a class="account-back-link" href="../../index.html">← Volver a Inicio</a>
+      <div class="account-intro-copy">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="250" height="86">
+        <p class="eyebrow">Protege tu cuenta</p>
+        <h1 id="new-password-welcome-title">Crea una contraseña nueva</h1>
+        <p>Utiliza una contraseña diferente a las anteriores y evita compartirla.</p>
+      </div>
+      <div class="account-helper-box">
+        <strong>El enlace se usa una sola vez.</strong>
+        <p>Al guardar, Django invalidará el código de recuperación y las sesiones anteriores.</p>
+      </div>
+    </section>
+    <section class="customer-account-panel" aria-labelledby="new-password-title">
+      <div class="customer-account-card compact-card">
+        <div class="account-form-heading">
+          <p class="eyebrow">Nueva contraseña</p>
+          <h2 id="new-password-title">Recupera el acceso</h2>
+          <p id="purchase-context">Completa los dos campos para continuar.</p>
+        </div>
+        <form class="customer-account-form" id="reset-password-form" data-auth-form="reset-password" novalidate>
+          <input id="reset-token" name="token_restablecimiento" type="hidden">
+          <div class="account-field">
+            <label for="new-password">Contraseña nueva *</label>
+            <div class="account-password-control">
+              <input id="new-password" name="contrasena_nueva" type="password" autocomplete="new-password" minlength="8" data-password-field required>
+              <button type="button" data-password-toggle="new-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <small>Mínimo 8 caracteres, una mayúscula y un número.</small>
+            <small class="account-field-error" data-error-for="new-password"></small>
+          </div>
+          <div class="account-field">
+            <label for="new-password-confirmation">Confirmar contraseña *</label>
+            <div class="account-password-control">
+              <input id="new-password-confirmation" name="confirmacion_contrasena" type="password" autocomplete="new-password" minlength="8" data-password-field required>
+              <button type="button" data-password-toggle="new-password-confirmation" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <small class="account-field-error" data-error-for="new-password-confirmation"></small>
+          </div>
+          <p class="account-form-status" id="account-form-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary account-submit" type="submit">Guardar contraseña nueva</button>
+        </form>
+        <nav class="account-related-links" aria-label="Otras opciones de cuenta">
+          <p><a href="iniciar-sesion.html" data-preserve-query>Volver a Iniciar sesión</a></p>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

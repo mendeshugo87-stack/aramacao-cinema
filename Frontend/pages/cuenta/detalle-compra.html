@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Detalle protegido de una compra de Aramacao Cinema.">
+  <title>Detalle de compra | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
+  <script src="../../assets/js/customer-session.js" defer></script>
+</head>
+<body class="customer-dashboard-body" data-customer-protected data-account-view="purchase-detail">
+  <a class="skip-link" href="#account-content">Saltar al contenido</a>
+  <header class="customer-dashboard-header">
+    <a class="customer-dashboard-brand" href="../../index.html"><img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="210" height="72"></a>
+    <div class="customer-dashboard-user"><span class="customer-avatar" data-customer-avatar>AM</span><div><small>Sesión de cliente</small><strong>Hola, <span data-customer-name>cliente</span></strong></div><button type="button" data-customer-logout>Cerrar sesión</button></div>
+  </header>
+  <div class="customer-dashboard-layout">
+    <aside class="customer-dashboard-sidebar">
+      <nav aria-label="Opciones de Mi cuenta">
+        <a href="mi-cuenta.html"><span>01</span> Mi cuenta</a>
+        <a class="active" href="mis-compras.html"><span>02</span> Mis compras</a>
+        <a href="seguridad.html"><span>03</span> Seguridad</a>
+        <a href="../../index.html"><span>04</span> Volver al cine</a>
+      </nav>
+      <div class="account-sidebar-note"><strong>Un solo QR válido</strong><p>Si Taquilla reemite un boleto, el código anterior quedará anulado.</p></div>
+    </aside>
+    <main class="customer-dashboard-content" id="account-content">
+      <div class="account-demo-notice" data-local-preview hidden><strong>Vista local de demostración</strong><span>El detalle real estará disponible después de conectar ventas, pagos y boletos.</span></div>
+      <header class="account-dashboard-heading"><div><p class="eyebrow">Compra protegida</p><h1>Detalle de compra</h1><p>Solo el dueño autenticado podrá consultar esta información.</p></div><a class="button button-ghost" href="mis-compras.html">← Volver al historial</a></header>
+      <p class="account-form-status account-page-status" id="customer-page-status" role="status" aria-live="polite"></p>
+
+      <section class="account-dashboard-card account-detail-loading" id="purchase-detail-loading"><p>Cargando la compra…</p></section>
+      <section class="account-dashboard-card account-empty-state" id="purchase-detail-unavailable" hidden>
+        <span aria-hidden="true">🔒</span>
+        <h2>Detalle pendiente de ventas reales</h2>
+        <p>La pantalla y el endpoint ya están preparados, pero no mostraremos boletos inventados en la demostración local.</p>
+        <a class="button button-primary" href="mis-compras.html">Volver a Mis compras</a>
+      </section>
+      <section class="account-dashboard-card" id="purchase-detail-content" hidden>
+        <div class="account-detail-summary">
+          <div><small>Referencia</small><strong id="detail-reference">—</strong></div>
+          <div><small>Fecha</small><strong id="detail-date">—</strong></div>
+          <div><small>Estado</small><strong id="detail-status">—</strong></div>
+          <div><small>Total</small><strong id="detail-total">—</strong></div>
+        </div>
+        <div class="account-detail-section"><h2>Artículos</h2><ul id="purchase-detail-items"></ul></div>
+        <div class="account-detail-section"><h2>Boletos disponibles</h2><div class="account-ticket-actions" id="purchase-detail-tickets"></div></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

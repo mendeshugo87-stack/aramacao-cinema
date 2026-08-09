@@ -9,6 +9,7 @@
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css">
   <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
   <script src="../../assets/js/auth.js" defer></script>
 </head>
 <body class="customer-account-body">
@@ -48,7 +49,7 @@
 
         <!--
           BACKEND:
-          - Comprobar correo y usuario duplicados en el servidor.
+          - Comprobar identificación, correo y usuario duplicados en el servidor.
           - Cifrar la contraseña; nunca guardarla como texto visible.
           - Enviar un código de verificación al correo.
           - Crear una sesión segura y regresar al paso de compra solicitado.
@@ -63,34 +64,52 @@
           <div class="account-form-grid">
             <div class="account-field span-2">
               <label for="customer-name">Nombre completo *</label>
-              <input id="customer-name" name="full_name" type="text" autocomplete="name" maxlength="120" required>
+              <input id="customer-name" name="nombre_completo" type="text" autocomplete="name" maxlength="120" required>
+              <small>Escríbelo como aparece en tu documento.</small>
               <small class="account-field-error" data-error-for="customer-name"></small>
             </div>
 
             <div class="account-field">
+              <label for="customer-id-type">Tipo de identificación *</label>
+              <select id="customer-id-type" name="tipo_identificacion" required>
+                <option value="">Selecciona una opción</option>
+                <option value="IDENTIDAD_HN">Identidad hondureña</option>
+                <option value="PASAPORTE">Pasaporte</option>
+              </select>
+              <small class="account-field-error" data-error-for="customer-id-type"></small>
+            </div>
+
+            <div class="account-field">
+              <label for="customer-id-number">Número de identificación *</label>
+              <input id="customer-id-number" name="numero_identificacion" type="text" inputmode="text" autocomplete="off" maxlength="24" placeholder="0801-1990-12345" required>
+              <small>Servirá para recuperar tus boletos en Taquilla presentando el documento.</small>
+              <small class="account-field-error" data-error-for="customer-id-number"></small>
+            </div>
+
+            <div class="account-field">
               <label for="customer-email">Correo electrónico *</label>
-              <input id="customer-email" name="email" type="email" autocomplete="email" maxlength="160" required>
+              <input id="customer-email" name="correo" type="email" autocomplete="email" maxlength="160" required>
               <small>Recibirás aquí la verificación y tus boletos.</small>
               <small class="account-field-error" data-error-for="customer-email"></small>
             </div>
 
             <div class="account-field">
               <label for="customer-username">Nombre de usuario *</label>
-              <input id="customer-username" name="username" type="text" autocomplete="username" minlength="4" maxlength="40" required>
+              <input id="customer-username" name="usuario" type="text" autocomplete="username" minlength="4" maxlength="40" required>
               <small>También ayudará a localizar una compra en ventanilla.</small>
               <small class="account-field-error" data-error-for="customer-username"></small>
             </div>
 
             <div class="account-field span-2">
-              <label for="customer-phone">Teléfono</label>
-              <input id="customer-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="+504 9999-9999">
+              <label for="customer-phone">Teléfono *</label>
+              <input id="customer-phone" name="telefono" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="+504 9999-9999" required>
               <small class="account-field-error" data-error-for="customer-phone"></small>
             </div>
 
             <div class="account-field">
               <label for="customer-password">Contraseña *</label>
               <div class="account-password-control">
-                <input id="customer-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+                <input id="customer-password" name="contrasena" type="password" autocomplete="new-password" minlength="8" data-password-field required>
                 <button type="button" data-password-toggle="customer-password" aria-label="Mostrar contraseña">Mostrar</button>
               </div>
               <small>Mínimo 8 caracteres, una mayúscula y un número.</small>
@@ -100,7 +119,7 @@
             <div class="account-field">
               <label for="customer-password-confirmation">Confirmar contraseña *</label>
               <div class="account-password-control">
-                <input id="customer-password-confirmation" name="password_confirmation" type="password" autocomplete="new-password" minlength="8" required>
+                <input id="customer-password-confirmation" name="confirmacion_contrasena" type="password" autocomplete="new-password" minlength="8" data-password-field required>
                 <button type="button" data-password-toggle="customer-password-confirmation" aria-label="Mostrar contraseña">Mostrar</button>
               </div>
               <small class="account-field-error" data-error-for="customer-password-confirmation"></small>
@@ -108,13 +127,19 @@
           </div>
 
           <label class="account-consent">
-            <input id="customer-terms" name="terms" type="checkbox" required>
-            <span>Acepto el uso de mis datos para administrar mi cuenta, compras y boletos.</span>
+            <input id="customer-terms" name="acepta_terminos" type="checkbox" required>
+            <span>Acepto los términos y condiciones de la compra en línea.</span>
           </label>
           <small class="account-field-error" data-error-for="customer-terms"></small>
 
+          <label class="account-consent">
+            <input id="customer-data-consent" name="acepta_tratamiento_datos" type="checkbox" required>
+            <span>Autorizo el tratamiento necesario de mis datos para administrar la cuenta, las compras y la recuperación de boletos.</span>
+          </label>
+          <small class="account-field-error" data-error-for="customer-data-consent"></small>
+
           <p class="account-form-status" id="account-form-status" role="status" aria-live="polite"></p>
-          <button class="button button-primary account-submit" type="submit">Crear cuenta y continuar</button>
+          <button class="button button-primary account-submit" type="submit">Crear cuenta y verificar correo</button>
         </form>
 
         <nav class="account-related-links" aria-label="Otras opciones de cuenta">

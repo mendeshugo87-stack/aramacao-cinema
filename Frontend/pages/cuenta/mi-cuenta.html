@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Consulta y actualiza tu cuenta de cliente de Aramacao Cinema.">
+  <title>Mi cuenta | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
+  <script src="../../assets/js/customer-session.js" defer></script>
+</head>
+<body class="customer-dashboard-body" data-customer-protected data-account-view="profile">
+  <a class="skip-link" href="#account-content">Saltar al contenido</a>
+  <header class="customer-dashboard-header">
+    <a class="customer-dashboard-brand" href="../../index.html" aria-label="Volver al Inicio de Aramacao Cinema">
+      <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="210" height="72">
+    </a>
+    <div class="customer-dashboard-user">
+      <span class="customer-avatar" data-customer-avatar>AM</span>
+      <div><small>Sesión de cliente</small><strong>Hola, <span data-customer-name>cliente</span></strong></div>
+      <button type="button" data-customer-logout>Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="customer-dashboard-layout">
+    <aside class="customer-dashboard-sidebar">
+      <nav aria-label="Opciones de Mi cuenta">
+        <a class="active" href="mi-cuenta.html"><span>01</span> Mi cuenta</a>
+        <a href="mis-compras.html"><span>02</span> Mis compras</a>
+        <a href="seguridad.html"><span>03</span> Seguridad</a>
+        <a href="../../index.html"><span>04</span> Volver al cine</a>
+      </nav>
+      <div class="account-sidebar-note">
+        <strong>¿Perdiste un boleto?</strong>
+        <p>Podrás descargarlo desde Mis compras o presentarte en Taquilla con tu identificación.</p>
+      </div>
+    </aside>
+
+    <main class="customer-dashboard-content" id="account-content">
+      <div class="account-demo-notice" data-local-preview hidden>
+        <strong>Vista local de demostración</strong>
+        <span>Estos datos son visuales y no se guardan. Django mostrará la cuenta real.</span>
+      </div>
+      <header class="account-dashboard-heading">
+        <div>
+          <p class="eyebrow">Cuenta de cliente</p>
+          <h1>Mi cuenta</h1>
+          <p>Consulta tus datos y actualiza únicamente la información permitida.</p>
+        </div>
+        <a class="button button-primary" href="mis-compras.html">Ver mis compras</a>
+      </header>
+      <p class="account-form-status account-page-status" id="customer-page-status" role="status" aria-live="polite"></p>
+
+      <section class="account-overview-grid" aria-label="Resumen de la cuenta">
+        <article>
+          <small>Nombre legal</small>
+          <strong id="profile-name">Cargando…</strong>
+          <span>No editable desde la web</span>
+        </article>
+        <article>
+          <small>Correo</small>
+          <strong id="profile-email">Cargando…</strong>
+          <span id="profile-email-status">Comprobando estado…</span>
+        </article>
+        <article>
+          <small id="profile-identification-type">Identificación</small>
+          <strong id="profile-identification">••••••••</strong>
+          <span>Protegida y enmascarada</span>
+        </article>
+      </section>
+
+      <section class="account-dashboard-card" aria-labelledby="editable-data-title">
+        <div class="account-card-heading">
+          <div><p class="eyebrow">Datos editables</p><h2 id="editable-data-title">Contacto y usuario</h2></div>
+          <span>Las compras siempre se vinculan a tu ID interno.</span>
+        </div>
+        <form class="customer-account-form account-dashboard-form" data-customer-form="profile" novalidate>
+          <div class="account-form-grid">
+            <div class="account-field">
+              <label for="profile-username">Nombre de usuario *</label>
+              <input id="profile-username" name="usuario" type="text" autocomplete="username" minlength="4" maxlength="40" required>
+              <small class="account-field-error" data-error-for="profile-username"></small>
+            </div>
+            <div class="account-field">
+              <label for="profile-phone">Teléfono *</label>
+              <input id="profile-phone" name="telefono" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required>
+              <small class="account-field-error" data-error-for="profile-phone"></small>
+            </div>
+            <div class="account-field span-2">
+              <label for="profile-current-password">Contraseña actual</label>
+              <div class="account-password-control">
+                <input id="profile-current-password" name="contrasena_actual" type="password" autocomplete="current-password">
+                <button type="button" data-password-toggle="profile-current-password">Mostrar</button>
+              </div>
+              <small>Solo es obligatoria si cambias el nombre de usuario.</small>
+              <small class="account-field-error" data-error-for="profile-current-password"></small>
+            </div>
+          </div>
+          <p class="account-form-status" data-form-status role="status" aria-live="polite"></p>
+          <div class="account-form-actions">
+            <button class="button button-primary" type="submit">Guardar cambios</button>
+            <a class="button button-ghost" href="seguridad.html">Cambiar correo o contraseña</a>
+          </div>
+        </form>
+      </section>
+
+      <section class="account-dashboard-card account-protected-data" aria-labelledby="protected-data-title">
+        <div>
+          <p class="eyebrow">Datos protegidos</p>
+          <h2 id="protected-data-title">Nombre legal e identificación</h2>
+          <p>No pueden cambiarse libremente porque sirven para recuperar boletos y verificar al titular.</p>
+        </div>
+        <a class="button button-ghost" href="../contacto/">Solicitar una corrección</a>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -8,6 +8,7 @@
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css">
   <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
   <script src="../../assets/js/auth.js" defer></script>
 </head>
 <body class="customer-account-body">
@@ -53,7 +54,7 @@
             <div class="account-field account-single-field">
               <label for="login-password">Contraseña *</label>
               <div class="account-password-control">
-                <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+                <input id="login-password" name="contrasena" type="password" autocomplete="current-password" data-password-field required>
                 <button type="button" data-password-toggle="login-password" aria-label="Mostrar contraseña">Mostrar</button>
               </div>
               <small class="account-field-error" data-error-for="login-password"></small>

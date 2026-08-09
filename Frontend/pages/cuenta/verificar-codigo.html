@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Verifica el código para recuperar tu cuenta de Aramacao Cinema.">
+  <title>Verificar código | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
+  <script src="../../assets/js/auth.js" defer></script>
+</head>
+<body class="customer-account-body">
+  <a class="skip-link" href="#recovery-code-form">Saltar al formulario</a>
+  <main class="customer-account-layout">
+    <section class="customer-account-intro" aria-labelledby="code-welcome-title">
+      <a class="account-back-link" href="../../index.html">← Volver a Inicio</a>
+      <div class="account-intro-copy">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="250" height="86">
+        <p class="eyebrow">Recuperación segura</p>
+        <h1 id="code-welcome-title">Confirma el código</h1>
+        <p>Esta comprobación protege tu historial y tus boletos antes de permitir una contraseña nueva.</p>
+      </div>
+      <div class="account-helper-box">
+        <strong>Solo se aceptará un código vigente.</strong>
+        <p>Después de varios intentos incorrectos, Django bloqueará temporalmente el flujo.</p>
+      </div>
+    </section>
+    <section class="customer-account-panel" aria-labelledby="code-title">
+      <div class="customer-account-card compact-card">
+        <div class="account-form-heading">
+          <p class="eyebrow">Código de recuperación</p>
+          <h2 id="code-title">Verificar identidad</h2>
+          <p id="purchase-context">Escribe el código enviado al correo registrado.</p>
+        </div>
+        <form class="customer-account-form" id="recovery-code-form" data-auth-form="verify-recovery" novalidate>
+          <input id="recovery-flow-id" name="flujo_recuperacion_id" type="hidden">
+          <div class="account-field">
+            <label for="recovery-code">Código de 6 dígitos *</label>
+            <input class="account-code-input" id="recovery-code" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
+            <small class="account-field-error" data-error-for="recovery-code"></small>
+          </div>
+          <p class="account-form-status" id="account-form-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary account-submit" type="submit">Validar código</button>
+        </form>
+        <nav class="account-related-links" aria-label="Otras opciones de cuenta">
+          <p><a href="recuperar.html" data-preserve-query>Solicitar otro código</a></p>
+          <a href="iniciar-sesion.html" data-preserve-query>Volver a Iniciar sesión</a>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

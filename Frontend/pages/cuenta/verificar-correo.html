@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Verifica el correo de tu cuenta de Aramacao Cinema.">
+  <title>Verificar correo | Aramacao Cinema</title>
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/cuenta.css">
+  <script src="../../assets/js/customer-api.js" defer></script>
+  <script src="../../assets/js/auth.js" defer></script>
+</head>
+<body class="customer-account-body">
+  <a class="skip-link" href="#verification-form">Saltar al formulario</a>
+  <main class="customer-account-layout">
+    <section class="customer-account-intro" aria-labelledby="verification-welcome-title">
+      <a class="account-back-link" href="../../index.html">← Volver a Inicio</a>
+      <div class="account-intro-copy">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="250" height="86">
+        <p class="eyebrow">Último paso</p>
+        <h1 id="verification-welcome-title">Verifica tu correo</h1>
+        <p>Escribe el código de seis dígitos para activar tu cuenta y proteger tus futuras compras.</p>
+      </div>
+      <div class="account-helper-box">
+        <strong>El código es personal y vence pronto.</strong>
+        <p>Aramacao Cinema nunca te pedirá que lo compartas por teléfono o redes sociales.</p>
+      </div>
+    </section>
+
+    <section class="customer-account-panel" aria-labelledby="verification-title">
+      <div class="customer-account-card compact-card">
+        <div class="account-form-heading">
+          <p class="eyebrow">Código de verificación</p>
+          <h2 id="verification-title">Activa tu cuenta</h2>
+          <p id="purchase-context">Revisa el correo que utilizaste al registrarte.</p>
+        </div>
+        <form class="customer-account-form" id="verification-form" data-auth-form="verify-email" novalidate>
+          <input id="verification-flow-id" name="flujo_verificacion_id" type="hidden">
+          <div class="account-field">
+            <label for="verification-code">Código de 6 dígitos *</label>
+            <input class="account-code-input" id="verification-code" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
+            <small class="account-field-error" data-error-for="verification-code"></small>
+          </div>
+          <p class="account-form-status" id="account-form-status" role="status" aria-live="polite"></p>
+          <button class="button button-primary account-submit" type="submit">Verificar y continuar</button>
+          <button class="account-secondary-button" type="button" data-resend-code>Enviar un código nuevo</button>
+        </form>
+        <nav class="account-related-links" aria-label="Otras opciones de cuenta">
+          <p><a href="iniciar-sesion.html" data-preserve-query>Volver a Iniciar sesión</a></p>
+          <a href="crear.html" data-preserve-query>Corregir el registro</a>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

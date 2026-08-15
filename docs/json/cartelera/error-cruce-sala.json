@@ -1,0 +1,9 @@
+{
+  "codigo": "CRUCE_HORARIO_SALA",
+  "mensaje": "La Sala 1 ya tiene una función en ese horario.",
+  "errores": {
+    "hora": [
+      "Selecciona una hora que no se cruce con otra función."
+    ]
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "proyecto": "Aramacao Cinema",
+  "idioma": "español",
+  "zona_horaria": "America/Tegucigalpa",
+  "reglas_generales": [
+    "Django decide el rol y los permisos; el navegador nunca los asigna.",
+    "Las contraseñas se cifran y nunca se devuelven en JSON.",
+    "Las áreas privadas requieren sesión, cuenta activa y permiso en cada solicitud.",
+    "Los clientes no pueden entrar a Gestión, Taquilla ni Django Admin.",
+    "Los JSON describen los endpoints; el ingeniero backend debe programarlos en Django."
+  ],
+  "bloques": [
+    {
+      "orden": 1,
+      "modulo": "Acceso de empleados",
+      "estado": "LISTO_PARA_BACKEND",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/01-acceso-empleados.json"
+    },
+    {
+      "orden": 2,
+      "modulo": "Administración de empleados y áreas privadas",
+      "estado": "LISTO_PARA_BACKEND",
+      "se_sube_en_esta_version": true,
+      "contratos": [
+        "docs/json/02-administracion-empleados.json",
+        "docs/json/03-proteccion-areas-privadas.json"
+      ]
+    },
+    {
+      "orden": 3,
+      "modulo": "Cuentas de clientes",
+      "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contratos": [
+        "docs/json/cuentas-clientes/01-autenticacion-clientes.json",
+        "docs/json/cuentas-clientes/02-mi-cuenta-clientes.json",
+        "docs/json/cuentas-clientes/03-historial-compras-clientes.json",
+        "docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json"
+      ]
+    },
+    {
+      "orden": 4,
+      "modulo": "Películas, funciones y promoción 2x1",
+      "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/04-siguientes-endpoints.json"
+    },
+    {
+      "orden": 5,
+      "modulo": "Aforo, asientos y bloqueos por función",
+      "estado": "PENDIENTE",
+      "se_sube_en_esta_version": false
+    },
+    {
+      "orden": 6,
+      "modulo": "Dulcería e inventario",
+      "estado": "PENDIENTE",
+      "se_sube_en_esta_version": false
+    },
+    {
+      "orden": 7,
+      "modulo": "Carrito de compras",
+      "estado": "PENDIENTE",
+      "se_sube_en_esta_version": false
+    },
+    {
+      "orden": 8,
+      "modulo": "Ventas, pagos y órdenes",
+      "estado": "PENDIENTE",
+      "se_sube_en_esta_version": false
+    },
+    {
+      "orden": 9,
+      "modulo": "Boletos, historial, reemisión y QR",
+      "estado": "PENDIENTE",
+      "se_sube_en_esta_version": false
+    }
+  ]
+}

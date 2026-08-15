@@ -1,0 +1,14 @@
+{
+  "activa": true,
+  "peliculas_ids": [
+    "8d69005e-4044-4651-b7b6-67df80253e1a"
+  ],
+  "fecha_inicial": "2026-08-10",
+  "fecha_final": "2026-08-26",
+  "dias_semana": ["LUNES", "MARTES", "MIERCOLES"],
+  "aplica_en": "FUNCIONES_ESPECIFICAS",
+  "funciones_ids": [
+    "b9c097fd-44ed-46f8-b87e-6722b9f74c58"
+  ],
+  "condiciones_visibles": "Por cada dos admisiones se cobra una en las funciones seleccionadas."
+}

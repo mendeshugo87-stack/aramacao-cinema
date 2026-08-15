@@ -1,0 +1,13 @@
+{
+  "id": "b9c097fd-44ed-46f8-b87e-6722b9f74c58",
+  "pelicula_id": "8d69005e-4044-4651-b7b6-67df80253e1a",
+  "fecha": "2026-08-10",
+  "hora": "14:00",
+  "hora_inicio": "2026-08-10T14:00:00-06:00",
+  "venta_hasta": "2026-08-10T14:20:00-06:00",
+  "venta_disponible": true,
+  "motivo_cierre": null,
+  "sala": "Sala 1",
+  "formato": "2D",
+  "precio": "120.00"
+}

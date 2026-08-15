@@ -8,12 +8,20 @@
   <title>Administración de cartelera | Aramacao Cinema</title>
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
-  <link rel="stylesheet" href="../../assets/css/styles.css">
-  <link rel="stylesheet" href="../../assets/css/gestion.css">
-  <script src="../../assets/js/cinema-store.js" defer></script>
-  <script src="../../assets/js/gestion-cartelera.js" defer></script>
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/gestion.css?v=8">
+  <script src="../../assets/js/staff-api.js?v=8" defer></script>
+  <script src="../../assets/js/staff-private.js?v=8" defer></script>
+  <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
+  <script src="../../assets/js/gestion-cartelera.js?v=5.2" defer></script>
 </head>
-<body class="admin-body">
+<body
+  class="admin-body"
+  data-area-privada="gestion"
+  data-roles-permitidos="ADMINISTRADOR_OPERATIVO"
+  data-permiso-requerido="cartelera.gestionar"
+  data-login-url="/pages/gestion/login.html"
+>
   <a class="skip-link" href="#admin-content">Saltar al contenido</a>
 
   <!--
@@ -44,10 +52,10 @@
     <header class="admin-topbar">
       <button class="admin-menu-button" id="admin-menu-button" type="button" aria-label="Abrir menú" aria-expanded="false">☰</button>
       <div>
-        <strong>Administrador operativo</strong>
-        <span>Contenido y funciones</span>
+        <strong data-session-name>Comprobando sesión…</strong>
+        <span data-session-role>Administración operativa</span>
       </div>
-      <button class="admin-session-button" type="button" disabled>Cerrar sesión</button>
+      <button class="admin-session-button" type="button" data-logout-button disabled>Cerrar sesión</button>
     </header>
 
     <main class="admin-content" id="admin-content">
@@ -76,6 +84,8 @@
           </div>
           <button class="button button-primary" id="new-movie-button" type="button">+ Nueva película</button>
         </div>
+
+        <p class="admin-list-status" id="movie-list-status" role="status" aria-live="polite" hidden></p>
 
         <div class="admin-filter-row">
           <label for="movie-search">Buscar película</label>
@@ -195,11 +205,6 @@
                 <small class="admin-field-error" data-error-for="movie-trailer"></small>
               </label>
 
-              <label class="admin-field" for="movie-accent">
-                <span>Color de apoyo</span>
-                <input id="movie-accent" name="accent" type="color" value="#0877d1">
-              </label>
-
               <label class="admin-check">
                 <input id="movie-active" name="active" type="checkbox" checked>
                 <span><strong>Publicada</strong><small>Visible en la web pública.</small></span>
@@ -211,17 +216,22 @@
               </label>
 
               <div class="image-upload-field">
-                <label for="movie-poster"><strong>Póster vertical</strong><small>Se encuadrará a 2:3. PNG, JPG o WebP. Máximo 4 MB.</small></label>
+                <label for="movie-poster"><strong>Póster vertical</strong><small>Recomendado: 1000 × 1500 px, proporción 2:3. PNG, JPG o WebP. Máximo 8 MB.</small></label>
                 <input id="movie-poster" name="poster" type="file" accept="image/png,image/jpeg,image/webp">
                 <div class="image-preview poster-preview" id="poster-preview"><span>Sin póster</span></div>
                 <button class="reframe-button" id="reframe-poster" type="button" hidden>Volver a encuadrar</button>
               </div>
 
               <div class="image-upload-field">
-                <label for="movie-banner"><strong>Imagen del carrusel</strong><small>Se encuadrará a 16:7 para Inicio. PNG, JPG o WebP. Máximo 4 MB.</small></label>
+                <label for="movie-banner"><strong>Fondo horizontal de Inicio</strong><small>Ideal: 2560 × 1120 px, proporción 16:7 y sin texto impreso. PNG, JPG o WebP. Máximo 8 MB.</small></label>
                 <input id="movie-banner" name="banner" type="file" accept="image/png,image/jpeg,image/webp">
                 <div class="image-preview banner-preview" id="banner-preview"><span>Sin imagen</span></div>
                 <button class="reframe-button" id="reframe-banner" type="button" hidden>Volver a encuadrar</button>
+                <label class="banner-visibility-control" for="movie-banner-visibility">
+                  <span><strong>Visibilidad del fondo en Inicio</strong><output id="movie-banner-visibility-value" for="movie-banner-visibility">65%</output></span>
+                  <input id="movie-banner-visibility" name="banner_visibility" type="range" min="35" max="85" step="5" value="65">
+                  <small>Muévela para ver la imagen más clara u oscura antes de guardar.</small>
+                </label>
               </div>
             </div>
           </fieldset>
@@ -229,9 +239,10 @@
           <fieldset id="funciones">
             <legend>Funciones y precios</legend>
             <div class="fieldset-heading">
-              <p>Agrega únicamente los horarios disponibles. Próximamente puede quedar sin funciones.</p>
+              <p>Agrega cada función y escribe su hora exacta. Así puedes dejar el tiempo necesario para limpiar y preparar la única sala.</p>
               <button class="button button-ghost" id="add-showtime" type="button">+ Agregar función</button>
             </div>
+            <p class="timezone-note"><strong>Hora obligatoria:</strong> escribe, por ejemplo, 2:00 p. m. · <strong>Sala única:</strong> Sala 1 · <strong>Zona horaria:</strong> Honduras (UTC−6).</p>
             <div class="showtime-editor-list" id="showtime-editor-list"></div>
           </fieldset>
 
@@ -244,24 +255,82 @@
       </section>
 
       <section class="admin-panel promo-admin-panel" id="promociones" aria-labelledby="promotion-title">
-        <div>
+        <div class="promotion-intro">
           <p class="eyebrow">Regla comercial</p>
           <h2 id="promotion-title">Promoción 2x1</h2>
-          <p>Actívala o retírala de la información compartida con Inicio y Taquilla.</p>
+          <p>Administración selecciona las películas, el periodo, los días y las funciones participantes. Taquilla solamente informa el resultado.</p>
         </div>
-        <form id="promotion-form" class="promotion-form">
-          <label class="switch-control">
-            <input id="promotion-enabled" type="checkbox">
-            <span aria-hidden="true"></span>
-            <strong>Promoción activa</strong>
-          </label>
-          <label class="admin-field" for="promotion-description">
-            <span>Condiciones visibles</span>
-            <textarea id="promotion-description" rows="3" maxlength="300"></textarea>
-          </label>
-          <button class="button button-primary" type="submit">Guardar promoción</button>
-          <p class="admin-form-status" id="promotion-status" role="status" aria-live="polite"></p>
-        </form>
+
+        <div class="promotion-workspace">
+          <article class="promotion-summary" id="promotion-summary" aria-labelledby="promotion-summary-title">
+            <div class="promotion-summary-heading">
+              <p class="eyebrow">Configuración guardada</p>
+              <span class="promotion-summary-state" id="promotion-summary-state">Sin configurar</span>
+            </div>
+            <h3 id="promotion-summary-title">Todavía no hay una promoción configurada</h3>
+            <p id="promotion-summary-period">Guarda las reglas para ver aquí el resumen permanente.</p>
+            <div class="promotion-summary-movies" id="promotion-summary-movies"></div>
+            <p class="promotion-summary-feedback" id="promotion-summary-feedback" role="status" aria-live="polite" hidden></p>
+            <button class="button button-ghost" id="edit-promotion-button" type="button">Configurar promoción</button>
+          </article>
+
+          <form id="promotion-form" class="promotion-form promotion-editor" novalidate>
+            <div class="promotion-editor-heading">
+              <strong>Editar configuración</strong>
+              <button class="icon-close" id="close-promotion-editor" type="button" aria-label="Cerrar configuración de promoción">×</button>
+            </div>
+            <label class="switch-control">
+              <input id="promotion-enabled" type="checkbox">
+              <span aria-hidden="true"></span>
+              <strong>Promoción activa</strong>
+            </label>
+
+            <fieldset class="promotion-fieldset">
+              <legend>Películas participantes *</legend>
+              <div class="promotion-option-list" id="promotion-movie-options"></div>
+            </fieldset>
+
+            <div class="promotion-date-grid">
+              <label class="admin-field" for="promotion-start-date">
+                <span>Fecha inicial *</span>
+                <input id="promotion-start-date" type="date">
+              </label>
+              <label class="admin-field" for="promotion-end-date">
+                <span>Fecha final *</span>
+                <input id="promotion-end-date" type="date">
+              </label>
+            </div>
+
+            <fieldset class="promotion-fieldset">
+              <legend>Días permitidos *</legend>
+              <div class="promotion-day-options">
+                <label><input type="checkbox" name="promotion-weekday" value="1"> Lunes</label>
+                <label><input type="checkbox" name="promotion-weekday" value="2"> Martes</label>
+                <label><input type="checkbox" name="promotion-weekday" value="3"> Miércoles</label>
+              </div>
+            </fieldset>
+
+            <label class="admin-field" for="promotion-scope">
+              <span>Funciones participantes *</span>
+              <select id="promotion-scope">
+                <option value="todas">Todas las funciones que cumplan las condiciones</option>
+                <option value="especificas">Solamente funciones específicas</option>
+              </select>
+            </label>
+
+            <fieldset class="promotion-fieldset" id="promotion-function-fieldset" hidden>
+              <legend>Seleccionar funciones *</legend>
+              <div class="promotion-option-list function-options" id="promotion-function-options"></div>
+            </fieldset>
+
+            <label class="admin-field" for="promotion-description">
+              <span>Condiciones visibles</span>
+              <textarea id="promotion-description" rows="3" maxlength="300" placeholder="Ejemplo: Por cada dos admisiones se cobra una en las funciones seleccionadas."></textarea>
+            </label>
+            <button class="button button-primary" type="submit">Guardar promoción</button>
+            <p class="admin-form-status" id="promotion-status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
       </section>
 
       <section class="admin-panel backend-note">

@@ -109,7 +109,7 @@ function renderCurrentMovieCard(movie) {
         <h3>${escapeHTML(movie.title)}</h3>
         <p class="movie-card-subtitle">${Number(movie.durationMinutes) || 0} min · ${escapeHTML((movie.genres || []).join(" / "))}</p>
         <div class="showtimes" aria-label="Horarios disponibles">
-          ${shows.length ? shows.map((show) => `<span class="showtime">${escapeHTML(show.time)}</span>`).join("") : '<span class="no-showtimes">Sin funciones este día</span>'}
+          ${shows.length ? shows.map((show) => `<span class="showtime${show.promotion ? " has-promotion" : ""}">${escapeHTML(show.time)}${show.promotion ? " <small>2x1</small>" : ""}</span>`).join("") : '<span class="no-showtimes">Sin funciones este día</span>'}
         </div>
         <div class="card-actions">
           ${getYouTubeEmbedUrl(movie.trailerUrl) ? `<button class="card-trailer" type="button" data-trailer-id="${escapeHTML(movie.id)}">Ver tráiler</button>` : ""}
@@ -215,7 +215,38 @@ function bindContactForm() {
 }
 
 function getShowtimes(movie, date) {
-  return movie.schedules?.[String(date.getDay())] || [];
+  const selectedDate = toLocalISODate(date);
+  return (movie.funciones || [])
+    .filter((showtime) => showtime.fecha === selectedDate)
+    .sort((first, second) => first.hora.localeCompare(second.hora))
+    .map((showtime) => ({
+      id: showtime.id,
+      time: formatTimeForDisplay(showtime.hora),
+      room: "Sala 1",
+      format: showtime.formato,
+      price: Number(showtime.precio),
+      promotion: isFunctionInPromotion(movie.id, showtime, selectedDate),
+    }));
+}
+
+function isFunctionInPromotion(movieId, showtime, selectedDate) {
+  const promotion = pageState.data?.promotion;
+  const weekday = parseLocalDate(selectedDate).getDay();
+  return Boolean(
+    promotion?.enabled &&
+    promotion.movieIds?.includes(movieId) &&
+    selectedDate >= promotion.startDate &&
+    selectedDate <= promotion.endDate &&
+    promotion.allowedWeekdays?.includes(weekday) &&
+    (promotion.appliesTo !== "especificas" || promotion.functionIds?.includes(showtime.id))
+  );
+}
+
+function formatTimeForDisplay(value) {
+  if (!/^\d{2}:\d{2}$/.test(String(value || ""))) return String(value || "");
+  const [hourText, minute] = value.split(":");
+  const hour = Number(hourText);
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "p. m." : "a. m."}`;
 }
 
 function buildLoginUrl(movie = "", date = "", time = "") {

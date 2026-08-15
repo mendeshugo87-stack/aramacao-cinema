@@ -1,18 +1,23 @@
 "use strict";
 
 const DATA_URL = "../../assets/data/cartelera.json";
-const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const DEFAULT_ACCENT = "#0877d1";
+const DEFAULT_BANNER_VISIBILITY = 65;
+const CORRECT_PROMOTION_DESCRIPTION = "Por cada dos admisiones se cobra una en las funciones seleccionadas. Administración configura la promoción y Taquilla solamente informa al cliente.";
 const CROP_PRESETS = {
-  posterImage: { label: "Póster vertical", ratio: 2 / 3, width: 800, height: 1200 },
-  bannerImage: { label: "Imagen del carrusel", ratio: 16 / 7, width: 1600, height: 700 },
+  posterImage: { label: "Póster vertical", ratio: 2 / 3, width: 1000, height: 1500 },
+  bannerImage: { label: "Fondo horizontal de Inicio", ratio: 16 / 7, width: 2560, height: 1120 },
 };
 
 const state = {
   data: null,
   editingMovieId: null,
+  originalFunctionsSignature: "",
   posterImage: "",
   bannerImage: "",
+  bannerVisibility: DEFAULT_BANNER_VISIBILITY,
+  promotionEditorOpen: false,
   crop: {
     targetKey: "",
     source: "",
@@ -36,11 +41,14 @@ const elements = {
   editorTitle: document.querySelector("#movie-form-title"),
   movieForm: document.querySelector("#movie-form"),
   movieFormStatus: document.querySelector("#movie-form-status"),
+  movieListStatus: document.querySelector("#movie-list-status"),
   showtimeList: document.querySelector("#showtime-editor-list"),
   posterInput: document.querySelector("#movie-poster"),
   bannerInput: document.querySelector("#movie-banner"),
   posterPreview: document.querySelector("#poster-preview"),
   bannerPreview: document.querySelector("#banner-preview"),
+  bannerVisibility: document.querySelector("#movie-banner-visibility"),
+  bannerVisibilityValue: document.querySelector("#movie-banner-visibility-value"),
   reframePoster: document.querySelector("#reframe-poster"),
   reframeBanner: document.querySelector("#reframe-banner"),
   cropModal: document.querySelector("#image-crop-modal"),
@@ -53,8 +61,23 @@ const elements = {
   applyCrop: document.querySelector("#apply-crop"),
   promotionForm: document.querySelector("#promotion-form"),
   promotionEnabled: document.querySelector("#promotion-enabled"),
+  promotionMovieOptions: document.querySelector("#promotion-movie-options"),
+  promotionStartDate: document.querySelector("#promotion-start-date"),
+  promotionEndDate: document.querySelector("#promotion-end-date"),
+  promotionScope: document.querySelector("#promotion-scope"),
+  promotionFunctionFieldset: document.querySelector("#promotion-function-fieldset"),
+  promotionFunctionOptions: document.querySelector("#promotion-function-options"),
   promotionDescription: document.querySelector("#promotion-description"),
   promotionStatus: document.querySelector("#promotion-status"),
+  promotionEditor: document.querySelector("#promotion-form"),
+  promotionSummary: document.querySelector("#promotion-summary"),
+  promotionSummaryState: document.querySelector("#promotion-summary-state"),
+  promotionSummaryTitle: document.querySelector("#promotion-summary-title"),
+  promotionSummaryPeriod: document.querySelector("#promotion-summary-period"),
+  promotionSummaryMovies: document.querySelector("#promotion-summary-movies"),
+  promotionSummaryFeedback: document.querySelector("#promotion-summary-feedback"),
+  editPromotionButton: document.querySelector("#edit-promotion-button"),
+  closePromotionEditor: document.querySelector("#close-promotion-editor"),
 };
 
 document.addEventListener("DOMContentLoaded", initializeAdmin);
@@ -101,13 +124,25 @@ function bindEvents() {
     removeButton.closest(".showtime-row").remove();
     renderEmptyShowtimeMessage();
   });
+  elements.showtimeList.addEventListener("focusout", (event) => {
+    const timeInput = event.target.closest('[data-showtime-field="time"]');
+    if (timeInput) normalizeVisibleTimeInput(timeInput);
+  });
 
   elements.movieForm.addEventListener("submit", saveMovie);
   elements.promotionForm.addEventListener("submit", savePromotion);
+  elements.promotionForm.addEventListener("change", handlePromotionFormChange);
   elements.posterInput.addEventListener("change", () => handleImageSelection(elements.posterInput, "posterImage"));
   elements.bannerInput.addEventListener("change", () => handleImageSelection(elements.bannerInput, "bannerImage"));
   elements.reframePoster.addEventListener("click", () => openImageCropper(state.posterImage, "posterImage"));
   elements.reframeBanner.addEventListener("click", () => openImageCropper(state.bannerImage, "bannerImage"));
+  elements.bannerVisibility.addEventListener("input", () => {
+    state.bannerVisibility = normalizeBannerVisibility(elements.bannerVisibility.value);
+    renderBannerPreview();
+  });
+  document.querySelector("#movie-title").addEventListener("input", renderBannerPreview);
+  elements.editPromotionButton.addEventListener("click", openPromotionEditor);
+  elements.closePromotionEditor.addEventListener("click", closePromotionEditor);
   elements.cropZoom.addEventListener("input", () => {
     state.crop.zoom = Number(elements.cropZoom.value);
     updateCropTransform();
@@ -130,18 +165,31 @@ function bindEvents() {
 
 function ensureDataShape() {
   state.data.movies = Array.isArray(state.data.movies) ? state.data.movies : [];
-  state.data.promotion = state.data.promotion || { enabled: false, description: "" };
+  state.data.promotion = {
+    enabled: false,
+    movieIds: [],
+    startDate: "",
+    endDate: "",
+    allowedWeekdays: [1, 2, 3],
+    appliesTo: "todas",
+    functionIds: [],
+    description: "",
+    ...(state.data.promotion || {}),
+  };
+  if (/vendedor\s+decide/i.test(state.data.promotion.description || "")) {
+    state.data.promotion.description = CORRECT_PROMOTION_DESCRIPTION;
+  }
   state.data.movies.forEach((movie) => {
     if (typeof movie.active !== "boolean") movie.active = true;
-    movie.schedules = movie.schedules || {};
+    movie.funciones = Array.isArray(movie.funciones) ? movie.funciones : [];
+    movie.bannerVisibility = normalizeBannerVisibility(movie.bannerVisibility);
   });
 }
 
 function renderAll() {
   renderMetrics();
   renderMovieList();
-  elements.promotionEnabled.checked = Boolean(state.data.promotion.enabled);
-  elements.promotionDescription.value = state.data.promotion.description || "";
+  renderPromotionForm();
 }
 
 function renderMetrics() {
@@ -228,28 +276,33 @@ async function toggleMoviePublication(movie) {
 
 function openMovieEditor(movie = null) {
   clearFormErrors();
+  hideMovieListStatus();
   elements.movieForm.reset();
   elements.showtimeList.replaceChildren();
   state.editingMovieId = movie?.id || null;
+  state.originalFunctionsSignature = buildFunctionsSignature(movie?.funciones || []);
   state.posterImage = movie?.posterImage || "";
   state.bannerImage = movie?.bannerImage || "";
+  state.bannerVisibility = normalizeBannerVisibility(movie?.bannerVisibility);
   elements.editorTitle.textContent = movie ? "Editar película" : "Nueva película";
   document.querySelector("#movie-id").value = movie?.id || "";
 
   if (movie) fillMovieForm(movie);
   else {
     document.querySelector("#movie-active").checked = true;
-    document.querySelector("#movie-accent").value = "#0877d1";
   }
 
   renderImagePreview(elements.posterPreview, state.posterImage, "Sin póster");
-  renderImagePreview(elements.bannerPreview, state.bannerImage, "Sin imagen");
+  renderBannerPreview();
   syncReframeButtons();
   renderEmptyShowtimeMessage();
   syncFeaturedAvailability();
-  elements.editor.hidden = false;
-  elements.editor.scrollIntoView({ behavior: "smooth", block: "start" });
-  window.setTimeout(() => document.querySelector("#movie-title").focus(), 250);
+  elements.editor.removeAttribute("hidden");
+  elements.editor.classList.add("is-open");
+  window.requestAnimationFrame(() => {
+    elements.editor.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => document.querySelector("#movie-title").focus(), 250);
+  });
 }
 
 function fillMovieForm(movie) {
@@ -265,18 +318,19 @@ function fillMovieForm(movie) {
   setValue("movie-status", movie.status || "cartelera");
   setValue("movie-release-date", movie.releaseDate);
   setValue("movie-trailer", movie.trailerUrl);
-  setValue("movie-accent", sanitizeColor(movie.accent));
   document.querySelector("#movie-active").checked = movie.active !== false;
   document.querySelector("#movie-featured").checked = Boolean(movie.featured);
 
-  Object.entries(movie.schedules || {}).forEach(([weekday, showtimes]) => {
-    showtimes.forEach((showtime) => addShowtimeRow({ weekday, ...showtime }));
-  });
+  [...(movie.funciones || [])]
+    .sort(compareFunctions)
+    .forEach((showtime) => addShowtimeRow(showtime));
 }
 
 function closeMovieEditor() {
-  elements.editor.hidden = true;
+  elements.editor.setAttribute("hidden", "");
+  elements.editor.classList.remove("is-open");
   state.editingMovieId = null;
+  state.originalFunctionsSignature = "";
   document.querySelector("#peliculas").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -284,22 +338,22 @@ function addShowtimeRow(showtime = {}) {
   elements.showtimeList.querySelector(".no-showtimes-admin")?.remove();
   const row = document.createElement("div");
   row.className = "showtime-row";
+  row.dataset.functionId = showtime.id || createFunctionId();
+  const minimumDate = showtime.fecha ? "" : ` min="${toLocalISODate(new Date())}"`;
   row.innerHTML = `
-    <label>Día
-      <select data-showtime-field="weekday">${WEEKDAYS.map((day, index) => `<option value="${index}" ${String(showtime.weekday) === String(index) ? "selected" : ""}>${day}</option>`).join("")}</select>
+    <label>Fecha
+      <input data-showtime-field="date" type="date"${minimumDate} value="${escapeHTML(showtime.fecha || "")}" required>
     </label>
-    <label>Hora
-      <input data-showtime-field="time" type="time" value="${toTimeInput(showtime.time)}" required>
-    </label>
-    <label>Sala
-      <input data-showtime-field="room" type="text" value="${escapeHTML(showtime.room || "Sala 1")}" maxlength="30" required>
+    <label>Hora obligatoria
+      <input data-showtime-field="time" type="text" inputmode="numeric" autocomplete="off" placeholder="Ej. 2:00 p. m." value="${escapeHTML(formatTimeForDisplay(showtime.hora || ""))}" required>
     </label>
     <label>Formato
-      <select data-showtime-field="format"><option ${showtime.format === "2D" ? "selected" : ""}>2D</option><option ${showtime.format === "3D" ? "selected" : ""}>3D</option></select>
+      <select data-showtime-field="format"><option ${showtime.formato === "2D" ? "selected" : ""}>2D</option><option ${showtime.formato === "3D" ? "selected" : ""}>3D</option></select>
     </label>
     <label>Precio (L)
-      <input data-showtime-field="price" type="number" min="0" step="1" value="${Number(showtime.price) || 120}" required>
+      <input data-showtime-field="price" type="number" min="0" step="1" value="${Number(showtime.precio) || 120}" required>
     </label>
+    <span class="fixed-room"><small></small><strong>Sala 1</strong></span>
     <button class="remove-showtime" type="button" data-remove-showtime aria-label="Quitar función">×</button>
   `;
   elements.showtimeList.append(row);
@@ -332,12 +386,13 @@ async function saveMovie(event) {
     status: movieStatus,
     featured: movieStatus === "cartelera" && document.querySelector("#movie-featured").checked,
     active: document.querySelector("#movie-active").checked,
-    accent: document.querySelector("#movie-accent").value,
+    accent: existingMovie?.accent || DEFAULT_ACCENT,
     releaseDate: document.querySelector("#movie-release-date").value,
     trailerUrl: document.querySelector("#movie-trailer").value.trim(),
     posterImage: state.posterImage,
     bannerImage: state.bannerImage,
-    schedules: collectShowtimes(),
+    bannerVisibility: state.bannerVisibility,
+    funciones: collectFunctions(),
   };
 
   if (existingMovie) Object.assign(existingMovie, movie);
@@ -345,9 +400,8 @@ async function saveMovie(event) {
 
   try {
     await persistAndRender();
-    elements.movieFormStatus.textContent = "Película guardada. Actualiza Inicio para comprobar el cambio.";
-    elements.movieFormStatus.className = "admin-form-status success";
-    state.editingMovieId = movie.id;
+    showMovieListStatus(`“${movie.title}” se guardó correctamente. Puedes editar otra película o revisar el cambio en Inicio.`);
+    closeMovieEditor();
   } catch (error) {
     console.error("No fue posible guardar la película:", error);
     elements.movieFormStatus.textContent = "No se pudo guardar la película en esta demostración.";
@@ -390,13 +444,40 @@ function validateMovieForm() {
     valid = false;
   }
 
-  const invalidShowtime = [...elements.showtimeList.querySelectorAll(".showtime-row")].find((row) =>
-    [...row.querySelectorAll("input[required]")].some((input) => !input.value || !input.checkValidity())
-  );
-  if (invalidShowtime) {
-    elements.movieFormStatus.textContent = "Revisa los datos de las funciones.";
-    elements.movieFormStatus.className = "admin-form-status error";
-    valid = false;
+  const currentFunctions = collectFunctions();
+  const functionsChanged = buildFunctionsSignature(currentFunctions) !== state.originalFunctionsSignature;
+
+  /*
+   * Una película existente puede contener funciones guardadas por una versión
+   * anterior de la maqueta. Esas funciones no deben impedir cambiar solamente
+   * el título, la descripción, el tráiler o las imágenes. Las validaciones de
+   * horario se ejecutan cuando Administración modifica realmente las funciones.
+   */
+  if (functionsChanged) {
+    const invalidShowtime = [...elements.showtimeList.querySelectorAll(".showtime-row")].find((row) => {
+      const timeInput = row.querySelector('[data-showtime-field="time"]');
+      const normalizedTime = parseTimeInput(timeInput.value);
+      timeInput.setCustomValidity(normalizedTime ? "" : "Escribe una hora válida con a. m. o p. m.");
+      timeInput.toggleAttribute("aria-invalid", !normalizedTime);
+      if (normalizedTime) timeInput.value = formatTimeForDisplay(normalizedTime);
+
+      return [...row.querySelectorAll("input[required], select[required]")]
+        .some((input) => !input.value || !input.checkValidity());
+    });
+    if (invalidShowtime) {
+      elements.movieFormStatus.textContent = "Cada función debe tener fecha, una hora válida, formato y precio. Ejemplo de hora: 2:00 p. m.";
+      elements.movieFormStatus.className = "admin-form-status error";
+      valid = false;
+    }
+  }
+
+  if (valid && functionsChanged) {
+    const conflict = findRoomConflict(currentFunctions, Number(duration.value));
+    if (conflict) {
+      elements.movieFormStatus.textContent = conflict;
+      elements.movieFormStatus.className = "admin-form-status error";
+      valid = false;
+    }
   }
 
   if (!valid) {
@@ -410,20 +491,32 @@ function validateMovieForm() {
   return valid;
 }
 
-function collectShowtimes() {
-  const schedules = {};
-  elements.showtimeList.querySelectorAll(".showtime-row").forEach((row) => {
-    const weekday = row.querySelector('[data-showtime-field="weekday"]').value;
-    const showtime = {
-      time: formatTimeForDisplay(row.querySelector('[data-showtime-field="time"]').value),
-      room: row.querySelector('[data-showtime-field="room"]').value.trim(),
-      format: row.querySelector('[data-showtime-field="format"]').value,
-      price: Number(row.querySelector('[data-showtime-field="price"]').value),
-    };
-    if (!schedules[weekday]) schedules[weekday] = [];
-    schedules[weekday].push(showtime);
-  });
-  return schedules;
+function collectFunctions() {
+  return [...elements.showtimeList.querySelectorAll(".showtime-row")]
+    .map((row) => ({
+      id: row.dataset.functionId || createFunctionId(),
+      fecha: row.querySelector('[data-showtime-field="date"]').value,
+      hora: parseTimeInput(row.querySelector('[data-showtime-field="time"]').value),
+      sala: "Sala 1",
+      formato: row.querySelector('[data-showtime-field="format"]').value,
+      precio: Number(row.querySelector('[data-showtime-field="price"]').value),
+    }))
+    .sort(compareFunctions);
+}
+
+function buildFunctionsSignature(functions) {
+  return JSON.stringify(
+    [...(functions || [])]
+      .map((showtime) => ({
+        id: String(showtime.id || ""),
+        fecha: String(showtime.fecha || ""),
+        hora: String(showtime.hora || ""),
+        sala: "Sala 1",
+        formato: String(showtime.formato || "2D"),
+        precio: Number(showtime.precio) || 0,
+      }))
+      .sort(compareFunctions)
+  );
 }
 
 async function handleImageSelection(input, stateKey) {
@@ -432,7 +525,7 @@ async function handleImageSelection(input, stateKey) {
 
   if (!file.type.match(/^image\/(png|jpeg|webp)$/) || file.size > MAX_IMAGE_BYTES) {
     input.value = "";
-    elements.movieFormStatus.textContent = "La imagen debe ser PNG, JPG o WebP y pesar como máximo 4 MB.";
+    elements.movieFormStatus.textContent = "La imagen debe ser PNG, JPG o WebP y pesar como máximo 8 MB.";
     elements.movieFormStatus.className = "admin-form-status error";
     return;
   }
@@ -453,6 +546,30 @@ function renderImagePreview(container, imageUrl, emptyText) {
   container.innerHTML = safeUrl ? `<img src="${escapeHTML(safeUrl)}" alt="Vista previa">` : `<span>${emptyText}</span>`;
 }
 
+function renderBannerPreview() {
+  const safeUrl = getSafeImageUrl(state.bannerImage);
+  const title = document.querySelector("#movie-title").value.trim() || "Título de la película";
+  const overlay = buildBannerOverlay(state.bannerVisibility);
+  elements.bannerVisibility.value = String(state.bannerVisibility);
+  elements.bannerVisibilityValue.value = `${state.bannerVisibility}%`;
+  elements.bannerVisibilityValue.textContent = `${state.bannerVisibility}%`;
+  elements.bannerPreview.style.setProperty("--banner-preview-overlay", overlay);
+  elements.bannerPreview.innerHTML = safeUrl
+    ? `<img src="${escapeHTML(safeUrl)}" alt="Vista previa del fondo"><span class="banner-preview-copy"><small>Así se verá en Inicio</small><strong>${escapeHTML(title)}</strong></span>`
+    : '<span>Sin imagen</span>';
+}
+
+function buildBannerOverlay(visibility) {
+  const visibleRatio = normalizeBannerVisibility(visibility) / 100;
+  const shadow = 1 - visibleRatio;
+  const left = clamp(shadow + 0.35, 0.55, 0.95);
+  const center = clamp(shadow + 0.18, 0.35, 0.82);
+  const right = clamp(shadow + 0.05, 0.2, 0.7);
+  const bottom = clamp(shadow + 0.2, 0.4, 0.85);
+  const top = clamp(shadow - 0.05, 0.12, 0.65);
+  return `linear-gradient(90deg, rgba(3, 8, 16, ${left}) 0%, rgba(3, 8, 16, ${center}) 48%, rgba(3, 8, 16, ${right}) 100%), linear-gradient(0deg, rgba(3, 8, 16, ${bottom}), rgba(3, 8, 16, ${top}) 65%, rgba(3, 8, 16, ${center}))`;
+}
+
 function openImageCropper(source, stateKey) {
   const safeSource = getSafeImageUrl(source);
   const preset = CROP_PRESETS[stateKey];
@@ -462,7 +579,7 @@ function openImageCropper(source, stateKey) {
   state.crop.source = safeSource;
   state.crop.lastFocus = document.activeElement;
   elements.cropModalTitle.textContent = `Encuadrar ${preset.label.toLowerCase()}`;
-  elements.cropModalHelp.textContent = `Arrastra la imagen y ajusta el zoom. La vista final tendrá proporción ${preset.width === 800 ? "2:3" : "16:7"}.`;
+  elements.cropModalHelp.textContent = `Arrastra la imagen y ajusta el zoom. La vista final tendrá proporción ${stateKey === "posterImage" ? "2:3" : "16:7"}.`;
   elements.cropStage.style.aspectRatio = `${preset.width} / ${preset.height}`;
   elements.cropStage.classList.toggle("poster-crop", stateKey === "posterImage");
   elements.cropStatus.textContent = "";
@@ -591,8 +708,11 @@ function applyImageCrop() {
     );
 
     state[state.crop.targetKey] = canvas.toDataURL("image/webp", 0.9);
-    const preview = state.crop.targetKey === "posterImage" ? elements.posterPreview : elements.bannerPreview;
-    renderImagePreview(preview, state[state.crop.targetKey], "Sin imagen");
+    if (state.crop.targetKey === "posterImage") {
+      renderImagePreview(elements.posterPreview, state.posterImage, "Sin póster");
+    } else {
+      renderBannerPreview();
+    }
     syncReframeButtons();
     closeImageCropper();
   } catch (error) {
@@ -619,11 +739,247 @@ function syncReframeButtons() {
 
 async function savePromotion(event) {
   event.preventDefault();
-  state.data.promotion.enabled = elements.promotionEnabled.checked;
-  state.data.promotion.description = elements.promotionDescription.value.trim();
+  clearPromotionStatus();
+
+  const movieIds = getCheckedValues('input[name="promotion-movie"]');
+  const allowedWeekdays = getCheckedValues('input[name="promotion-weekday"]').map(Number);
+  const functionIds = getCheckedValues('input[name="promotion-function"]');
+  const enabled = elements.promotionEnabled.checked;
+  const appliesTo = elements.promotionScope.value;
+  const startDate = elements.promotionStartDate.value;
+  const endDate = elements.promotionEndDate.value;
+
+  if (enabled && !movieIds.length) {
+    return showPromotionError("Selecciona al menos una película para activar la promoción.");
+  }
+  if (enabled && (!startDate || !endDate || startDate > endDate)) {
+    return showPromotionError("Selecciona un periodo de fechas válido.");
+  }
+  if (enabled && !allowedWeekdays.length) {
+    return showPromotionError("Selecciona lunes, martes y/o miércoles.");
+  }
+  if (enabled && appliesTo === "especificas" && !functionIds.length) {
+    return showPromotionError("Selecciona al menos una función específica.");
+  }
+
+  const eligibleFunctions = getFunctionsForPromotionRules(movieIds, startDate, endDate, allowedWeekdays);
+  const effectiveFunctions = appliesTo === "especificas"
+    ? eligibleFunctions.filter(({ showtime }) => functionIds.includes(showtime.id))
+    : eligibleFunctions;
+  const effectiveMovieIds = new Set(effectiveFunctions.map(({ movie }) => movie.id));
+  const moviesWithoutFunctions = state.data.movies
+    .filter((movie) => movieIds.includes(movie.id) && !effectiveMovieIds.has(movie.id))
+    .map((movie) => movie.title);
+
+  if (enabled && moviesWithoutFunctions.length) {
+    return showPromotionError(`Estas películas no tienen funciones que cumplan las reglas: ${moviesWithoutFunctions.join(", ")}. Ajusta las fechas, los días o las funciones específicas.`);
+  }
+
+  state.data.promotion = {
+    ...state.data.promotion,
+    enabled,
+    movieIds,
+    startDate,
+    endDate,
+    allowedWeekdays,
+    appliesTo,
+    functionIds: appliesTo === "especificas" ? functionIds : [],
+    description: elements.promotionDescription.value.trim(),
+  };
   await window.CinemaStore.saveData(state.data);
-  elements.promotionStatus.textContent = "Promoción actualizada en los datos compartidos.";
-  elements.promotionStatus.className = "admin-form-status success";
+  state.promotionEditorOpen = false;
+  renderPromotionSummary();
+  setPromotionEditorVisibility(false);
+  elements.promotionSummaryFeedback.textContent = enabled
+    ? "Promoción guardada. Inicio y Taquilla ya consultan estas condiciones."
+    : "La configuración quedó guardada, pero la promoción está desactivada.";
+  elements.promotionSummaryFeedback.hidden = false;
+}
+
+function renderPromotionForm() {
+  const promotion = state.data.promotion;
+  elements.promotionEnabled.checked = Boolean(promotion.enabled);
+  elements.promotionStartDate.value = promotion.startDate || "";
+  elements.promotionEndDate.value = promotion.endDate || "";
+  elements.promotionScope.value = promotion.appliesTo === "especificas" ? "especificas" : "todas";
+  elements.promotionDescription.value = promotion.description || "";
+
+  document.querySelectorAll('input[name="promotion-weekday"]').forEach((input) => {
+    input.checked = (promotion.allowedWeekdays || []).includes(Number(input.value));
+  });
+
+  const eligibleMovies = state.data.movies.filter(
+    (movie) => movie.status === "cartelera" && movie.active !== false
+  );
+  elements.promotionMovieOptions.innerHTML = eligibleMovies.length
+    ? eligibleMovies.map((movie) => `
+        <label>
+          <input type="checkbox" name="promotion-movie" value="${escapeHTML(movie.id)}" ${(promotion.movieIds || []).includes(movie.id) ? "checked" : ""}>
+          <span><strong>${escapeHTML(movie.title)}</strong><small>${countShowtimes(movie)} funciones guardadas</small></span>
+        </label>
+      `).join("")
+    : '<p class="promotion-empty">Primero agrega y publica una película en cartelera para configurar la promoción.</p>';
+
+  elements.promotionEnabled.disabled = !eligibleMovies.length;
+  renderPromotionFunctionOptions();
+  renderPromotionSummary();
+  setPromotionEditorVisibility(state.promotionEditorOpen || !hasPromotionConfiguration(promotion));
+}
+
+function renderPromotionSummary() {
+  const promotion = state.data.promotion;
+  const configured = hasPromotionConfiguration(promotion);
+  const entries = getSavedPromotionEntries(promotion);
+  const effectiveEntries = entries.filter((entry) => entry.functions.length);
+
+  elements.promotionSummary.classList.toggle("is-active", Boolean(promotion.enabled && effectiveEntries.length));
+  elements.promotionSummary.classList.toggle("is-inactive", Boolean(configured && !promotion.enabled));
+  elements.promotionSummaryState.textContent = promotion.enabled
+    ? effectiveEntries.length ? "Activa" : "Revisar"
+    : configured ? "Desactivada" : "Sin configurar";
+  elements.promotionSummaryTitle.textContent = promotion.enabled
+    ? effectiveEntries.length ? "2x1 activo en estas películas" : "La promoción está activa, pero no tiene funciones válidas"
+    : configured ? "Promoción guardada, pero desactivada" : "Todavía no hay una promoción configurada";
+  elements.promotionSummaryPeriod.textContent = configured
+    ? `Del ${formatDateForDisplay(promotion.startDate)} al ${formatDateForDisplay(promotion.endDate)} · ${formatPromotionWeekdays(promotion.allowedWeekdays)}.`
+    : "Guarda las reglas para ver aquí el resumen permanente.";
+
+  elements.promotionSummaryMovies.innerHTML = configured
+    ? entries.map(({ movie, functions }) => `
+        <div class="promotion-summary-movie${functions.length ? "" : " without-functions"}">
+          <strong>${escapeHTML(movie.title)}</strong>
+          <span>${functions.length ? `${functions.length} ${functions.length === 1 ? "función participante" : "funciones participantes"}` : "Sin funciones que cumplan las reglas"}</span>
+          ${functions.length ? `<small>${functions.slice(0, 3).map((showtime) => escapeHTML(formatFunctionSummary(showtime))).join(" · ")}${functions.length > 3 ? ` · +${functions.length - 3} más` : ""}</small>` : ""}
+        </div>
+      `).join("")
+    : "";
+
+  elements.editPromotionButton.textContent = configured ? "Editar promoción" : "Configurar promoción";
+}
+
+function hasPromotionConfiguration(promotion) {
+  return Boolean(
+    (promotion.movieIds || []).length ||
+    promotion.startDate ||
+    promotion.endDate ||
+    (promotion.functionIds || []).length
+  );
+}
+
+function getFunctionsForPromotionRules(movieIds, startDate, endDate, allowedWeekdays) {
+  return state.data.movies
+    .filter((movie) => movieIds.includes(movie.id))
+    .flatMap((movie) => (movie.funciones || []).map((showtime) => ({ movie, showtime })))
+    .filter(({ showtime }) => {
+      const weekday = getWeekdayFromISO(showtime.fecha);
+      const inPeriod = (!startDate || showtime.fecha >= startDate) && (!endDate || showtime.fecha <= endDate);
+      return inPeriod && (!allowedWeekdays.length || allowedWeekdays.includes(weekday));
+    })
+    .sort((left, right) => compareFunctions(left.showtime, right.showtime));
+}
+
+function getSavedPromotionEntries(promotion) {
+  const selectedMovieIds = Array.isArray(promotion.movieIds) ? promotion.movieIds : [];
+  const eligibleFunctions = getFunctionsForPromotionRules(
+    selectedMovieIds,
+    promotion.startDate || "",
+    promotion.endDate || "",
+    promotion.allowedWeekdays || []
+  );
+  const functionsByMovie = new Map(selectedMovieIds.map((movieId) => [movieId, []]));
+
+  eligibleFunctions.forEach(({ movie, showtime }) => {
+    const isSelected = promotion.appliesTo !== "especificas" || (promotion.functionIds || []).includes(showtime.id);
+    if (isSelected) functionsByMovie.get(movie.id)?.push(showtime);
+  });
+
+  return state.data.movies
+    .filter((movie) => selectedMovieIds.includes(movie.id))
+    .map((movie) => ({ movie, functions: functionsByMovie.get(movie.id) || [] }));
+}
+
+function formatPromotionWeekdays(weekdays) {
+  const names = { 1: "lunes", 2: "martes", 3: "miércoles" };
+  const selected = (weekdays || []).map((day) => names[day]).filter(Boolean);
+  return selected.length ? selected.join(", ") : "sin días seleccionados";
+}
+
+function formatFunctionSummary(showtime) {
+  const [year, month, day] = String(showtime.fecha || "").split("-");
+  return `${day}/${month}/${year} ${formatTimeForDisplay(showtime.hora)} ${showtime.formato}`;
+}
+
+function openPromotionEditor() {
+  state.promotionEditorOpen = true;
+  renderPromotionForm();
+  elements.promotionSummaryFeedback.hidden = true;
+  window.requestAnimationFrame(() => {
+    elements.promotionEditor.scrollIntoView({ behavior: "smooth", block: "start" });
+    elements.promotionEnabled.focus();
+  });
+}
+
+function closePromotionEditor() {
+  state.promotionEditorOpen = false;
+  setPromotionEditorVisibility(false);
+  elements.promotionSummary.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function setPromotionEditorVisibility(visible) {
+  elements.promotionEditor.hidden = !visible;
+}
+
+function handlePromotionFormChange(event) {
+  if (
+    event.target.matches('input[name="promotion-movie"]') ||
+    event.target === elements.promotionStartDate ||
+    event.target === elements.promotionEndDate ||
+    event.target.matches('input[name="promotion-weekday"]') ||
+    event.target === elements.promotionScope
+  ) {
+    renderPromotionFunctionOptions();
+  }
+  clearPromotionStatus();
+  elements.promotionSummaryFeedback.hidden = true;
+}
+
+function renderPromotionFunctionOptions() {
+  const showSpecific = elements.promotionScope.value === "especificas";
+  elements.promotionFunctionFieldset.hidden = !showSpecific;
+  if (!showSpecific) return;
+
+  const selectedMovieIds = getCheckedValues('input[name="promotion-movie"]');
+  const selectedWeekdays = getCheckedValues('input[name="promotion-weekday"]').map(Number);
+  const startDate = elements.promotionStartDate.value;
+  const endDate = elements.promotionEndDate.value;
+  const savedIds = new Set(state.data.promotion.functionIds || []);
+  const functions = getFunctionsForPromotionRules(selectedMovieIds, startDate, endDate, selectedWeekdays);
+
+  elements.promotionFunctionOptions.innerHTML = functions.length
+    ? functions.map(({ movie, showtime }) => `
+        <label>
+          <input type="checkbox" name="promotion-function" value="${escapeHTML(showtime.id)}" ${savedIds.has(showtime.id) ? "checked" : ""}>
+          <span>
+            <strong>${escapeHTML(movie.title)}</strong>
+            <small>${escapeHTML(formatDateForDisplay(showtime.fecha))} · ${escapeHTML(formatTimeForDisplay(showtime.hora))} · ${escapeHTML(showtime.formato)}</small>
+          </span>
+        </label>
+      `).join("")
+    : '<p class="promotion-empty">No hay funciones que coincidan con las películas, fechas y días seleccionados.</p>';
+}
+
+function getCheckedValues(selector) {
+  return [...elements.promotionForm.querySelectorAll(`${selector}:checked`)].map((input) => input.value);
+}
+
+function showPromotionError(message) {
+  elements.promotionStatus.textContent = message;
+  elements.promotionStatus.className = "admin-form-status error";
+}
+
+function clearPromotionStatus() {
+  elements.promotionStatus.textContent = "";
+  elements.promotionStatus.className = "admin-form-status";
 }
 
 async function resetDemoData() {
@@ -632,6 +988,7 @@ async function resetDemoData() {
 
   state.data = await window.CinemaStore.resetData(DATA_URL);
   ensureDataShape();
+  state.promotionEditorOpen = false;
   closeMovieEditor();
   renderAll();
 }
@@ -640,6 +997,7 @@ async function persistAndRender() {
   await window.CinemaStore.saveData(state.data);
   renderMetrics();
   renderMovieList();
+  renderPromotionForm();
 }
 
 function syncFeaturedAvailability() {
@@ -650,7 +1008,45 @@ function syncFeaturedAvailability() {
 }
 
 function countShowtimes(movie) {
-  return Object.values(movie.schedules || {}).reduce((total, showtimes) => total + showtimes.length, 0);
+  return (movie.funciones || []).length;
+}
+
+function findRoomConflict(functions, currentDuration) {
+  const scheduled = [];
+
+  state.data.movies.forEach((movie) => {
+    if (movie.id === state.editingMovieId) return;
+    (movie.funciones || []).forEach((showtime) => {
+      scheduled.push({ movieTitle: movie.title, duration: Number(movie.durationMinutes) || 0, ...showtime });
+    });
+  });
+
+  functions.forEach((showtime) => {
+    scheduled.push({
+      movieTitle: document.querySelector("#movie-title").value.trim() || "esta película",
+      duration: currentDuration,
+      current: true,
+      ...showtime,
+    });
+  });
+
+  for (let index = 0; index < scheduled.length; index += 1) {
+    for (let otherIndex = index + 1; otherIndex < scheduled.length; otherIndex += 1) {
+      const first = scheduled[index];
+      const second = scheduled[otherIndex];
+      if (first.fecha !== second.fecha || (!first.current && !second.current)) continue;
+
+      const firstStart = timeToMinutes(first.hora);
+      const secondStart = timeToMinutes(second.hora);
+      const overlaps = firstStart < secondStart + second.duration && secondStart < firstStart + first.duration;
+      if (overlaps) {
+        const conflict = first.current ? second : first;
+        return `La Sala 1 ya tiene una función de ${conflict.movieTitle} el ${formatDateForDisplay(conflict.fecha)} a las ${formatTimeForDisplay(conflict.hora)}.`;
+      }
+    }
+  }
+
+  return "";
 }
 
 function setFieldError(input, message) {
@@ -664,6 +1060,17 @@ function clearFormErrors() {
   elements.movieFormStatus.className = "admin-form-status";
   elements.movieForm.querySelectorAll('[aria-invalid="true"]').forEach((input) => input.removeAttribute("aria-invalid"));
   elements.movieForm.querySelectorAll(".admin-field-error").forEach((error) => { error.textContent = ""; });
+  elements.movieForm.querySelectorAll('[data-showtime-field="time"]').forEach((input) => input.setCustomValidity(""));
+}
+
+function showMovieListStatus(message) {
+  elements.movieListStatus.textContent = message;
+  elements.movieListStatus.hidden = false;
+}
+
+function hideMovieListStatus() {
+  elements.movieListStatus.textContent = "";
+  elements.movieListStatus.hidden = true;
 }
 
 function setValue(id, value) {
@@ -680,6 +1087,77 @@ function createMovieId(title) {
   return `${slug}-${Date.now().toString(36)}`;
 }
 
+function createFunctionId() {
+  return `funcion-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function parseTimeInput(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll(".", "")
+    .replace(/\s+/g, "");
+  if (!normalized) return "";
+
+  const match = normalized.match(/^(\d{1,2})(?::(\d{1,2}))?(am|pm)?$/);
+  if (!match) return "";
+
+  let hour = Number(match[1]);
+  const minute = Number(match[2] ?? 0);
+  const period = match[3] || "";
+  if (minute > 59) return "";
+
+  if (period) {
+    if (hour < 1 || hour > 12) return "";
+    if (period === "am" && hour === 12) hour = 0;
+    if (period === "pm" && hour !== 12) hour += 12;
+  } else if (hour > 23) {
+    return "";
+  }
+
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function normalizeVisibleTimeInput(input) {
+  const normalized = parseTimeInput(input.value);
+  input.setCustomValidity(normalized ? "" : "Escribe una hora válida con a. m. o p. m.");
+  input.toggleAttribute("aria-invalid", Boolean(input.value.trim()) && !normalized);
+  if (normalized) input.value = formatTimeForDisplay(normalized);
+}
+
+function compareFunctions(first, second) {
+  return `${first.fecha || ""}T${first.hora || ""}`.localeCompare(`${second.fecha || ""}T${second.hora || ""}`);
+}
+
+function timeToMinutes(value) {
+  const [hour, minute] = String(value || "0:0").split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function toLocalISODate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getWeekdayFromISO(value) {
+  const [year, month, day] = String(value || "").split("-").map(Number);
+  if (!year || !month || !day) return -1;
+  return new Date(year, month - 1, day, 12, 0, 0).getDay();
+}
+
+function formatDateForDisplay(value) {
+  const [year, month, day] = String(value || "").split("-").map(Number);
+  if (!year || !month || !day) return "fecha sin definir";
+  return new Intl.DateTimeFormat("es-HN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, month - 1, day, 12, 0, 0));
+}
+
 function normalizeText(value) {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
@@ -694,6 +1172,13 @@ function sanitizeColor(value) {
 
 function clamp(value, minimum, maximum) {
   return Math.min(Math.max(value, minimum), maximum);
+}
+
+function normalizeBannerVisibility(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue)
+    ? Math.round(clamp(numericValue, 35, 85) / 5) * 5
+    : DEFAULT_BANNER_VISIBILITY;
 }
 
 function isSafeExternalUrl(value) {
@@ -735,18 +1220,6 @@ function readFileAsDataUrl(file) {
     reader.addEventListener("error", () => reject(reader.error));
     reader.readAsDataURL(file);
   });
-}
-
-function toTimeInput(displayTime) {
-  if (!displayTime) return "";
-  const match = String(displayTime).match(/(\d{1,2}):(\d{2})\s*([ap])\.?\s*m\.?/i);
-  if (!match) return /^\d{2}:\d{2}$/.test(displayTime) ? displayTime : "";
-  let hour = Number(match[1]);
-  const minute = match[2];
-  const period = match[3].toLowerCase();
-  if (period === "p" && hour !== 12) hour += 12;
-  if (period === "a" && hour === 12) hour = 0;
-  return `${String(hour).padStart(2, "0")}:${minute}`;
 }
 
 function formatTimeForDisplay(value) {

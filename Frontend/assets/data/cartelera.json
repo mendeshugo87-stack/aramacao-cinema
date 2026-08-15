@@ -11,9 +11,14 @@
   "promotion": {
     "code": "2X1_LMM",
     "name": "2x1 de lunes a miércoles",
-    "enabled": true,
+    "enabled": false,
+    "movieIds": [],
+    "startDate": "",
+    "endDate": "",
     "allowedWeekdays": [1, 2, 3],
-    "description": "Por cada dos admisiones se cobra una. El vendedor decide si aplica la promoción."
+    "appliesTo": "todas",
+    "functionIds": [],
+    "description": "Por cada dos admisiones se cobra una. Administración define las películas, fechas, días y funciones participantes."
   },
   "movies": [
     {
@@ -36,15 +41,11 @@
       "bannerImage": "",
       "accent": "#0877d1",
       "releaseDate": "2026-07-30",
-      "schedules": {
-        "0": [{"time": "3:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}, {"time": "6:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "1": [{"time": "4:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}, {"time": "7:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "2": [{"time": "4:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}, {"time": "7:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "3": [{"time": "4:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}, {"time": "7:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "4": [{"time": "4:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}, {"time": "7:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "5": [{"time": "3:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}, {"time": "6:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "6": [{"time": "3:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}, {"time": "6:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}]
-      }
+      "funciones": [
+        {"id": "func-horizonte-20260806-1400", "fecha": "2026-08-06", "hora": "14:00", "sala": "Sala 1", "formato": "2D", "precio": 120},
+        {"id": "func-horizonte-20260808-1400", "fecha": "2026-08-08", "hora": "14:00", "sala": "Sala 1", "formato": "3D", "precio": 150},
+        {"id": "func-horizonte-20260810-1400", "fecha": "2026-08-10", "hora": "14:00", "sala": "Sala 1", "formato": "2D", "precio": 120}
+      ]
     },
     {
       "id": "guardianes-del-bosque",
@@ -62,15 +63,11 @@
       "featured": true,
       "accent": "#e32a31",
       "releaseDate": "2026-07-24",
-      "schedules": {
-        "0": [{"time": "2:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}, {"time": "5:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "1": [{"time": "3:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}, {"time": "5:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "2": [{"time": "3:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}, {"time": "5:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "3": [{"time": "3:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}, {"time": "5:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "4": [{"time": "3:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}, {"time": "6:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "5": [{"time": "2:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}, {"time": "5:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "6": [{"time": "2:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}, {"time": "5:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}]
-      }
+      "funciones": [
+        {"id": "func-guardianes-20260806-1630", "fecha": "2026-08-06", "hora": "16:30", "sala": "Sala 1", "formato": "2D", "precio": 120},
+        {"id": "func-guardianes-20260808-1630", "fecha": "2026-08-08", "hora": "16:30", "sala": "Sala 1", "formato": "2D", "precio": 120},
+        {"id": "func-guardianes-20260810-1630", "fecha": "2026-08-10", "hora": "16:30", "sala": "Sala 1", "formato": "3D", "precio": 150}
+      ]
     },
     {
       "id": "la-ultima-senal",
@@ -88,15 +85,11 @@
       "featured": true,
       "accent": "#7054d8",
       "releaseDate": "2026-07-17",
-      "schedules": {
-        "0": [{"time": "7:30 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "1": [{"time": "8:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "2": [{"time": "8:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "3": [{"time": "8:00 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "4": [{"time": "8:15 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "5": [{"time": "8:15 p. m.", "room": "Sala 2", "format": "2D", "price": 120}],
-        "6": [{"time": "8:15 p. m.", "room": "Sala 2", "format": "2D", "price": 120}]
-      }
+      "funciones": [
+        {"id": "func-senal-20260807-1830", "fecha": "2026-08-07", "hora": "18:30", "sala": "Sala 1", "formato": "2D", "precio": 120},
+        {"id": "func-senal-20260809-1830", "fecha": "2026-08-09", "hora": "18:30", "sala": "Sala 1", "formato": "2D", "precio": 120},
+        {"id": "func-senal-20260811-1830", "fecha": "2026-08-11", "hora": "18:30", "sala": "Sala 1", "formato": "2D", "precio": 120}
+      ]
     },
     {
       "id": "risas-en-familia",
@@ -114,15 +107,11 @@
       "featured": false,
       "accent": "#e4a21a",
       "releaseDate": "2026-07-10",
-      "schedules": {
-        "0": [{"time": "5:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "1": [{"time": "6:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "2": [{"time": "6:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "3": [{"time": "6:00 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "4": [{"time": "6:15 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "5": [{"time": "5:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}],
-        "6": [{"time": "5:30 p. m.", "room": "Sala 1", "format": "2D", "price": 120}]
-      }
+      "funciones": [
+        {"id": "func-risas-20260807-2045", "fecha": "2026-08-07", "hora": "20:45", "sala": "Sala 1", "formato": "2D", "precio": 120},
+        {"id": "func-risas-20260809-2045", "fecha": "2026-08-09", "hora": "20:45", "sala": "Sala 1", "formato": "2D", "precio": 120},
+        {"id": "func-risas-20260812-2045", "fecha": "2026-08-12", "hora": "20:45", "sala": "Sala 1", "formato": "2D", "precio": 120}
+      ]
     },
     {
       "id": "viaje-del-colibri",
@@ -139,7 +128,7 @@
       "featured": false,
       "accent": "#17a77c",
       "releaseDate": "2026-08-21",
-      "schedules": {}
+      "funciones": []
     },
     {
       "id": "ciudad-de-niebla",
@@ -156,7 +145,7 @@
       "featured": false,
       "accent": "#627489",
       "releaseDate": "2026-09-04",
-      "schedules": {}
+      "funciones": []
     },
     {
       "id": "aventura-en-celaque",
@@ -173,7 +162,7 @@
       "featured": false,
       "accent": "#d96128",
       "releaseDate": "2026-09-18",
-      "schedules": {}
+      "funciones": []
     }
   ]
 }

@@ -15,7 +15,6 @@ const state = {
   selectedMovie: null,
   selectedShowtime: null,
   selectedSeats: new Set(),
-  promoApplied: false,
   /*
    * BACKEND: este mapa recibirá el estado real por función.
    * Valores admitidos: "available", "reserved" y "occupied".
@@ -31,7 +30,6 @@ const elements = {
   seatMap: document.querySelector("#seat-map"),
   seatInstruction: document.querySelector("#seat-instruction"),
   promotionBox: document.querySelector("#promotion-box"),
-  promotionToggle: document.querySelector("#promotion-toggle"),
   promotionStatus: document.querySelector("#promotion-status"),
   summaryMovie: document.querySelector("#summary-movie"),
   summaryShowtime: document.querySelector("#summary-showtime"),
@@ -86,6 +84,7 @@ function bindEvents() {
     state.selectedMovie = state.data.movies.find((movie) => movie.id === elements.movieSelect.value) || null;
     resetFunctionSelection();
     renderShowtimes(true);
+    updatePromotionAvailability();
   });
 
   elements.showtimes.addEventListener("click", (event) => {
@@ -100,12 +99,6 @@ function bindEvents() {
     const button = event.target.closest("[data-seat]");
     if (!button || button.disabled) return;
     toggleSeat(button.dataset.seat);
-  });
-
-  elements.promotionToggle.addEventListener("change", () => {
-    state.promoApplied = elements.promotionToggle.checked && isPromotionAvailable();
-    elements.promotionToggle.checked = state.promoApplied;
-    updateSummary();
   });
 
   document.querySelectorAll('input[name="payment"]').forEach((input) => {
@@ -210,13 +203,11 @@ function selectShowtime(showtime) {
   const shows = getShowtimes(state.selectedMovie, state.selectedDate);
   elements.showtimes.querySelectorAll("[data-showtime-index]").forEach((button) => {
     const show = shows[Number(button.dataset.showtimeIndex)];
-    button.classList.toggle(
-      "selected",
-      show.time === showtime.time && show.room === showtime.room
-    );
+    button.classList.toggle("selected", show.id === showtime.id);
   });
 
   renderSeatMap();
+  updatePromotionAvailability();
   updateSummary();
 }
 
@@ -284,14 +275,13 @@ function resetFunctionSelection() {
   state.selectedShowtime = null;
   state.selectedSeats.clear();
   renderEmptySeatMap("Selecciona una función para ver los asientos.");
+  updatePromotionAvailability();
   showError("");
 }
 
 function resetCurrentSale(clearMovie) {
   state.selectedShowtime = null;
   state.selectedSeats.clear();
-  state.promoApplied = false;
-  elements.promotionToggle.checked = false;
   elements.cashReceived.value = "";
   document.querySelector('input[name="payment"][value="efectivo"]').checked = true;
 
@@ -302,6 +292,7 @@ function resetCurrentSale(clearMovie) {
 
   renderShowtimes(false);
   renderEmptySeatMap("Selecciona una función para ver los asientos.");
+  updatePromotionAvailability();
   updatePaymentUI();
   updateSummary();
   showError("");
@@ -311,15 +302,15 @@ function updatePromotionAvailability() {
   if (!state.data) return;
 
   const available = isPromotionAvailable();
-  elements.promotionToggle.disabled = !available;
   elements.promotionBox.classList.toggle("unavailable", !available);
+  elements.promotionBox.classList.toggle("active", available);
 
-  if (!available) {
-    state.promoApplied = false;
-    elements.promotionToggle.checked = false;
-    elements.promotionStatus.textContent = "No disponible en la fecha seleccionada.";
+  if (!state.selectedMovie || !state.selectedShowtime) {
+    elements.promotionStatus.textContent = "Selecciona una película y una función para consultar si participa.";
+  } else if (!available) {
+    elements.promotionStatus.textContent = "Esta función no tiene promoción activa.";
   } else {
-    elements.promotionStatus.textContent = "Disponible hoy. El vendedor decide si la aplica.";
+    elements.promotionStatus.textContent = "2x1 activo. El descuento se calcula automáticamente al seleccionar dos o más asientos.";
   }
 
   updateSummary();
@@ -327,17 +318,28 @@ function updatePromotionAvailability() {
 
 function isPromotionAvailable() {
   const promotion = state.data?.promotion;
+  const selectedDate = state.selectedDate ? toLocalISODate(state.selectedDate) : "";
+  const correctFunction = promotion?.appliesTo !== "especificas" ||
+    promotion.functionIds?.includes(state.selectedShowtime?.id);
   return Boolean(
     promotion?.enabled &&
+      state.selectedMovie &&
+      state.selectedShowtime &&
       state.selectedDate &&
-      promotion.allowedWeekdays.includes(state.selectedDate.getDay())
+      promotion.movieIds?.includes(state.selectedMovie.id) &&
+      promotion.startDate &&
+      promotion.endDate &&
+      selectedDate >= promotion.startDate &&
+      selectedDate <= promotion.endDate &&
+      promotion.allowedWeekdays?.includes(state.selectedDate.getDay()) &&
+      correctFunction
   );
 }
 
 function calculateTotals() {
   const admissions = state.selectedSeats.size;
   const unitPrice = Number(state.selectedShowtime?.price || 0);
-  const validPromotion = state.promoApplied && isPromotionAvailable();
+  const validPromotion = isPromotionAvailable();
   const freeAdmissions = validPromotion ? Math.floor(admissions / 2) : 0;
   const subtotal = admissions * unitPrice;
   const discount = freeAdmissions * unitPrice;
@@ -389,16 +391,6 @@ function confirmSale() {
     return;
   }
 
-  if (state.promoApplied && !isPromotionAvailable()) {
-    showError("La promoción 2x1 no está permitida en la fecha seleccionada.");
-    return;
-  }
-
-  if (state.promoApplied && state.selectedSeats.size < 2) {
-    showError("Selecciona al menos dos asientos para aplicar el 2x1.");
-    return;
-  }
-
   const totals = calculateTotals();
   const paymentMethod = getPaymentMethod();
   const cashReceived = Number(elements.cashReceived.value || 0);
@@ -424,7 +416,17 @@ function confirmSale() {
 
 function getShowtimes(movie, date) {
   if (!movie || !date) return [];
-  return movie.schedules[String(date.getDay())] || [];
+  const selectedDate = toLocalISODate(date);
+  return (movie.funciones || [])
+    .filter((showtime) => showtime.fecha === selectedDate)
+    .sort((first, second) => first.hora.localeCompare(second.hora))
+    .map((showtime) => ({
+      id: showtime.id,
+      time: formatTimeForDisplay(showtime.hora),
+      room: "Sala 1",
+      format: showtime.formato,
+      price: Number(showtime.precio),
+    }));
 }
 
 function getPaymentMethod() {
@@ -433,6 +435,13 @@ function getPaymentMethod() {
 
 function showError(message) {
   elements.saleError.textContent = message;
+}
+
+function formatTimeForDisplay(value) {
+  if (!/^\d{2}:\d{2}$/.test(String(value || ""))) return String(value || "");
+  const [hourText, minute] = value.split(":");
+  const hour = Number(hourText);
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "p. m." : "a. m."}`;
 }
 
 function formatMoney(value) {

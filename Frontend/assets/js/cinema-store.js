@@ -74,17 +74,61 @@ window.CinemaStore = (() => {
 
   async function getData(dataUrl) {
     const savedCatalog = await readCatalog();
-    if (savedCatalog) return savedCatalog;
+    if (savedCatalog) {
+      const normalizedCatalog = normalizeCatalog(savedCatalog);
+      await saveData(normalizedCatalog);
+      return normalizedCatalog;
+    }
 
-    const defaultData = await fetchDefaultData(dataUrl);
+    const defaultData = normalizeCatalog(await fetchDefaultData(dataUrl));
     await saveData(defaultData);
     return structuredClone(defaultData);
   }
 
   async function resetData(dataUrl) {
-    const defaultData = await fetchDefaultData(dataUrl);
+    const defaultData = normalizeCatalog(await fetchDefaultData(dataUrl));
     await saveData(defaultData);
     return structuredClone(defaultData);
+  }
+
+  function normalizeCatalog(catalog) {
+    const normalized = structuredClone(catalog || {});
+    const correctPromotionDescription = "Por cada dos admisiones se cobra una en las funciones seleccionadas. Administración configura la promoción y Taquilla solamente informa al cliente.";
+    normalized.movies = Array.isArray(normalized.movies) ? normalized.movies : [];
+    normalized.promotion = {
+      enabled: false,
+      movieIds: [],
+      startDate: "",
+      endDate: "",
+      allowedWeekdays: [1, 2, 3],
+      appliesTo: "todas",
+      functionIds: [],
+      description: "",
+      ...(normalized.promotion || {}),
+    };
+    if (/vendedor\s+decide/i.test(normalized.promotion.description || "")) {
+      normalized.promotion.description = correctPromotionDescription;
+    }
+
+    normalized.movies.forEach((movie) => {
+      /*
+       * La maqueta anterior repetía horarios por día de la semana y permitía
+       * varias salas. Al actualizar, se conserva la película y sus imágenes,
+       * pero el administrador vuelve a cargar funciones con fecha exacta.
+       */
+      movie.funciones = Array.isArray(movie.funciones) ? movie.funciones : [];
+      movie.funciones = movie.funciones.map((showtime) => ({
+        ...showtime,
+        sala: "Sala 1",
+      }));
+      const visibility = Number(movie.bannerVisibility);
+      movie.bannerVisibility = Number.isFinite(visibility)
+        ? Math.round(Math.min(Math.max(visibility, 35), 85) / 5) * 5
+        : 65;
+      delete movie.schedules;
+    });
+
+    return normalized;
   }
 
   return { getData, saveData, resetData };

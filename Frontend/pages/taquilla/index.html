@@ -7,12 +7,20 @@
   <title>Taquilla | Aramacao Cinema</title>
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
-  <link rel="stylesheet" href="../../assets/css/styles.css">
-  <link rel="stylesheet" href="../../assets/css/taquilla.css">
-  <script src="../../assets/js/cinema-store.js" defer></script>
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/taquilla.css?v=8">
+  <script src="../../assets/js/staff-api.js?v=8" defer></script>
+  <script src="../../assets/js/staff-private.js?v=8" defer></script>
+  <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
   <script src="../../assets/js/taquilla.js" defer></script>
 </head>
-<body class="ticket-office-body">
+<body
+  class="ticket-office-body"
+  data-area-privada="taquilla"
+  data-roles-permitidos="VENDEDOR_TAQUILLA"
+  data-permiso-requerido="ventas.crear_venta"
+  data-login-url="/pages/empleados/login.html"
+>
   <a class="skip-link" href="#taquilla-main">Saltar a la venta</a>
 
   <!--
@@ -31,11 +39,10 @@
     <div class="employee-session">
       <span class="connection-dot" aria-hidden="true"></span>
       <div>
-        <!-- BACKEND: mostrar aquí el nombre y usuario del empleado autenticado. -->
-        <strong>Empleado autenticado</strong>
-        <span>Sesión protegida por backend</span>
+        <strong data-session-name>Comprobando sesión…</strong>
+        <span data-session-role>Taquilla</span>
       </div>
-      <button class="session-button" type="button" disabled>Cerrar sesión</button>
+      <button class="session-button" type="button" data-logout-button disabled>Cerrar sesión</button>
     </div>
   </header>
 
@@ -132,14 +139,11 @@
         </dl>
 
         <div class="promotion-box" id="promotion-box">
-          <label class="promotion-toggle">
-            <span>
-              <strong>Aplicar promoción 2x1</strong>
-              <small id="promotion-status">Disponible lunes, martes y miércoles.</small>
-            </span>
-            <input id="promotion-toggle" type="checkbox" role="switch">
-            <i aria-hidden="true"></i>
-          </label>
+          <span class="promotion-indicator" aria-hidden="true">2×1</span>
+          <span class="promotion-information">
+            <strong>Promoción de la función</strong>
+            <small id="promotion-status" role="status">Selecciona una función para consultar si participa.</small>
+          </span>
         </div>
 
         <div class="price-breakdown" aria-live="polite">

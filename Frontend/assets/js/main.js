@@ -23,6 +23,8 @@ const elements = {
   hero: document.querySelector("#hero"),
   heroBackdrop: document.querySelector(".hero-backdrop"),
   heroEyebrow: document.querySelector("#hero-eyebrow"),
+  heroPromotionIndicator: document.querySelector("#hero-promotion-indicator"),
+  heroPromotionIndicatorText: document.querySelector("#hero-promotion-indicator-text"),
   heroTitle: document.querySelector("#hero-title"),
   heroDescription: document.querySelector("#hero-description"),
   heroMeta: document.querySelector("#hero-meta"),
@@ -50,6 +52,9 @@ const elements = {
   trailerModalTitle: document.querySelector("#trailer-modal-title"),
   trailerPlayer: document.querySelector("#trailer-player"),
   trailerBuy: document.querySelector("#trailer-buy"),
+  activePromotion: document.querySelector("#active-promotion"),
+  promotionTitle: document.querySelector("#promo-title"),
+  promotionDescription: document.querySelector("#promo-description"),
 };
 
 document.addEventListener("DOMContentLoaded", initializePage);
@@ -68,6 +73,7 @@ async function initializePage() {
     renderMovies();
     renderUpcomingMovies();
     renderHero();
+    renderActivePromotion();
     startHeroRotation();
   } catch (error) {
     console.error("No se pudo cargar la cartelera:", error);
@@ -204,7 +210,7 @@ function renderMovies() {
             <div class="showtimes" aria-label="Horarios disponibles">
               ${
                 showtimes.length
-                  ? showtimes.map((show) => `<span class="showtime">${escapeHTML(show.time)}</span>`).join("")
+                  ? showtimes.map((show) => `<span class="showtime${show.promotion ? " has-promotion" : ""}">${escapeHTML(show.time)}${show.promotion ? " <small>2x1</small>" : ""}</span>`).join("")
                   : '<span class="no-showtimes">Sin funciones este día</span>'
               }
             </div>
@@ -266,6 +272,22 @@ function renderUpcomingMovies() {
     : '<p class="empty-message">Los próximos estrenos se publicarán pronto.</p>';
 }
 
+function renderActivePromotion() {
+  const promotion = state.data?.promotion;
+  const participatingMovies = getEffectivePromotionMovies(promotion);
+  const validConfiguration = isVisiblePromotion(promotion, participatingMovies);
+
+  elements.activePromotion.hidden = !validConfiguration;
+  if (!validConfiguration) return;
+
+  const movieNames = participatingMovies.map((movie) => movie.title);
+  elements.promotionTitle.textContent = movieNames.length === 1
+    ? `2x1 en ${movieNames[0]}`
+    : "2x1 en películas seleccionadas";
+  elements.promotionDescription.textContent = promotion.description ||
+    `Vigente del ${formatPromotionDate(promotion.startDate)} al ${formatPromotionDate(promotion.endDate)} en las funciones configuradas por Administración.`;
+}
+
 function renderHero() {
   if (!state.featuredMovies.length) {
     elements.heroTitle.textContent = "Muy pronto, nuevas historias";
@@ -273,6 +295,7 @@ function renderHero() {
     elements.heroMeta.replaceChildren();
     elements.heroDetails.disabled = true;
     elements.heroTrailer.hidden = true;
+    elements.heroPromotionIndicator.hidden = true;
     return;
   }
 
@@ -294,6 +317,7 @@ function renderHero() {
 
   elements.heroPoster.style.setProperty("--poster-accent", sanitizeColor(movie.accent));
   elements.heroPosterLabel.textContent = movie.title;
+  renderHeroPromotionIndicator(movie);
   setHeroImages(movie);
   setTrailerButton(elements.heroTrailer, movie);
   elements.heroBuy.href = buildCustomerAccountUrl(
@@ -323,6 +347,50 @@ function renderHero() {
       restartHeroRotation();
     });
   });
+}
+
+function renderHeroPromotionIndicator(movie) {
+  const promotion = state.data?.promotion;
+  const participatingMovies = getEffectivePromotionMovies(promotion);
+  const visible = isVisiblePromotion(promotion, participatingMovies);
+  const currentMovieParticipates = participatingMovies.some((item) => item.id === movie.id);
+
+  elements.heroPromotionIndicator.hidden = !visible;
+  if (!visible) return;
+  elements.heroPromotionIndicatorText.textContent = currentMovieParticipates
+    ? "Disponible para esta película en funciones seleccionadas"
+    : "Disponible en otras películas y funciones seleccionadas";
+}
+
+function getEffectivePromotionMovies(promotion) {
+  if (!promotion) return [];
+  const selectedMovieIds = Array.isArray(promotion.movieIds) ? promotion.movieIds : [];
+  return state.data.movies.filter((movie) => {
+    if (!selectedMovieIds.includes(movie.id) || movie.status !== "cartelera" || movie.active === false) return false;
+    return (movie.funciones || []).some((showtime) => {
+      const weekday = parseLocalDate(showtime.fecha).getDay();
+      const matchesRules =
+        showtime.fecha >= promotion.startDate &&
+        showtime.fecha <= promotion.endDate &&
+        promotion.allowedWeekdays?.includes(weekday);
+      const matchesFunction = promotion.appliesTo !== "especificas" || promotion.functionIds?.includes(showtime.id);
+      return matchesRules && matchesFunction;
+    });
+  });
+}
+
+function isVisiblePromotion(promotion, participatingMovies) {
+  const today = toLocalISODate(new Date());
+  return Boolean(
+    promotion?.enabled &&
+    participatingMovies.length &&
+    promotion.startDate &&
+    promotion.endDate &&
+    promotion.startDate <= promotion.endDate &&
+    promotion.endDate >= today &&
+    Array.isArray(promotion.allowedWeekdays) &&
+    promotion.allowedWeekdays.length
+  );
 }
 
 function changeHero(direction) {
@@ -405,7 +473,31 @@ function closeTrailerModal() {
 }
 
 function getShowtimes(movie, date) {
-  return movie.schedules[String(date.getDay())] || [];
+  const selectedDate = toLocalISODate(date);
+  return (movie.funciones || [])
+    .filter((showtime) => showtime.fecha === selectedDate)
+    .sort((first, second) => first.hora.localeCompare(second.hora))
+    .map((showtime) => ({
+      id: showtime.id,
+      time: formatTimeForDisplay(showtime.hora),
+      room: "Sala 1",
+      format: showtime.formato,
+      price: Number(showtime.precio),
+      promotion: isFunctionInPromotion(movie.id, showtime, selectedDate),
+    }));
+}
+
+function isFunctionInPromotion(movieId, showtime, selectedDate) {
+  const promotion = state.data?.promotion;
+  const weekday = parseLocalDate(selectedDate).getDay();
+  return Boolean(
+    promotion?.enabled &&
+    promotion.movieIds?.includes(movieId) &&
+    selectedDate >= promotion.startDate &&
+    selectedDate <= promotion.endDate &&
+    promotion.allowedWeekdays?.includes(weekday) &&
+    (promotion.appliesTo !== "especificas" || promotion.functionIds?.includes(showtime.id))
+  );
 }
 
 function showDataError() {
@@ -439,6 +531,19 @@ function formatReleaseDate(value) {
   return new Intl.DateTimeFormat("es-HN", { day: "numeric", month: "short" })
     .format(parseLocalDate(value))
     .replace(".", "");
+}
+
+function formatPromotionDate(value) {
+  if (!value) return "fecha por confirmar";
+  return new Intl.DateTimeFormat("es-HN", { day: "numeric", month: "long" })
+    .format(parseLocalDate(value));
+}
+
+function formatTimeForDisplay(value) {
+  if (!/^\d{2}:\d{2}$/.test(String(value || ""))) return String(value || "");
+  const [hourText, minute] = value.split(":");
+  const hour = Number(hourText);
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "p. m." : "a. m."}`;
 }
 
 function capitalize(value) {
@@ -491,6 +596,31 @@ function getYouTubeEmbedUrl(value) {
     : "";
 }
 
+function showHeroPosterFallback() {
+  elements.heroPosterImage.hidden = true;
+  elements.heroPosterImage.removeAttribute("src");
+  elements.heroPosterImage.alt = "";
+  elements.heroPosterLabel.hidden = false;
+  elements.heroPoster.classList.remove("has-image");
+}
+
+function handleBrokenMovieImage(event) {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement)) return;
+
+  if (image === elements.heroPosterImage) {
+    showHeroPosterFallback();
+    return;
+  }
+
+  if (image.classList.contains("movie-art-image")) {
+    image.hidden = true;
+    image.removeAttribute("src");
+  }
+}
+
+document.addEventListener("error", handleBrokenMovieImage, true);
+
 function renderMovieImage(value, title, className) {
   const imageUrl = getSafeMediaUrl(value);
   if (!imageUrl) return "";
@@ -526,15 +656,33 @@ function setHeroImages(movie) {
   const posterUrl = getSafeMediaUrl(movie.posterImage);
   const bannerUrl = getSafeMediaUrl(movie.bannerImage);
 
-  elements.heroPosterImage.hidden = !posterUrl;
-  elements.heroPosterLabel.hidden = Boolean(posterUrl);
-  if (posterUrl) elements.heroPosterImage.src = posterUrl;
-  else elements.heroPosterImage.removeAttribute("src");
+  if (posterUrl) {
+    elements.heroPosterImage.hidden = false;
+    elements.heroPosterImage.alt = `Póster de ${movie.title}`;
+    elements.heroPosterLabel.hidden = true;
+    elements.heroPoster.classList.add("has-image");
+    elements.heroPosterImage.src = posterUrl;
+  } else {
+    showHeroPosterFallback();
+  }
 
+  elements.hero.classList.toggle("has-banner", Boolean(bannerUrl));
   elements.heroBackdrop.classList.toggle("has-image", Boolean(bannerUrl));
+  const overlay = buildHeroBannerOverlay(movie.bannerVisibility);
   elements.heroBackdrop.style.backgroundImage = bannerUrl
-    ? `linear-gradient(90deg, rgba(4, 9, 16, 0.96), rgba(4, 9, 16, 0.34)), url("${bannerUrl.replaceAll('"', "%22")}")`
+    ? `${overlay}, url("${bannerUrl.replaceAll('"', "%22")}")`
     : "";
+}
+
+function buildHeroBannerOverlay(value) {
+  const visibility = Math.min(Math.max(Number(value) || 65, 35), 85) / 100;
+  const shadow = 1 - visibility;
+  const left = Math.min(Math.max(shadow + 0.35, 0.55), 0.95);
+  const center = Math.min(Math.max(shadow + 0.18, 0.35), 0.82);
+  const right = Math.min(Math.max(shadow + 0.05, 0.2), 0.7);
+  const bottom = Math.min(Math.max(shadow + 0.2, 0.4), 0.85);
+  const top = Math.min(Math.max(shadow - 0.05, 0.12), 0.65);
+  return `linear-gradient(90deg, rgba(3, 8, 16, ${left}) 0%, rgba(3, 8, 16, ${center}) 48%, rgba(3, 8, 16, ${right}) 100%), linear-gradient(0deg, rgba(3, 8, 16, ${bottom}), rgba(3, 8, 16, ${top}) 65%, rgba(3, 8, 16, ${center}))`;
 }
 
 /* Evita insertar etiquetas HTML si un texto recibido de la API contiene caracteres especiales. */

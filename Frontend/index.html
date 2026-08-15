@@ -7,9 +7,9 @@
   <title>Aramacao Cinema | Inicio</title>
 
   <link rel="icon" href="assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
-  <link rel="stylesheet" href="assets/css/styles.css">
-  <script src="assets/js/cinema-store.js" defer></script>
-  <script src="assets/js/main.js" defer></script>
+  <link rel="stylesheet" href="assets/css/styles.css?v=5.2">
+  <script src="assets/js/cinema-store.js?v=5.2" defer></script>
+  <script src="assets/js/main.js?v=5.2" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido-principal">Saltar al contenido</a>
@@ -53,6 +53,10 @@
       <div class="container hero-grid">
         <div class="hero-copy">
           <p class="eyebrow" id="hero-eyebrow">Ahora en cartelera</p>
+          <a class="hero-promotion-indicator" id="hero-promotion-indicator" href="#active-promotion" hidden>
+            <strong>2x1 activo</strong>
+            <span id="hero-promotion-indicator-text">En funciones seleccionadas</span>
+          </a>
           <h1 id="hero-title">Cargando cartelera…</h1>
           <p class="hero-description" id="hero-description">Estamos preparando las películas disponibles.</p>
 
@@ -72,7 +76,7 @@
         </div>
 
         <div class="hero-poster" id="hero-poster" aria-hidden="true">
-          <img id="hero-poster-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" hidden>
+          <img id="hero-poster-image" alt="" hidden>
           <span id="hero-poster-label">Aramacao</span>
         </div>
       </div>
@@ -81,10 +85,10 @@
     <section class="benefits" aria-label="Beneficios del cine">
       <div class="container benefits-grid">
         <article>
-          <span class="benefit-icon">2×1</span>
+          <span class="benefit-icon">✓</span>
           <div>
-            <strong>Lunes, martes y miércoles</strong>
-            <p>Promoción opcional en funciones participantes.</p>
+            <strong>Cartelera actualizada</strong>
+            <p>Consulta películas, fechas y horarios disponibles.</p>
           </div>
         </article>
         <article>
@@ -124,15 +128,22 @@
       </div>
     </section>
 
-    <section class="promo-section" aria-labelledby="promo-title">
+    <!--
+      BACKEND — PROMOCIONES:
+      Esta sección permanece oculta mientras no exista una promoción activa.
+      Cuando Administración configure el 2x1, el backend deberá devolver las
+      películas, fechas, días y funciones participantes. main.js completará la
+      información y retirará el atributo hidden únicamente si la promoción es válida.
+    -->
+    <section class="promo-section" id="active-promotion" aria-labelledby="promo-title" hidden>
       <div class="container promo-card">
         <div class="promo-badge" aria-hidden="true">
           <span>2</span><small>×</small><span>1</span>
         </div>
         <div class="promo-copy">
-          <p class="eyebrow">Una entrada, dos experiencias</p>
-          <h2 id="promo-title">Comparte el cine de lunes a miércoles</h2>
-          <p>En funciones participantes, selecciona dos asientos y paga uno. La activación depende de las condiciones vigentes de la promoción.</p>
+          <p class="eyebrow">Promoción activa</p>
+          <h2 id="promo-title">2x1 en funciones seleccionadas</h2>
+          <p id="promo-description"></p>
         </div>
         <a class="button button-light" href="pages/cartelera/">Consultar funciones</a>
       </div>

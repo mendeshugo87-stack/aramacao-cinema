@@ -39,5 +39,4 @@ Thumbs.db
 *.7z
 # Documentos internos locales
 AGENTS.md
-LEEME_CAMBIOS_V6.md
-LEEME_INSTALACION.md
+/LEEME_*.md

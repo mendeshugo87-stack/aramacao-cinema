@@ -1,0 +1,12 @@
+{
+  "bloqueo_id": "de88c9e7-b615-46bf-a7ea-8ad62155be42",
+  "funcion_id": "b9c097fd-44ed-46f8-b87e-6722b9f74c58",
+  "asientos": [
+    "A1",
+    "A2"
+  ],
+  "estado": "ACTIVO",
+  "creado_en": "2026-08-20T18:45:00-06:00",
+  "expira_en": "2026-08-20T18:55:00-06:00",
+  "segundos_restantes": 600
+}

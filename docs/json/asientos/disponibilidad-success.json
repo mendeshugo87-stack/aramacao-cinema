@@ -1,0 +1,180 @@
+{
+  "funcion_id": "b9c097fd-44ed-46f8-b87e-6722b9f74c58",
+  "sala": {
+    "nombre": "Sala 1",
+    "aforo_total": 112,
+    "asientos_por_fila": 14,
+    "pasillo_despues_del_asiento": 7,
+    "distribucion": [
+      {
+        "fila": "A",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fila": "B",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fila": "C",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fila": "D",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fila": "E",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fila": "F",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fila": "G",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      {
+        "fila": "H",
+        "asientos": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      }
+    ]
+  },
+  "venta_disponible": true,
+  "venta_hasta": "2026-08-20T19:20:00-06:00",
+  "bloqueo_temporal_segundos": 600,
+  "asientos_bloqueados_temporalmente": [
+    "B8",
+    "B9"
+  ],
+  "asientos_reservados": [
+    "C1",
+    "C2"
+  ],
+  "asientos_ocupados": [
+    "D1"
+  ],
+  "mi_bloqueo": null,
+  "actualizado_en": "2026-08-20T18:45:00-06:00",
+  "hora_inicio": "2026-08-20T19:00:00-06:00"
+}

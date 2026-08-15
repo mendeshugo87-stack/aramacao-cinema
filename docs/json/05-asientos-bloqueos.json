@@ -1,0 +1,62 @@
+{
+  "modulo": "Aforo, asientos y bloqueos por función",
+  "estado": "CONTRATO_PREPARADO_SIN_DJANGO",
+  "sala": {
+    "nombre": "Sala 1",
+    "aforo_total": 112,
+    "filas": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H"
+    ],
+    "asientos_por_fila": 14,
+    "pasillo_despues_del_asiento": 7
+  },
+  "bloqueo_temporal_segundos": 600,
+  "endpoints": [
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/funciones/{funcion_id}/asientos/",
+      "uso": "Consultar distribución y disponibilidad de la función."
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/funciones/{funcion_id}/bloqueos-asientos/",
+      "uso": "Bloquear temporalmente los asientos antes del pago."
+    },
+    {
+      "metodo": "DELETE",
+      "ruta": "/api/v1/bloqueos-asientos/{bloqueo_id}/",
+      "uso": "Liberar voluntariamente un bloqueo activo."
+    }
+  ],
+  "estados": [
+    "DISPONIBLE",
+    "BLOQUEADO_TEMPORALMENTE",
+    "RESERVADO",
+    "OCUPADO"
+  ],
+  "reglas": [
+    "La disponibilidad es independiente para cada función.",
+    "Seleccionar en pantalla no reserva; el bloqueo comienza al continuar al pago.",
+    "Solo la sesión que creó el bloqueo puede utilizarlo o liberarlo.",
+    "El bloqueo vence automáticamente después de 600 segundos o antes si llega venta_hasta.",
+    "Django vuelve a validar los asientos dentro de una operación segura al confirmar la venta.",
+    "Pago confirmado cambia cada asiento a RESERVADO.",
+    "El primer escaneo válido cambia el boleto a UTILIZADO y el asiento a OCUPADO.",
+    "Un segundo escaneo del mismo QR debe rechazarse con BOLETO_YA_UTILIZADO.",
+    "Cada asiento genera un boleto individual; el 2x1 genera dos boletos y ocupa dos asientos.",
+    "La venta en línea y Taquilla comparten la misma disponibilidad.",
+    "venta_hasta corresponde a 20 minutos después de hora_inicio; después de ese límite no se crean bloqueos."
+  ],
+  "fuera_de_este_bloque": [
+    "Procesamiento del pago.",
+    "Emisión de comprobantes o facturas.",
+    "Generación y escaneo definitivo de códigos QR."
+  ]
+}

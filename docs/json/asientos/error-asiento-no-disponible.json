@@ -1,0 +1,12 @@
+{
+  "codigo": "ASIENTO_NO_DISPONIBLE",
+  "mensaje": "Uno o más asientos ya no están disponibles.",
+  "errores": {
+    "asientos": [
+      {
+        "codigo": "B8",
+        "estado": "RESERVADO"
+      }
+    ]
+  }
+}

@@ -49,8 +49,10 @@
     {
       "orden": 5,
       "modulo": "Aforo, asientos y bloqueos por función",
-      "estado": "PENDIENTE",
-      "se_sube_en_esta_version": false
+      "estado": "CONTRATO_PREPARADO_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/05-asientos-bloqueos.json",
+      "documentacion": "docs/API_AFORO_ASIENTOS_BLOQUEOS.md"
     },
     {
       "orden": 6,

@@ -1,71 +1,50 @@
-# Conexión con backend — primera etapa
+# Conexión con backend
 
-Este documento explica los puntos de integración sin definir tablas ni campos. La arquitectura final queda a criterio del ingeniero backend.
+El orden oficial de implementación está definido en `docs/json/00-orden-endpoints.json`.
 
-## Fuente compartida de cartelera
+## Orden de integración
 
-Actualmente, `Frontend/index.html` y `Frontend/pages/taquilla/index.html` consumen:
+Backend debe trabajar los módulos en este orden:
 
-```text
-Frontend/assets/data/cartelera.json
-```
+1. Acceso y sesión de empleados.
+2. Administración de vendedores y protección de áreas privadas.
+3. Cuentas, sesión, Mi cuenta e historial de clientes.
+4. Películas, funciones y promoción 2x1.
+5. Aforo, asientos y bloqueos por función.
+6. Dulcería e inventario.
+7. Carrito de compras.
+8. Ventas, pagos y órdenes.
+9. Boletos, historial, reemisión y QR.
 
-En producción, ambas interfaces deben consumir la misma API de cartelera. Los cambios de películas, fechas, horarios, salas, precios y promociones realizados desde administración deben reflejarse en las dos páginas.
+Cada bloque debe probarse antes de comenzar el siguiente.
 
-Los archivos donde se cambia la dirección temporal de los datos son:
+## Contratos preparados
 
-```text
-Frontend/assets/js/main.js
-Frontend/assets/js/taquilla.js
-```
+Acceso y administración de empleados:
 
-Busca la constante `DATA_URL` al principio de cada archivo.
+- `docs/json/01-acceso-empleados.json`
+- `docs/json/02-administracion-empleados.json`
+- `docs/json/03-proteccion-areas-privadas.json`
 
-## Seguridad de Taquilla
+Cuentas de clientes:
 
-- La ruta de taquilla debe requerir autenticación.
-- Solo empleados con permiso de venta física pueden utilizarla.
-- El backend debe identificar al vendedor en cada operación.
-- No basta con ocultar enlaces o botones en el frontend.
+- `docs/json/cuentas-clientes/01-autenticacion-clientes.json`
+- `docs/json/cuentas-clientes/02-mi-cuenta-clientes.json`
+- `docs/json/cuentas-clientes/03-historial-compras-clientes.json`
+- `docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json`
 
-## Confirmación de una venta
+Películas, funciones y promoción 2x1:
 
-Seleccionar un asiento en el frontend no lo reserva. Es únicamente una selección temporal en la pantalla del comprador o del vendedor.
+- `docs/API_CARTELERA_FUNCIONES_PROMOCIONES.md`
+- `docs/json/04-siguientes-endpoints.json`
+- `docs/json/cartelera/`
 
-Antes de confirmar el pago, backend debe volver a comprobar que los asientos continúan disponibles. La comprobación, el pago, la creación de la venta, los boletos y la actualización del estado deben completarse como una sola operación segura.
+## Reglas de integración
 
-Si dos vendedores intentan confirmar el mismo asiento, solamente una venta debe completarse; la otra debe recibir una respuesta que indique cuáles asientos dejaron de estar disponibles.
+- Django será la fuente oficial de usuarios, permisos, películas, funciones, precios y promociones.
+- El navegador nunca asigna roles ni decide permisos.
+- Los datos locales del frontend sirven únicamente para demostración y deben sustituirse gradualmente por respuestas de la API.
+- No deben mezclarse asientos, pagos o códigos QR con un bloque anterior que todavía no haya superado sus pruebas.
+- Los contratos describen rutas, campos y respuestas; no obligan al backend a utilizar modelos o tablas específicos.
 
-El ciclo de estados solicitado es:
-
-1. **Disponible:** puede seleccionarse.
-2. **Seleccionado:** estado temporal del frontend; todavía no bloquea ni reserva.
-3. **Reservado:** el pago fue confirmado y el boleto ya fue emitido.
-4. **Ocupado:** el boleto o QR fue escaneado correctamente antes de entrar a la sala.
-
-La estrategia técnica para confirmar pagos, resolver concurrencia y actualizar estados queda a criterio del ingeniero backend. El frontend no utiliza `localStorage` ni genera ocupación aleatoria.
-
-## Regla 2x1
-
-- Solo puede aplicarse si la promoción está habilitada y la fecha de la función cumple sus condiciones.
-- El vendedor decide si la aplica.
-- Por cada dos admisiones, una se cobra y la otra se bonifica.
-- Ambos asientos reducen el aforo.
-- Cada persona debe recibir su boleto o acceso individual.
-- La venta y el recibo deben conservar el precio normal, el descuento y el total pagado.
-- El backend debe validar esta regla incluso si el frontend ya la validó.
-
-## Recibo y boletos
-
-El frontend no diseña ni imprime un recibo. Backend definirá el comprobante, proporcionará el número permanente de venta y utilizará únicamente datos confirmados. Los códigos QR reales deben ser únicos, verificables y generados a partir de boletos guardados.
-
-## Elementos todavía simulados
-
-- Sesión e identidad del empleado.
-- Consulta de estados de los asientos por función.
-- Confirmación del pago y cambio a estado reservado.
-- Escaneo del boleto y cambio a estado ocupado.
-- Pago con tarjeta o transferencia.
-- Número permanente de venta.
-- QR y boletos individuales.
-- Registro de reimpresiones.
+Django conserva libertad para organizar sus aplicaciones, modelos y almacenamiento interno, siempre que respete el contrato acordado con el frontend.

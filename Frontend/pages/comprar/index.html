@@ -3,23 +3,161 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Compra en línea de boletos para Aramacao Cinema.">
+  <meta name="description" content="Selecciona función y asientos para comprar boletos en línea en Aramacao Cinema.">
   <title>Compra en línea | Aramacao Cinema</title>
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css">
-  <link rel="stylesheet" href="../../assets/css/personal.css">
+  <link rel="stylesheet" href="../../assets/css/compra.css">
 </head>
-<body class="online-purchase-body">
-  <main class="online-purchase-shell">
-    <a class="staff-public-link" href="../../index.html">← Volver a Inicio</a>
-    <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="220" height="76">
-    <p class="eyebrow">Compra en línea</p>
-    <h1>Compra en línea protegida</h1>
-    <p>Después de que backend valide la cuenta del cliente, esta ruta continuará con la función, los asientos, el pago y el boleto digital. El vendedor utilizará un acceso privado diferente.</p>
-    <div class="purchase-flow" aria-label="Pasos de compra en línea">
-      <span>1. Cuenta</span><span>2. Función</span><span>3. Asientos</span><span>4. Pago</span><span>5. Boleto</span>
+<body class="online-checkout-body">
+  <header class="checkout-header">
+    <div class="checkout-header-inner">
+      <a class="checkout-logo" href="../../index.html" aria-label="Volver al Inicio">
+        <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="220" height="76">
+      </a>
+      <nav class="checkout-nav" aria-label="Navegación de compra">
+        <a href="../cartelera/">Cartelera</a>
+        <a href="../cuenta/mi-cuenta.html">Mi cuenta</a>
+      </nav>
     </div>
-    <a class="button button-primary" href="../cartelera/">Volver a cartelera</a>
+  </header>
+
+  <main class="checkout-main">
+    <section class="checkout-intro" aria-labelledby="checkout-title">
+      <div>
+        <p class="eyebrow">Compra en línea protegida</p>
+        <h1 id="checkout-title">Elige tu función y tus asientos</h1>
+        <p>Los asientos se apartarán durante 10 minutos cuando continúes. El pago se conectará en la siguiente etapa.</p>
+      </div>
+      <p class="local-preview-notice" id="local-preview-notice" hidden>
+        Vista local: la disponibilidad es demostrativa y no representa ventas reales.
+      </p>
+    </section>
+
+    <ol class="checkout-steps" aria-label="Pasos de compra">
+      <li class="completed"><span>1</span> Cuenta</li>
+      <li class="active"><span>2</span> Función</li>
+      <li class="active"><span>3</span> Asientos</li>
+      <li><span>4</span> Pago</li>
+      <li><span>5</span> Boleto</li>
+    </ol>
+
+    <div class="checkout-layout">
+      <section class="checkout-workspace" aria-labelledby="selection-title">
+        <div class="checkout-panel selection-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker">Paso 2</p>
+              <h2 id="selection-title">Selecciona la función</h2>
+            </div>
+            <a class="text-link" href="../cartelera/">Cambiar desde Cartelera</a>
+          </div>
+
+          <div class="selection-fields">
+            <label>
+              <span>Película</span>
+              <select id="purchase-movie">
+                <option value="">Selecciona una película</option>
+              </select>
+            </label>
+            <label>
+              <span>Fecha</span>
+              <input id="purchase-date" type="date">
+            </label>
+          </div>
+
+          <div class="showtime-section">
+            <p class="field-label">Funciones disponibles</p>
+            <div class="purchase-showtimes" id="purchase-showtimes">
+              <p class="empty-inline">Selecciona película y fecha.</p>
+            </div>
+          </div>
+
+          <div class="purchase-promotion" id="purchase-promotion">
+            <strong>Promoción 2x1</strong>
+            <span id="purchase-promotion-status">Selecciona una función para consultar la promoción.</span>
+          </div>
+        </div>
+
+        <div class="checkout-panel seats-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker">Paso 3</p>
+              <h2>Selecciona tus asientos</h2>
+            </div>
+            <span class="seat-count" id="seat-count">0 seleccionados</span>
+          </div>
+
+          <div class="seat-legend" aria-label="Estados de los asientos">
+            <span><i class="legend-seat available"></i>Disponible</span>
+            <span><i class="legend-seat selected"></i>Seleccionado</span>
+            <span><i class="legend-seat blocked"></i>En proceso (10 min)</span>
+            <span><i class="legend-seat reserved"></i>Reservado</span>
+            <span><i class="legend-seat occupied"></i>Ocupado</span>
+          </div>
+
+          <div class="screen-wrap" aria-hidden="true">
+            <div class="screen">Pantalla</div>
+            <span>Frente de la sala</span>
+          </div>
+
+          <div class="seat-map-scroll" tabindex="0" aria-label="Mapa desplazable de asientos">
+            <div class="purchase-seat-map" id="purchase-seat-map">
+              <p class="seat-map-message">Selecciona una función para consultar los asientos.</p>
+            </div>
+          </div>
+
+          <p class="seat-instruction" id="seat-instruction" aria-live="polite">
+            Selecciona una película, fecha y función.
+          </p>
+        </div>
+      </section>
+
+      <aside class="checkout-summary" aria-labelledby="summary-title">
+        <div class="summary-card">
+          <p class="panel-kicker">Tu compra</p>
+          <h2 id="summary-title">Resumen</h2>
+
+          <dl class="purchase-summary-list">
+            <div><dt>Película</dt><dd id="summary-movie">Sin seleccionar</dd></div>
+            <div><dt>Fecha</dt><dd id="summary-date">Sin seleccionar</dd></div>
+            <div><dt>Función</dt><dd id="summary-showtime">Sin seleccionar</dd></div>
+            <div><dt>Sala</dt><dd id="summary-room">Sala 1</dd></div>
+            <div><dt>Formato</dt><dd id="summary-format">—</dd></div>
+            <div><dt>Asientos</dt><dd id="summary-seats">Ninguno</dd></div>
+          </dl>
+
+          <div class="purchase-totals">
+            <p><span>Admisiones</span><strong id="summary-admissions">0</strong></p>
+            <p><span>Subtotal</span><strong id="summary-subtotal">L 0.00</strong></p>
+            <p class="discount"><span>Descuento 2x1</span><strong id="summary-discount">−L 0.00</strong></p>
+            <p class="grand-total"><span>Total</span><strong id="summary-total">L 0.00</strong></p>
+          </div>
+
+          <div class="block-status" id="block-status" hidden>
+            <strong>Asientos apartados</strong>
+            <span>Tiempo restante: <b id="block-countdown">10:00</b></span>
+          </div>
+
+          <p class="purchase-error" id="purchase-error" role="alert"></p>
+          <p class="purchase-status" id="purchase-status" aria-live="polite"></p>
+
+          <button class="button button-primary purchase-continue" id="continue-purchase" type="button" disabled>
+            Apartar asientos y continuar
+          </button>
+          <button class="button button-ghost release-block" id="release-block" type="button" hidden>
+            Liberar y cambiar asientos
+          </button>
+
+          <p class="summary-help">El pago, comprobante y boleto QR se conectarán con Django en los siguientes módulos.</p>
+        </div>
+      </aside>
+    </div>
   </main>
+
+  <script src="../../assets/js/customer-api.js"></script>
+  <script src="../../assets/js/cinema-store.js"></script>
+  <script src="../../assets/js/seat-api.js"></script>
+  <script src="../../assets/js/compra.js"></script>
 </body>
 </html>

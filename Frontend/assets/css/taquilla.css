@@ -320,13 +320,13 @@
 }
 
 .legend-box.reserved {
-  background: #de9f91;
-  border-color: #f0beb2;
+  background: #ff9f2f;
+  border-color: #ffd08a;
 }
 
 .legend-box.occupied {
-  background: #4b2a35;
-  border-color: #70404d;
+  background: #ef2948;
+  border-color: #ff8a9c;
 }
 
 .screen-wrap {
@@ -417,24 +417,24 @@
 }
 
 .seat.reserved {
-  color: #2e1715;
-  background: #de9f91;
-  border-color: #f0beb2;
+  color: #241300;
+  background: #ff9f2f;
+  border-color: #ffd08a;
 }
 
 .seat:disabled,
 .seat.occupied {
-  color: #a9818e;
-  background: #4b2a35;
-  border-color: #70404d;
+  color: #ffffff;
+  background: #ef2948;
+  border-color: #ff8a9c;
   cursor: not-allowed;
 }
 
 .seat.reserved:disabled {
-  color: #2e1715;
-  background: #de9f91;
-  border-color: #f0beb2;
-  opacity: 0.88;
+  color: #241300;
+  background: #ff9f2f;
+  border-color: #ffd08a;
+  opacity: 1;
 }
 
 .seat-map-disabled {

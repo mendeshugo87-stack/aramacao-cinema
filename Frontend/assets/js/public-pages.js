@@ -255,7 +255,7 @@ function buildLoginUrl(movie = "", date = "", time = "") {
   if (date) params.set("date", date);
   if (time) params.set("time", time);
   const query = params.toString();
-  return `../cuenta/iniciar-sesion.html${query ? `?${query}` : ""}`;
+  return `../comprar/index.html${query ? `?${query}` : ""}`;
 }
 
 function getYouTubeEmbedUrl(value) {

@@ -649,7 +649,7 @@ function buildCustomerAccountUrl(movieId = "", date = "", time = "") {
   if (date) params.set("date", date);
   if (time) params.set("time", time);
   const query = params.toString();
-  return `pages/cuenta/iniciar-sesion.html${query ? `?${query}` : ""}`;
+  return `pages/comprar/index.html${query ? `?${query}` : ""}`;
 }
 
 function setHeroImages(movie) {

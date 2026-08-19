@@ -15,6 +15,7 @@ const state = {
   selectedMovie: null,
   selectedShowtime: null,
   selectedSeats: new Set(),
+  seatPairs: new Map(),
   /*
    * BACKEND: este mapa recibirá el estado real por función.
    * Valores admitidos: "available", "reserved" y "occupied".
@@ -193,7 +194,13 @@ function selectShowtime(showtime) {
 
   state.selectedShowtime = showtime;
   state.selectedSeats.clear();
+  state.seatPairs.clear();
   state.seatStatuses.clear();
+  if (window.AramacaoSalesApi?.esVistaLocal()) {
+    const paidStates = window.AramacaoSalesApi.obtenerEstadosAsientosDemo(showtime.id);
+    paidStates.reservados.forEach((seat) => state.seatStatuses.set(seat, "reserved"));
+    paidStates.ocupados.forEach((seat) => state.seatStatuses.set(seat, "occupied"));
+  }
 
   /*
    * BACKEND: al elegir una función, consultar aquí la disponibilidad real.
@@ -260,8 +267,25 @@ function renderEmptySeatMap(message) {
   elements.seatInstruction.textContent = message;
 }
 
+/* TAQUILLA_2X1_PARES_V1: la misma regla visual usada por la compra en línea. */
 function toggleSeat(seat) {
-  if (state.selectedSeats.has(seat)) {
+  if (isPromotionAvailable()) {
+    if (state.selectedSeats.has(seat)) {
+      removePromotionPair(seat);
+    } else {
+      const pairedSeat = findAvailablePairSeat(seat);
+      if (!pairedSeat) {
+        showError("No hay dos asientos contiguos disponibles en ese lugar. Selecciona otro asiento.");
+        return;
+      }
+
+      state.selectedSeats.add(seat);
+      state.selectedSeats.add(pairedSeat);
+      state.seatPairs.set(seat, pairedSeat);
+      state.seatPairs.set(pairedSeat, seat);
+      showError("");
+    }
+  } else if (state.selectedSeats.has(seat)) {
     state.selectedSeats.delete(seat);
   } else {
     state.selectedSeats.add(seat);
@@ -271,9 +295,39 @@ function toggleSeat(seat) {
   updateSummary();
 }
 
+function removePromotionPair(seat) {
+  const pairedSeat = state.seatPairs.get(seat);
+  state.selectedSeats.delete(seat);
+  state.seatPairs.delete(seat);
+
+  if (pairedSeat) {
+    state.selectedSeats.delete(pairedSeat);
+    state.seatPairs.delete(pairedSeat);
+  }
+}
+
+function findAvailablePairSeat(seat) {
+  const match = /^([A-H])(\d{1,2})$/.exec(String(seat || ""));
+  if (!match) return "";
+
+  const row = match[1];
+  const number = Number(match[2]);
+  const firstSeat = number <= 7 ? 1 : 8;
+  const lastSeat = number <= 7 ? 7 : 14;
+  const candidates = [number + 1, number - 1]
+    .filter((candidate) => candidate >= firstSeat && candidate <= lastSeat)
+    .map((candidate) => `${row}${candidate}`);
+
+  return candidates.find((candidate) =>
+    !state.selectedSeats.has(candidate) &&
+    (state.seatStatuses.get(candidate) || "available") === "available"
+  ) || "";
+}
+
 function resetFunctionSelection() {
   state.selectedShowtime = null;
   state.selectedSeats.clear();
+  state.seatPairs.clear();
   renderEmptySeatMap("Selecciona una función para ver los asientos.");
   updatePromotionAvailability();
   showError("");
@@ -282,6 +336,7 @@ function resetFunctionSelection() {
 function resetCurrentSale(clearMovie) {
   state.selectedShowtime = null;
   state.selectedSeats.clear();
+  state.seatPairs.clear();
   elements.cashReceived.value = "";
   document.querySelector('input[name="payment"][value="efectivo"]').checked = true;
 
@@ -310,7 +365,7 @@ function updatePromotionAvailability() {
   } else if (!available) {
     elements.promotionStatus.textContent = "Esta función no tiene promoción activa.";
   } else {
-    elements.promotionStatus.textContent = "2x1 activo. El descuento se calcula automáticamente al seleccionar dos o más asientos.";
+    elements.promotionStatus.textContent = "2x1 activo. Elige un asiento y se seleccionará automáticamente otro contiguo.";
   }
 
   updateSummary();
@@ -378,7 +433,7 @@ function updatePaymentUI() {
   updateSummary();
 }
 
-function confirmSale() {
+async function confirmSale() {
   showError("");
 
   if (!state.selectedMovie || !state.selectedShowtime) {
@@ -388,6 +443,17 @@ function confirmSale() {
 
   if (!state.selectedSeats.size) {
     showError("Selecciona al menos un asiento.");
+    return;
+  }
+
+  /* TAQUILLA_2X1_VALIDACION_V1 */
+  if (isPromotionAvailable() && state.selectedSeats.size % 2 !== 0) {
+    showError("La promoción 2x1 requiere seleccionar los asientos en pares.");
+    return;
+  }
+
+  if (!window.AramacaoSalesApi?.registrarVentaTaquilla) {
+    showError("No fue posible cargar el adaptador de ventas.");
     return;
   }
 
@@ -401,17 +467,51 @@ function confirmSale() {
     return;
   }
 
-  /*
-   * BACKEND CRÍTICO:
-   * reemplazar este punto por la confirmación real del pago y la venta.
-   * El servidor debe volver a validar la disponibilidad dentro de una
-   * operación segura. Solo si el pago fue aprobado cambiará los asientos a
-   * "reservado". El diseño del recibo y los boletos queda a cargo de backend.
-   *
-   * Esta maqueta no persiste ni cambia estados para no imponerle al backend
-   * una estrategia de reservas.
-   */
-  window.alert("La venta está lista para conectarse al backend.");
+  const soldSeats = [...state.selectedSeats].sort(sortSeats);
+  const sellerName = document.querySelector("[data-session-name]")?.textContent?.trim() ||
+    "Empleado de taquilla";
+  elements.confirmSale.disabled = true;
+  elements.confirmSale.textContent = "Registrando pago…";
+
+  try {
+    const response = await window.AramacaoSalesApi.registrarVentaTaquilla({
+      funcion_id: state.selectedShowtime.id,
+      pelicula_id: state.selectedMovie.id,
+      pelicula: state.selectedMovie.title,
+      fecha_funcion: toLocalISODate(state.selectedDate),
+      hora_funcion: state.selectedShowtime.time,
+      sala: state.selectedShowtime.room,
+      formato: state.selectedShowtime.format,
+      precio_unitario: state.selectedShowtime.price,
+      asientos: soldSeats,
+      promocion_2x1: isPromotionAvailable(),
+      subtotal: totals.subtotal,
+      descuento: totals.discount,
+      total: totals.total,
+      metodo_pago: paymentMethod.toUpperCase(),
+      efectivo_recibido: paymentMethod === "efectivo" ? cashReceived : 0,
+      cambio: paymentMethod === "efectivo" ? Math.max(cashReceived - totals.total, 0) : 0,
+      cliente_nombre: "Cliente de ventanilla",
+      vendedor_nombre: sellerName,
+    });
+    const purchase = response?.venta || response?.compra || response;
+    if (!purchase?.id || !Array.isArray(purchase.boletos)) {
+      throw new Error("La respuesta de la venta no contiene el comprobante y los boletos.");
+    }
+
+    soldSeats.forEach((seat) => state.seatStatuses.set(seat, "reserved"));
+    state.selectedSeats.clear();
+    state.seatPairs.clear();
+    elements.cashReceived.value = "";
+    renderSeatMap();
+    updateSummary();
+    window.AramacaoTicketOfficeCheckout?.renderSale(purchase);
+  } catch (error) {
+    showError(error?.message || "No fue posible registrar la venta.");
+  } finally {
+    elements.confirmSale.disabled = false;
+    elements.confirmSale.textContent = "Registrar pago";
+  }
 }
 
 function getShowtimes(movie, date) {

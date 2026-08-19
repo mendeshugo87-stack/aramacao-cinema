@@ -98,7 +98,7 @@ function clearLoginErrors() {
 function setSubmitting(isSubmitting) {
   employeeLoginSubmit.disabled = isSubmitting;
   employeeLoginForm.setAttribute("aria-busy", String(isSubmitting));
-  employeeLoginSubmit.textContent = isSubmitting ? "Validando…" : "Ingresar a Taquilla";
+  employeeLoginSubmit.textContent = isSubmitting ? "Validando…" : "Ingresar al área asignada";
 }
 
 function setLoginStatus(message, type) {
@@ -110,7 +110,7 @@ function getLoginErrorMessage(error) {
   const messages = {
     CREDENCIALES_INVALIDAS: "El usuario o la contraseña son incorrectos.",
     CUENTA_INACTIVA: "Esta cuenta está inactiva. Solicita ayuda al administrador.",
-    ROL_NO_PERMITIDO: "Esta cuenta no tiene permiso para ingresar a Taquilla.",
+    ROL_NO_PERMITIDO: "Esta cuenta no tiene permiso para ingresar al área solicitada.",
     DEMASIADOS_INTENTOS: "Se alcanzó el límite de intentos. Espera unos minutos e inténtalo nuevamente.",
     CSRF_NO_DISPONIBLE: "No fue posible preparar la conexión segura. Actualiza la página e inténtalo otra vez.",
   };
@@ -129,8 +129,8 @@ function getLoginErrorMessage(error) {
 function showAccessReason() {
   const reason = new URLSearchParams(window.location.search).get("motivo");
   const messages = {
-    sesion_requerida: "Inicia sesión para entrar a Taquilla.",
-    sin_permiso: "La cuenta utilizada no tiene permiso para entrar a Taquilla.",
+    sesion_requerida: "Inicia sesión para entrar a tu área asignada.",
+    sin_permiso: "La cuenta utilizada no tiene permiso para entrar al área solicitada.",
     sesion_cerrada: "La sesión se cerró correctamente.",
   };
 

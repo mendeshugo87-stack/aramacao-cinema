@@ -7,7 +7,7 @@
   "alta_administrador_operativo": {
     "responsable": "SUPERADMINISTRADOR_TECNICO",
     "medio": "Django Admin o proceso interno protegido del backend",
-    "regla": "La pantalla Personal crea y administra vendedores; nunca permite que un administrador operativo cree otro administrador."
+    "regla": "La pantalla Personal administra VENDEDOR_TAQUILLA y CONTROL_ACCESO; nunca permite crear otro administrador."
   },
   "empleado": {
     "id": "uuid",
@@ -26,7 +26,7 @@
     {
       "metodo": "GET",
       "ruta": "/api/v1/administracion/empleados/?buscar=&estado=ACTIVO",
-      "hace": "Lista y filtra vendedores.",
+      "hace": "Lista y filtra personal operativo de Taquilla y Control de entrada.",
       "respuesta_200": {
         "total": 1,
         "resultados": [
@@ -37,7 +37,7 @@
     {
       "metodo": "POST",
       "ruta": "/api/v1/administracion/empleados/",
-      "hace": "Crea una cuenta de vendedor.",
+      "hace": "Crea una cuenta operativa sin permitir el rol administrador.",
       "entrada": {
         "nombre_completo": "Hugo Méndez",
         "usuario": "hugo69",
@@ -45,7 +45,8 @@
         "telefono": "+504 9999-9999",
         "contrasena_temporal": "solo_por_https",
         "activo": true,
-        "cambio_contrasena_obligatorio": true
+        "cambio_contrasena_obligatorio": true,
+        "rol": "VENDEDOR_TAQUILLA o CONTROL_ACCESO"
       },
       "respuesta_201": {
         "mensaje": "Cuenta creada correctamente.",
@@ -69,7 +70,8 @@
         "correo": "nuevo@example.com",
         "telefono": null,
         "activo": false,
-        "cambio_contrasena_obligatorio": false
+        "cambio_contrasena_obligatorio": false,
+        "rol": "VENDEDOR_TAQUILLA o CONTROL_ACCESO"
       },
       "respuesta_200": {
         "mensaje": "Cuenta actualizada correctamente.",
@@ -91,11 +93,16 @@
   ],
   "reglas": [
     "El formulario no puede crear administradores.",
+    "Taquilla y Control de entrada tienen permisos separados; ninguno hereda permisos del otro.",
     "Usuario y correo no se repiten.",
     "El usuario se guarda en minúsculas y comienza con una letra.",
     "La contraseña nunca aparece en listados ni respuestas.",
     "Asignar una contraseña temporal invalida las sesiones anteriores y obliga a cambiarla al ingresar.",
     "Las cuentas con historial se desactivan; no se eliminan.",
     "Cada cambio registra administrador, fecha y acción."
+  ],
+  "roles_operativos_permitidos": [
+    "VENDEDOR_TAQUILLA",
+    "CONTROL_ACCESO"
   ]
 }

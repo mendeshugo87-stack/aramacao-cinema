@@ -79,6 +79,8 @@ function renderEmployees() {
       employee.usuario,
       employee.correo,
       employee.codigo_empleado,
+      employee.nombre_rol,
+      employee.rol,
     ].join(" ").toLocaleLowerCase("es");
     const matchesTerm = !term || haystack.includes(term);
     const matchesStatus = status === "TODOS" || (status === "ACTIVO" ? employee.activo : !employee.activo);
@@ -91,7 +93,7 @@ function renderEmployees() {
     personalElements.list.innerHTML = `
       <div class="employee-empty">
         <strong>No hay cuentas para mostrar</strong>
-        <span>${personalState.empleados.length ? "Cambia los filtros de búsqueda." : "Crea la primera cuenta de vendedor."}</span>
+        <span>${personalState.empleados.length ? "Cambia los filtros de búsqueda." : "Crea la primera cuenta operativa."}</span>
       </div>
     `;
     return;
@@ -102,7 +104,7 @@ function renderEmployees() {
       <div class="employee-avatar" aria-hidden="true">${escapeHtml(getInitials(employee.nombre_completo))}</div>
       <div class="employee-identity">
         <strong>${escapeHtml(employee.nombre_completo)}</strong>
-        <span>@${escapeHtml(employee.usuario)} · ${escapeHtml(employee.codigo_empleado || "Sin código")}</span>
+        <span>@${escapeHtml(employee.usuario)} · ${escapeHtml(employee.codigo_empleado || "Sin código")} · ${escapeHtml(employee.nombre_rol || employee.rol || "Rol operativo")}</span>
       </div>
       <div class="employee-detail">
         <span>Correo</span>
@@ -148,9 +150,10 @@ function openCreateForm() {
   document.querySelector("#staff-id").value = "";
   document.querySelector("#staff-active").checked = true;
   document.querySelector("#staff-force-change").checked = true;
+  document.querySelector("#staff-role").value = "VENDEDOR_TAQUILLA";
   personalElements.newPasswords.hidden = false;
   personalElements.temporaryForm.hidden = true;
-  personalElements.formTitle.textContent = "Nueva cuenta de vendedor";
+  personalElements.formTitle.textContent = "Nueva cuenta operativa";
   personalElements.formHelp.textContent = "La contraseña temporal se usa una sola vez y no se muestra en el listado.";
   personalElements.saveButton.textContent = "Crear cuenta";
   showPersonalEditor();
@@ -166,6 +169,7 @@ function openEditForm(employee) {
   document.querySelector("#staff-username").value = employee.usuario || "";
   document.querySelector("#staff-email").value = employee.correo || "";
   document.querySelector("#staff-phone").value = employee.telefono || "";
+  document.querySelector("#staff-role").value = employee.rol || "VENDEDOR_TAQUILLA";
   document.querySelector("#staff-active").checked = Boolean(employee.activo);
   document.querySelector("#staff-force-change").checked = Boolean(employee.debe_cambiar_contrasena);
   document.querySelector("#staff-password").value = "";
@@ -228,7 +232,7 @@ async function saveEmployee(event) {
     renderEmployees();
     closePersonalEditor();
     setGlobalStatus(
-      wasEditing ? "La cuenta se actualizó correctamente." : "La cuenta de vendedor se creó correctamente.",
+      wasEditing ? "La cuenta se actualizó correctamente." : "La cuenta operativa se creó correctamente.",
       "success"
     );
   } catch (error) {
@@ -244,6 +248,7 @@ function validateEmployeeForm() {
   const username = document.querySelector("#staff-username");
   const email = document.querySelector("#staff-email");
   const phone = document.querySelector("#staff-phone");
+  const role = document.querySelector("#staff-role");
   const password = document.querySelector("#staff-password");
   const passwordConfirmation = document.querySelector("#staff-password-confirmation");
   const normalizedUsername = username.value.trim().toLowerCase();
@@ -263,6 +268,10 @@ function validateEmployeeForm() {
   }
   if (phone.value.trim() && !/^[+0-9()\s-]{8,20}$/.test(phone.value.trim())) {
     setFieldError(phone, "Escribe un teléfono válido o deja el campo vacío.");
+    isValid = false;
+  }
+  if (!["VENDEDOR_TAQUILLA", "CONTROL_ACCESO"].includes(role.value)) {
+    setFieldError(role, "Selecciona un rol operativo válido.");
     isValid = false;
   }
 
@@ -294,6 +303,7 @@ function validateEmployeeForm() {
     usuario: normalizedUsername,
     correo: email.value.trim().toLowerCase(),
     telefono: phone.value.trim() || null,
+    rol: role.value,
     activo: document.querySelector("#staff-active").checked,
   };
 
@@ -377,15 +387,16 @@ function saveDemoEmployee(data) {
   }
 
   const nextNumber = personalState.empleados.length + 1;
+  const isAccessControl = data.rol === "CONTROL_ACCESO";
   return {
     id: `demo-${Date.now()}`,
-    codigo_empleado: `TAQ-${String(nextNumber).padStart(3, "0")}`,
+    codigo_empleado: `${isAccessControl ? "ACC" : "TAQ"}-${String(nextNumber).padStart(3, "0")}`,
     nombre_completo: data.nombre_completo,
     usuario: data.usuario,
     correo: data.correo,
     telefono: data.telefono,
-    rol: "VENDEDOR_TAQUILLA",
-    nombre_rol: "Vendedor de taquilla",
+    rol: data.rol,
+    nombre_rol: isAccessControl ? "Control de entrada" : "Vendedor de taquilla",
     activo: data.activo,
     debe_cambiar_contrasena: true,
     ultimo_acceso: null,
@@ -414,6 +425,19 @@ function getDemoEmployees() {
       ultimo_acceso: "2026-08-07T19:30:00-06:00",
     },
     {
+      id: "demo-control1",
+      codigo_empleado: "ACC-001",
+      nombre_completo: "Control de Entrada",
+      usuario: "control1",
+      correo: "control@example.com",
+      telefono: null,
+      rol: "CONTROL_ACCESO",
+      nombre_rol: "Control de entrada",
+      activo: true,
+      debe_cambiar_contrasena: false,
+      ultimo_acceso: "2026-08-18T20:30:00-06:00",
+    },
+    {
       id: "demo-prueba1",
       codigo_empleado: "TAQ-002",
       nombre_completo: "Cuenta de Prueba",
@@ -436,6 +460,7 @@ function applyApiFieldErrors(error) {
     usuario: "staff-username",
     correo: "staff-email",
     telefono: "staff-phone",
+    rol: "staff-role",
     contrasena_temporal: "staff-password",
   };
 

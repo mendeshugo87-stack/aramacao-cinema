@@ -54,10 +54,13 @@
   function handleProtectionFailure(error) {
     if (global.AramacaoStaffApi?.esVistaLocal()) {
       showLocalPreviewNotice();
+      const localArea = requiredRoles.includes("ADMINISTRADOR_OPERATIVO")
+        ? "administración"
+        : requiredRoles.includes("CONTROL_ACCESO")
+          ? "Control de entrada"
+          : "Taquilla";
       paintSession({
-        nombre_completo: requiredRoles.includes("ADMINISTRADOR_OPERATIVO")
-          ? "Vista local de administración"
-          : "Vista local de Taquilla",
+        nombre_completo: `Vista local de ${localArea}`,
         nombre_rol: "Backend pendiente",
       });
       enableLogout(true);

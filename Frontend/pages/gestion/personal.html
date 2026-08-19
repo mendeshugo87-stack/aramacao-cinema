@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Administración privada de cuentas de vendedores de Aramacao Cinema.">
+  <meta name="description" content="Administración privada de cuentas operativas de Aramacao Cinema.">
   <title>Administración de empleados | Aramacao Cinema</title>
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../../assets/css/personal.css?v=8">
   <script src="../../assets/js/staff-api.js?v=8" defer></script>
   <script src="../../assets/js/staff-private.js?v=8" defer></script>
-  <script src="../../assets/js/personal-admin.js?v=8" defer></script>
+  <script src="../../assets/js/personal-admin.js?v=20260818-separacion-1" defer></script>
 </head>
 <body
   class="staff-management-body"
@@ -50,7 +50,7 @@
       <div>
         <p class="eyebrow">Cuentas y permisos</p>
         <h1>Administración de empleados</h1>
-        <p>Crea, consulta y actualiza las cuentas que pueden ingresar a Taquilla.</p>
+        <p>Crea y actualiza cuentas de Taquilla y Control de entrada.</p>
       </div>
       <button class="button button-primary" id="new-personal-button" type="button">+ Nueva cuenta</button>
     </div>
@@ -66,8 +66,8 @@
     <section class="management-card employee-list-card" id="personal-list-section" aria-labelledby="personal-list-title">
       <div class="management-card-heading employee-list-heading">
         <div>
-          <h2 id="personal-list-title">Vendedores de Taquilla</h2>
-          <p>Editar una cuenta no permite cambiarla a administrador.</p>
+          <h2 id="personal-list-title">Personal operativo</h2>
+          <p>Solo se asignan roles operativos; nunca el rol de administrador.</p>
         </div>
         <span class="private-badge">Acceso privado</span>
       </div>
@@ -95,7 +95,7 @@
         <div class="management-card-heading">
           <span class="step-number">1</span>
           <div>
-            <h2 id="personal-form-title">Nueva cuenta de vendedor</h2>
+            <h2 id="personal-form-title">Nueva cuenta operativa</h2>
             <p id="personal-form-help">Los campos marcados con * son obligatorios.</p>
           </div>
         </div>
@@ -129,9 +129,13 @@
             </label>
 
             <label class="staff-field" for="staff-role">
-              <span>Rol asignado</span>
-              <input id="staff-role" name="rol_mostrado" type="text" value="Vendedor de taquilla" readonly>
-              <small>Django asignará VENDEDOR_TAQUILLA desde el servidor.</small>
+              <span>Rol operativo *</span>
+              <select id="staff-role" name="rol" required>
+                <option value="VENDEDOR_TAQUILLA">Vendedor de Taquilla</option>
+                <option value="CONTROL_ACCESO">Control de entrada</option>
+              </select>
+              <small>El administrador solo puede asignar estos dos roles operativos.</small>
+              <small class="field-error" data-error-for="staff-role"></small>
             </label>
 
             <div class="password-fields form-span-2" id="new-account-passwords">
@@ -159,7 +163,7 @@
           <div class="account-settings">
             <label class="setting-check">
               <input id="staff-active" name="activo" type="checkbox" checked>
-              <span><strong>Cuenta activa</strong><small>Permite iniciar sesión en Taquilla.</small></span>
+              <span><strong>Cuenta activa</strong><small>Permite iniciar sesión en el área asignada.</small></span>
             </label>
             <label class="setting-check">
               <input id="staff-force-change" name="cambio_contrasena_obligatorio" type="checkbox" checked disabled>
@@ -205,16 +209,15 @@
       </section>
 
       <aside class="management-help" aria-labelledby="permissions-title">
-        <p class="eyebrow">Permisos fijos</p>
-        <h2 id="permissions-title">Vendedor de Taquilla</h2>
+        <p class="eyebrow">Permisos separados</p>
+        <h2 id="permissions-title">Responsabilidad por rol</h2>
         <ul class="permissions-list">
-          <li><span>✓</span> Ingresar a Taquilla.</li>
-          <li><span>✓</span> Consultar cartelera, funciones y asientos.</li>
-          <li><span>✓</span> Registrar ventas autorizadas.</li>
-          <li><span>✓</span> Cerrar su propia sesión.</li>
-          <li class="permission-denied"><span>×</span> No cambia cartelera ni precios.</li>
-          <li class="permission-denied"><span>×</span> No crea administradores.</li>
-          <li class="permission-denied"><span>×</span> No entra al panel técnico.</li>
+          <li><span>✓</span> Taquilla puede vender, cobrar e imprimir.</li>
+          <li><span>✓</span> Control de entrada puede escanear y validar QR.</li>
+          <li><span>✓</span> Cada empleado cierra su propia sesión.</li>
+          <li class="permission-denied"><span>×</span> Taquilla no registra ingresos.</li>
+          <li class="permission-denied"><span>×</span> Control de entrada no registra ventas.</li>
+          <li class="permission-denied"><span>×</span> Ninguno crea administradores.</li>
         </ul>
         <div class="security-note">
           <strong>Sin borrar historial</strong>

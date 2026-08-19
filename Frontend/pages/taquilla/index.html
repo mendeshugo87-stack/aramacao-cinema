@@ -8,11 +8,15 @@
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/taquilla.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/taquilla.css?v=20260819-taquilla-qa1">
+  <link rel="stylesheet" href="../../assets/css/ticket-office-checkout.css?v=20260819-taquilla-qa1">
   <script src="../../assets/js/staff-api.js?v=8" defer></script>
   <script src="../../assets/js/staff-private.js?v=8" defer></script>
   <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
-  <script src="../../assets/js/taquilla.js" defer></script>
+  <script src="../../assets/vendor/qrcode/qrcode.js?v=20260819-taquilla-qa1" defer></script>
+  <script src="../../assets/js/sales-api.js?v=20260818-zona-hn-1" defer></script>
+  <script src="../../assets/js/taquilla.js?v=20260819-taquilla-qa1" defer></script>
+  <script src="../../assets/js/ticket-office-checkout.js?v=20260818-separacion-1" defer></script>
 </head>
 <body
   class="ticket-office-body"
@@ -48,8 +52,8 @@
 
   <main class="ticket-office-main" id="taquilla-main">
     <div class="demo-banner" id="demo-banner">
-      <strong>Vista de frontend:</strong> esta versión no guarda ventas ni reserva asientos.
-      El backend aplicará los cambios de estado después del pago y del escaneo del boleto.
+      <strong>Vista local de demostración:</strong> el pago de prueba genera comprobante, boletos y reservas compartidas.
+      Django reemplazará este almacenamiento local y volverá a validar toda la operación.
     </div>
 
     <section class="sale-toolbar" aria-labelledby="sale-title">
@@ -170,12 +174,21 @@
 
         <p class="sale-error" id="sale-error" role="alert"></p>
         <!--
-          BACKEND: este botón solamente inicia la confirmación del pago.
-          El backend decidirá cómo generar los boletos y el comprobante final.
+          BACKEND: POST /api/v1/taquilla/ventas/ volverá a validar los asientos,
+          registrará el pago y emitirá comprobante y boletos en una transacción.
         -->
         <button class="button button-primary confirm-sale" id="confirm-sale" type="button">Registrar pago</button>
       </aside>
     </div>
+
+    <section class="ticket-office-result" id="ticket-office-sale-result" aria-labelledby="ticket-office-sale-title" hidden>
+      <div class="ticket-office-result-heading">
+        <div><p>Venta registrada</p><h2 id="ticket-office-sale-title">Comprobante y boletos</h2></div>
+        <strong class="ticket-office-result-reference" id="ticket-office-sale-reference">—</strong>
+      </div>
+      <p class="ticket-office-result-status" id="ticket-office-sale-status" role="status" aria-live="polite"></p>
+      <div class="ticket-office-result-actions" id="ticket-office-sale-actions"></div>
+    </section>
   </main>
 
   <noscript>

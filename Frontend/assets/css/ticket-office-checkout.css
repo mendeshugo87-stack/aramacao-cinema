@@ -1,0 +1,103 @@
+.ticket-office-result {
+  max-width: 1240px;
+  margin: 0 auto 28px;
+  padding: 24px;
+  border: 1px solid #2d7c60;
+  border-radius: 18px;
+  background: #0b2a25;
+}
+
+.ticket-office-result[hidden] {
+  display: none !important;
+}
+
+.ticket-office-result-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.ticket-office-result-heading p {
+  margin: 0 0 5px;
+  color: #8fd8bd;
+}
+
+.ticket-office-result-heading h2 {
+  margin: 0;
+  color: #7ff5c4;
+}
+
+.ticket-office-result-reference {
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.ticket-office-result-status {
+  margin: 0 0 16px;
+  color: #bcebd9;
+}
+
+.ticket-office-result-status[data-state="error"] {
+  color: #ff9da4;
+}
+
+.ticket-office-result-status[data-state="working"] {
+  color: #ffe078;
+}
+
+.ticket-office-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ticket-office-result-actions .button {
+  min-height: 42px;
+  margin: 0;
+  border-radius: 10px;
+  white-space: normal;
+}
+
+.ticket-office-result-actions .button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+/* El foco se dibuja sobre el contenedor y no queda recortado dentro del campo. */
+.money-input:focus-within {
+  border-color: rgba(255, 210, 32, 0.88);
+  box-shadow: 0 0 0 3px rgba(255, 210, 32, 0.13);
+}
+
+.money-input input:focus-visible {
+  outline: none;
+}
+
+/* El efectivo se escribe como moneda; las flechas del input numérico estorban. */
+.money-input input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.money-input input[type="number"]::-webkit-inner-spin-button,
+.money-input input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+@media (max-width: 620px) {
+  .ticket-office-result {
+    padding: 18px 14px;
+  }
+
+  .ticket-office-result-heading,
+  .ticket-office-result-actions {
+    display: grid;
+  }
+
+  .ticket-office-result-actions .button {
+    width: 100%;
+  }
+}

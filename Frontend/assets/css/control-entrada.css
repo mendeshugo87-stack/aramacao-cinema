@@ -1,0 +1,270 @@
+:root {
+  color-scheme: dark;
+}
+
+.access-control-body {
+  min-height: 100vh;
+  color: #f5f8fc;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(18, 107, 165, 0.18), transparent 34rem),
+    #030b15;
+}
+
+.access-control-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 88px;
+  padding: 12px clamp(18px, 4vw, 54px);
+  border-bottom: 1px solid rgba(141, 181, 215, 0.18);
+  background: rgba(3, 10, 18, 0.96);
+  backdrop-filter: blur(14px);
+}
+
+.access-control-brand,
+.access-control-session {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.access-control-brand img {
+  width: 142px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.access-control-brand div,
+.access-control-session div {
+  display: grid;
+  gap: 2px;
+}
+
+.access-control-brand strong,
+.access-control-session strong {
+  font-size: 0.9rem;
+}
+
+.access-control-brand span,
+.access-control-session span {
+  color: #8fa7bc;
+  font-size: 0.72rem;
+}
+
+.access-control-back,
+.access-control-logout {
+  min-height: 40px;
+  color: #dce9f5;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.access-control-back {
+  display: grid;
+  width: 40px;
+  place-items: center;
+  text-decoration: none;
+}
+
+.access-control-logout {
+  padding: 8px 13px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.access-control-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #42da91;
+  box-shadow: 0 0 0 5px rgba(66, 218, 145, 0.11);
+}
+
+.access-control-main {
+  width: min(100% - 28px, 980px);
+  margin: 0 auto;
+  padding: clamp(28px, 6vw, 58px) 0 48px;
+}
+
+.private-access-banner {
+  margin: 0 0 18px;
+  padding: 12px 15px;
+  color: #bedef6;
+  border: 1px solid rgba(45, 166, 238, 0.42);
+  border-radius: 12px;
+  background: rgba(10, 78, 119, 0.22);
+  font-size: 0.78rem;
+}
+
+.access-control-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 0.42fr);
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.access-control-intro h1 {
+  margin: 5px 0 8px;
+  font-size: clamp(2.25rem, 8vw, 4.4rem);
+  line-height: 0.95;
+}
+
+.access-control-intro p {
+  margin: 0;
+  color: #a8c2d9;
+  line-height: 1.55;
+}
+
+.access-control-rule {
+  display: grid;
+  gap: 7px;
+  padding: 18px;
+  border: 1px solid rgba(255, 214, 45, 0.4);
+  border-radius: 14px;
+  background: rgba(255, 214, 45, 0.08);
+}
+
+.access-control-rule strong {
+  color: #ffe263;
+}
+
+.access-control-rule span {
+  color: #d4cfae;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.access-scanner {
+  max-width: none;
+  margin: 0;
+  background: rgba(9, 31, 50, 0.96);
+}
+
+.access-scanner .panel-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.access-scanner .panel-heading h2,
+.access-scanner .panel-heading p {
+  margin: 0;
+}
+
+.access-scanner .panel-heading p {
+  margin-top: 5px;
+  color: #93afc6;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.access-camera-actions .button {
+  width: 100%;
+  min-height: 54px;
+  font-size: 1rem;
+}
+
+.access-manual-entry {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(3, 12, 21, 0.45);
+}
+
+.access-manual-entry summary {
+  padding: 13px 14px;
+  color: #adc3d6;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.access-manual-entry > div {
+  display: grid;
+  gap: 10px;
+  padding: 0 13px 13px;
+}
+
+.access-control-guidance {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 13px;
+  margin-top: 18px;
+}
+
+.access-control-guidance article {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  padding: 16px;
+  border: 1px solid rgba(142, 177, 207, 0.16);
+  border-radius: 13px;
+  background: rgba(8, 24, 39, 0.72);
+}
+
+.access-control-guidance span {
+  grid-row: span 2;
+  color: #ffd927;
+  font-weight: 900;
+}
+
+.access-control-guidance strong {
+  color: #edf6ff;
+}
+
+.access-control-guidance p {
+  margin: 0;
+  color: #8fa9bf;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .access-control-header {
+    position: static;
+    align-items: flex-start;
+  }
+
+  .access-control-brand div,
+  .access-control-session div {
+    display: none;
+  }
+
+  .access-control-intro,
+  .access-control-guidance {
+    grid-template-columns: 1fr;
+  }
+
+  .access-control-rule {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 460px) {
+  .access-control-header {
+    padding: 10px 12px;
+  }
+
+  .access-control-brand {
+    gap: 8px;
+  }
+
+  .access-control-brand img {
+    width: 118px;
+  }
+
+  .access-control-logout {
+    padding-inline: 10px;
+    font-size: 0.72rem;
+  }
+
+  .access-control-main {
+    width: min(100% - 18px, 980px);
+    padding-top: 24px;
+  }
+}

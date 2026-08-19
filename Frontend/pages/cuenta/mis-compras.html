@@ -9,7 +9,9 @@
   <link rel="stylesheet" href="../../assets/css/styles.css">
   <link rel="stylesheet" href="../../assets/css/cuenta.css">
   <script src="../../assets/js/customer-api.js" defer></script>
-  <script src="../../assets/js/customer-session.js" defer></script>
+  <script src="../../assets/vendor/qrcode/qrcode.js" defer></script>
+  <script src="../../assets/js/sales-api.js?v=20260818-zona-hn-1" defer></script>
+  <script src="../../assets/js/customer-session.js?v=20260819-historial-1" defer></script>
 </head>
 <body class="customer-dashboard-body" data-customer-protected data-account-view="purchases">
   <a class="skip-link" href="#account-content">Saltar al contenido</a>
@@ -28,7 +30,7 @@
       <div class="account-sidebar-note"><strong>Recuperación de boletos</strong><p>Solo las compras pagadas generan boletos. Una reemisión futura anulará el QR anterior.</p></div>
     </aside>
     <main class="customer-dashboard-content" id="account-content">
-      <div class="account-demo-notice" data-local-preview hidden><strong>Vista local de demostración</strong><span>No se inventan compras. El historial permanecerá vacío hasta conectar ventas y pagos.</span></div>
+      <div class="account-demo-notice" data-local-preview hidden><strong>Vista local de demostración</strong><span>Las compras creadas con el botón de pago de prueba aparecerán aquí. No representan cobros reales.</span></div>
       <header class="account-dashboard-heading">
         <div><p class="eyebrow">Historial personal</p><h1>Mis compras</h1><p>Consulta órdenes, funciones, asientos y boletos asociados a tu ID interno.</p></div>
         <a class="button button-primary" href="../cartelera/">Comprar boletos</a>
@@ -51,7 +53,7 @@
         <div class="account-empty-state" id="purchase-history-empty" hidden>
           <span aria-hidden="true">🎟</span>
           <h3>Todavía no hay compras para mostrar</h3>
-          <p>Cuando Django registre una compra real, aparecerá aquí con su estado y sus boletos.</p>
+          <p>Cuando completes una compra en línea de demostración, aparecerá aquí con sus boletos.</p>
           <a class="button button-primary" href="../cartelera/">Explorar cartelera</a>
         </div>
       </section>

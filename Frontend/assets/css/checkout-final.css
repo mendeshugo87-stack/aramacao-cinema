@@ -1,0 +1,119 @@
+[hidden] { display: none !important; }
+
+.demo-payment-panel,
+.purchase-ticket-panel {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid #35526f;
+  border-radius: 16px;
+  background: #07182a;
+}
+
+.demo-payment-panel {
+  border-color: #a88600;
+  background: #172015;
+}
+
+.demo-payment-panel h3,
+.purchase-ticket-panel h3 { margin: 0 0 8px; }
+.demo-payment-panel p,
+.purchase-ticket-panel p { color: #b9cee0; }
+.demo-payment-panel .demo-warning { color: #ffe777; }
+.demo-payment-panel .button { width: 100%; margin-top: 12px; }
+
+.purchase-ticket-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.purchase-ticket-list { display: grid; gap: 14px; }
+
+.issued-ticket-card {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid #2e4a65;
+  border-radius: 14px;
+  background: #0c2238;
+}
+
+.issued-ticket-qr {
+  display: block;
+  width: 108px;
+  height: 108px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.issued-ticket-card > div { min-width: 0; }
+.issued-ticket-card h3 { margin: 0 0 6px; color: #fff; }
+.issued-ticket-card p { margin: 4px 0; line-height: 1.45; overflow-wrap: anywhere; }
+.issued-ticket-card .ticket-promotion { color: #ffd51f; font-weight: 800; }
+.issued-ticket-card .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  min-height: 42px;
+  margin: 10px 8px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  line-height: 1.25;
+  white-space: normal;
+}
+.issued-ticket-card .copy-demo-code { margin-left: 0; }
+
+@media (max-width: 620px) {
+  .purchase-ticket-heading { display: grid; }
+  .purchase-ticket-heading .button { width: 100%; }
+  .issued-ticket-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+  .issued-ticket-qr {
+    width: min(132px, 72vw);
+    height: auto;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+  .issued-ticket-card .button {
+    display: flex;
+    width: 100%;
+    margin: 9px 0 0;
+  }
+}
+/* Ajuste final: comprobante dentro del panel */
+.purchase-ticket-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 12px;
+}
+
+.purchase-ticket-heading > * {
+  min-width: 0;
+}
+
+.purchase-ticket-heading .button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

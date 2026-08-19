@@ -305,8 +305,8 @@ async function loadPurchases(status) {
   setPageStatus("Cargando tus compras…", "");
 
   try {
-    const response = isLocalPreview()
-      ? { total: 0, resultados: [] }
+    const response = isLocalPreview() && window.AramacaoSalesApi
+      ? window.AramacaoSalesApi.listarComprasDemo({ estado: status })
       : await window.AramacaoCustomerApi.listarCompras({ estado: status });
     const purchases = Array.isArray(response?.resultados) ? response.resultados : [];
     setText("purchase-total", String(response?.total ?? purchases.length));
@@ -321,7 +321,6 @@ async function loadPurchases(status) {
     setPageStatus(getCustomerErrorMessage(error), "error");
   }
 }
-
 function createPurchaseCard(purchase) {
   const article = document.createElement("article");
   article.className = "account-purchase-card";
@@ -360,26 +359,24 @@ async function initializePurchaseDetailView() {
     setPageStatus("La compra solicitada no es válida.", "error");
     return;
   }
-  if (isLocalPreview()) {
-    document.querySelector("#purchase-detail-loading")?.setAttribute("hidden", "");
-    document.querySelector("#purchase-detail-unavailable")?.removeAttribute("hidden");
-    setPageStatus("", "");
-    return;
-  }
   try {
-    const response = await window.AramacaoCustomerApi.obtenerCompra(purchaseId);
+    const response = isLocalPreview() && window.AramacaoSalesApi
+      ? window.AramacaoSalesApi.obtenerCompraDemo(purchaseId)
+      : await window.AramacaoCustomerApi.obtenerCompra(purchaseId);
     renderPurchaseDetail(response?.compra);
   } catch (error) {
+    document.querySelector("#purchase-detail-loading")?.setAttribute("hidden", "");
+    document.querySelector("#purchase-detail-unavailable")?.removeAttribute("hidden");
     setPageStatus(getCustomerErrorMessage(error), "error");
   }
 }
-
 function renderPurchaseDetail(purchase) {
   if (!purchase) {
     setPageStatus("No fue posible cargar la compra.", "error");
     return;
   }
   document.querySelector("#purchase-detail-loading")?.setAttribute("hidden", "");
+  document.querySelector("#purchase-detail-unavailable")?.setAttribute("hidden", "");
   const content = document.querySelector("#purchase-detail-content");
   content.hidden = false;
   setText("detail-reference", purchase.numero || purchase.referencia || "Compra");
@@ -397,7 +394,24 @@ function renderPurchaseDetail(purchase) {
 
   const tickets = document.querySelector("#purchase-detail-tickets");
   tickets.replaceChildren();
+  if (isLocalPreview() && window.AramacaoSalesApi) {
+    const receipt = document.createElement("button");
+    receipt.type = "button";
+    receipt.className = "button button-ghost account-small-button";
+    receipt.textContent = "Descargar comprobante";
+    receipt.addEventListener("click", () => window.AramacaoSalesApi.descargarComprobanteDemo(purchase.id));
+    tickets.append(receipt);
+  }
   (purchase.boletos || []).forEach((ticket) => {
+    if (isLocalPreview() && window.AramacaoSalesApi) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "button button-primary account-small-button";
+      button.textContent = `Descargar boleto ${ticket.asiento || ""}`.trim();
+      button.addEventListener("click", () => window.AramacaoSalesApi.descargarBoletoDemo(ticket.id));
+      tickets.append(button);
+      return;
+    }
     const link = document.createElement("a");
     link.className = "button button-primary account-small-button";
     link.href = window.AramacaoCustomerApi.rutaDescargaBoleto(ticket.id);
@@ -405,7 +419,6 @@ function renderPurchaseDetail(purchase) {
     tickets.append(link);
   });
 }
-
 function bindLogoutButtons() {
   document.querySelectorAll("[data-customer-logout]").forEach((button) => {
     button.addEventListener("click", logoutCustomer);

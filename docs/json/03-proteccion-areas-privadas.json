@@ -8,6 +8,12 @@
       "sin_sesion_ir_a": "/pages/empleados/login.html"
     },
     {
+      "ruta": "/pages/control-entrada/",
+      "rol": "CONTROL_ACCESO",
+      "permiso": "boletos.escanear",
+      "sin_sesion_ir_a": "/pages/empleados/login.html"
+    },
+    {
       "ruta": "/pages/gestion/",
       "rol": "ADMINISTRADOR_OPERATIVO",
       "permiso": "cartelera.gestionar",
@@ -23,6 +29,7 @@
       "ruta": "/pages/empleados/cambiar-contrasena.html",
       "roles": [
         "VENDEDOR_TAQUILLA",
+        "CONTROL_ACCESO",
         "ADMINISTRADOR_OPERATIVO"
       ],
       "requiere_sesion": true
@@ -34,7 +41,9 @@
     "Si debe_cambiar_contrasena es verdadero, permitir solamente cambio de contraseña y cierre de sesión.",
     "El vendedor no entra a Gestión y el administrador operativo no entra a Django Admin.",
     "Cerrar sesión invalida la sesión en el servidor.",
-    "Registrar accesos y cambios sin guardar contraseñas."
+    "Registrar accesos y cambios sin guardar contraseñas.",
+    "VENDEDOR_TAQUILLA puede vender e imprimir, pero no usa el endpoint de escaneo.",
+    "CONTROL_ACCESO puede escanear boletos, pero no crea ventas ni cobra pagos."
   ],
   "nota_frontend": "staff-private.js muestra la sesión y guía las redirecciones, pero Django aplica la autorización real."
 }

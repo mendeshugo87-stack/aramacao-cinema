@@ -1,0 +1,288 @@
+{
+  "proyecto": "Aramacao Cinema",
+  "version": "1.0",
+  "zona_horaria": "America/Tegucigalpa",
+  "estado": "CONTRATO_PREPARADO_SIN_DJANGO_NI_PROVEEDOR_DE_PAGO",
+  "alcance": [
+    "Carrito de boletos y resumen de compra",
+    "Orden, pago y comprobante de compra",
+    "Venta física en Taquilla con comprobante y boletos",
+    "Un boleto y un QR único por asiento",
+    "Historial y detalle de compras del cliente",
+    "Control de entrada separado para validar el QR",
+    "Rechazo de un QR utilizado o anulado"
+  ],
+  "fuera_de_alcance_por_ahora": [
+    "Dulcería e inventario",
+    "Factura fiscal",
+    "Selección definitiva del proveedor de pagos",
+    "Alquiler de sala y contenido informativo del cine"
+  ],
+  "reglas_obligatorias": [
+    "Django recalcula precio, promoción, descuento y total; nunca confía en los importes enviados por el navegador.",
+    "La orden solamente puede usar un bloqueo activo, perteneciente al cliente y no expirado.",
+    "El navegador nunca marca una orden como pagada. El webhook verificado del proveedor confirma el pago.",
+    "La confirmación del pago crea una venta, reserva todos sus asientos y genera un boleto individual por cada asiento en una sola operación segura.",
+    "La venta de Taquilla registra el empleado, canal, método de pago, efectivo recibido y cambio cuando corresponda.",
+    "Compra en línea y Taquilla usan la misma fuente de disponibilidad y el mismo servicio transaccional de emisión, aunque exponen endpoints con permisos diferentes.",
+    "Una compra 2x1 genera dos boletos y dos QR distintos por cada pareja de asientos.",
+    "En una función 2x1 la interfaz propone una pareja contigua disponible; Django vuelve a validar que la cantidad sea par, que ambos asientos pertenezcan a la misma función y que el descuento corresponda.",
+    "El QR contiene únicamente un token opaco aleatorio o una URL de validación con ese token; no contiene nombre, identidad, correo, teléfono, película ni asiento en texto legible.",
+    "El backend guarda solamente una representación segura del token cuando la estrategia elegida lo permita.",
+    "El primer escaneo válido cambia únicamente ese boleto y ese asiento de RESERVADO a OCUPADO.",
+    "Un segundo escaneo del mismo QR se rechaza y devuelve la fecha y hora del primer uso.",
+    "Una reemisión anula el token anterior, crea otro token y registra empleado, motivo y fecha.",
+    "El comprobante agrupa la compra completa; no sustituye una factura fiscal.",
+    "Los importes monetarios viajan como cadenas decimales con dos posiciones y moneda HNL.",
+    "Crear orden, iniciar pago, procesar webhook y escanear QR deben ser idempotentes o estar protegidos contra solicitudes repetidas.",
+    "Todas las operaciones usan la zona America/Tegucigalpa y conservan fecha y hora con desplazamiento -06:00.",
+    "El vendedor de Taquilla vende, cobra e imprime; no valida ingresos.",
+    "Control de entrada valida QR con boletos.escanear; no registra ventas ni pagos."
+  ],
+  "estados": {
+    "orden": [
+      "PENDIENTE_PAGO",
+      "PAGADA",
+      "CANCELADA",
+      "EXPIRADA",
+      "REEMBOLSO_PENDIENTE",
+      "REEMBOLSADA"
+    ],
+    "pago": [
+      "PENDIENTE",
+      "APROBADO",
+      "RECHAZADO",
+      "CANCELADO",
+      "REEMBOLSADO"
+    ],
+    "boleto": [
+      "RESERVADO",
+      "OCUPADO",
+      "ANULADO",
+      "REEMBOLSADO"
+    ],
+    "asiento": [
+      "DISPONIBLE",
+      "BLOQUEADO_TEMPORALMENTE",
+      "RESERVADO",
+      "OCUPADO"
+    ]
+  },
+  "endpoints": [
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/compras/ordenes/",
+      "autenticacion": "CLIENTE",
+      "uso": "Crear una orden desde un bloqueo activo. Django recalcula todos los importes.",
+      "cabeceras": {
+        "Idempotency-Key": "UUID generado para el intento"
+      },
+      "request": {
+        "bloqueo_id": "48f91cf5-bdc0-4a46-8ee5-bd568753a3a2",
+        "funcion_id": "b9c097fd-44ed-46f8-b87e-6722b9f74c58"
+      },
+      "response_201": {
+        "orden_id": "e8cb75aa-4f07-461c-83cb-0fc64fe24047",
+        "numero": "ARA-20260818163000-001",
+        "estado": "PENDIENTE_PAGO",
+        "subtotal": "240.00",
+        "descuento": "120.00",
+        "total": "120.00",
+        "moneda": "HNL",
+        "expira_en": "2026-08-18T16:40:00-06:00"
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/compras/ordenes/{orden_id}/",
+      "autenticacion": "CLIENTE_DUEÑO",
+      "uso": "Consultar estado y totales de la orden."
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/taquilla/ventas/",
+      "autenticacion": "VENDEDOR_TAQUILLA_CON_PERMISO_VENTAS_CREAR_VENTA",
+      "uso": "Validar disponibilidad, registrar pago físico, reservar asientos y emitir comprobante y boletos en una sola transacción.",
+      "cabeceras": {
+        "Idempotency-Key": "UUID generado para el intento"
+      },
+      "request": {
+        "funcion_id": "b9c097fd-44ed-46f8-b87e-6722b9f74c58",
+        "asientos": [
+          "B6",
+          "B7"
+        ],
+        "metodo_pago": "EFECTIVO",
+        "efectivo_recibido": "120.00"
+      },
+      "response_201": {
+        "venta_id": "98acc4b3-7f35-4d9a-bf20-5b59e98d8224",
+        "numero": "TAQ-20260818190000-001",
+        "canal": "TAQUILLA",
+        "estado": "PAGADA",
+        "subtotal": "240.00",
+        "descuento": "120.00",
+        "total": "120.00",
+        "efectivo_recibido": "120.00",
+        "cambio": "0.00",
+        "comprobante_id": "7f3cbc80-109a-4aa0-a746-5d8b87fd401c",
+        "boletos": [
+          {
+            "id": "5b20131d-e525-46de-b652-d1fbef7718e0",
+            "asiento": "B6",
+            "estado": "RESERVADO",
+            "promocion_2x1": true,
+            "posicion_2x1": 1
+          },
+          {
+            "id": "1c716e81-d16a-486b-8055-e77ee60755d9",
+            "asiento": "B7",
+            "estado": "RESERVADO",
+            "promocion_2x1": true,
+            "posicion_2x1": 2
+          }
+        ]
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/compras/ordenes/{orden_id}/iniciar-pago/",
+      "autenticacion": "CLIENTE_DUEÑO",
+      "uso": "Crear una sesión con el proveedor que se elija después.",
+      "cabeceras": {
+        "Idempotency-Key": "UUID generado para el intento"
+      },
+      "request": {
+        "proveedor": "PENDIENTE_DEFINIR"
+      },
+      "response_200": {
+        "pago_id": "4a358b75-2ff5-4ee0-91a5-415f2d488c1e",
+        "estado": "PENDIENTE",
+        "sesion_publica": "VALOR_DEL_PROVEEDOR_SIN_SECRETOS"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/pagos/webhooks/{proveedor}/",
+      "autenticacion": "FIRMA_DEL_PROVEEDOR",
+      "uso": "Confirmar el pago de forma idempotente y emitir los boletos. No lo llama el navegador."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/compras/",
+      "autenticacion": "CLIENTE",
+      "uso": "Listar únicamente las compras del cliente autenticado."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/compras/{compra_id}/",
+      "autenticacion": "CLIENTE_DUEÑO",
+      "uso": "Consultar comprobante y boletos de una compra propia."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/boletos/{boleto_id}/descargar/",
+      "autenticacion": "CLIENTE_DUEÑO",
+      "uso": "Descargar el boleto individual con su QR."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/clientes/mi-cuenta/comprobantes/{comprobante_id}/descargar/",
+      "autenticacion": "CLIENTE_DUEÑO",
+      "uso": "Descargar el comprobante no fiscal de la compra completa."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/taquilla/ventas/{venta_id}/comprobante/descargar/",
+      "autenticacion": "EMPLEADO_CON_PERMISO_VENTAS_CONSULTAR",
+      "uso": "Imprimir o reimprimir el comprobante de una venta física con auditoría."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/taquilla/boletos/{boleto_id}/descargar/",
+      "autenticacion": "EMPLEADO_CON_PERMISO_BOLETOS_REIMPRIMIR",
+      "uso": "Imprimir un boleto individual de Taquilla; una reemisión de QR usa el endpoint protegido de reemisión."
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/taquilla/boletos/escanear/",
+      "autenticacion": "CONTROL_ACCESO_CON_PERMISO_BOLETOS_ESCANEAR",
+      "uso": "Validar desde Control de entrada y registrar un solo ingreso de manera atómica.",
+      "request": {
+        "token_qr": "TOKEN_OPACO_EXTRAIDO_DEL_QR"
+      },
+      "response_200": {
+        "codigo": "INGRESO_REGISTRADO",
+        "mensaje": "Ingreso registrado correctamente.",
+        "boleto": {
+          "numero": "ARA-20260818163000-001-01",
+          "estado": "OCUPADO",
+          "comprador": "Nombre visible para validación",
+          "pelicula": "Guardianes del Bosque",
+          "fecha_funcion": "2026-08-18",
+          "hora_funcion": "6:00 p. m.",
+          "sala": "Sala 1",
+          "formato": "3D",
+          "asiento": "A1",
+          "promocion_2x1": true,
+          "posicion_2x1": 1,
+          "escaneado_en": "2026-08-18T17:47:12-06:00"
+        },
+        "pareja_2x1": {
+          "asiento": "A2",
+          "estado": "RESERVADO",
+          "falta_escanear": true
+        }
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/taquilla/boletos/{boleto_id}/reemision/",
+      "autenticacion": "EMPLEADO_CON_PERMISO_BOLETOS_REEMITIR",
+      "uso": "Anular el QR anterior y emitir uno nuevo con auditoría.",
+      "request": {
+        "motivo": "El cliente perdió el boleto impreso."
+      }
+    }
+  ],
+  "error_reutilizacion_qr": {
+    "estado_http": 409,
+    "codigo": "BOLETO_YA_UTILIZADO",
+    "mensaje": "Este boleto ya fue utilizado.",
+    "errores": {
+      "asiento": "A1",
+      "escaneado_en": "2026-08-18T17:47:12-06:00"
+    }
+  },
+  "implementacion_frontend": {
+    "adaptador_ventas_y_generador": "Frontend/assets/js/sales-api.js",
+    "integracion_compra_en_linea": "Frontend/assets/js/checkout-final.js",
+    "integracion_venta_taquilla": "Frontend/assets/js/taquilla.js y Frontend/assets/js/ticket-office-checkout.js",
+    "validacion_qr": "Frontend/pages/control-entrada/index.html y Frontend/assets/js/ticket-scanner.js",
+    "disponibilidad_compartida": "Frontend/assets/js/seat-api.js y AramacaoSalesApi.obtenerEstadosAsientosDemo",
+    "biblioteca_qr_local": "Frontend/assets/vendor/qrcode/qrcode.js",
+    "logo_oficial_reutilizado": "Frontend/assets/images/AraMacao Completo Degradado (3).png",
+    "nota": "La demostración local se construyó en el frontend desde cero sobre las pantallas P3; Django sustituirá localStorage y volverá a validar permisos, importes, disponibilidad, pagos y tokens.",
+    "seleccion_2x1_taquilla": "Frontend/assets/js/taquilla.js propone parejas contiguas; Django conserva la validación definitiva."
+  },
+  "biblioteca_renderizado_qr": {
+    "nombre": "qrcode",
+    "paquete_npm": "qrcode@1.5.4",
+    "licencia": "MIT",
+    "uso": "Dibujar en Canvas o generar una URL de imagen. No firma ni valida boletos."
+  },
+  "separacion_operativa": {
+    "taquilla": {
+      "rol": "VENDEDOR_TAQUILLA",
+      "permiso": "ventas.crear_venta",
+      "pagina": "/pages/taquilla/",
+      "responsabilidad": "Vender, cobrar e imprimir comprobante y boletos."
+    },
+    "control_entrada": {
+      "rol": "CONTROL_ACCESO",
+      "permiso": "boletos.escanear",
+      "pagina": "/pages/control-entrada/",
+      "responsabilidad": "Escanear, validar y registrar el ingreso de cada boleto."
+    }
+  }
+}

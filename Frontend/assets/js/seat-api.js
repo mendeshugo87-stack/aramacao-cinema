@@ -132,6 +132,10 @@
 
   function buildDemoAvailability(functionId, context) {
     const currentBlock = readDemoBlock(functionId);
+    const paidStates = global.AramacaoSalesApi?.obtenerEstadosAsientosDemo(functionId) || {
+      reservados: [],
+      ocupados: [],
+    };
     const start = buildHondurasDateTime(context.fecha, context.hora);
     const saleUntil = new Date(start.getTime() + 20 * 60 * 1000);
 
@@ -148,8 +152,8 @@
         distribucion: buildOfficialDistribution(),
       },
       asientos_bloqueados_temporalmente: ["B8", "B9"],
-      asientos_reservados: ["C1", "C2"],
-      asientos_ocupados: ["D1"],
+      asientos_reservados: [...new Set(["C1", "C2", ...paidStates.reservados])],
+      asientos_ocupados: [...new Set(["D1", ...paidStates.ocupados])],
       mi_bloqueo: currentBlock,
     };
   }

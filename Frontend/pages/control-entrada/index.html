@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Control privado de ingreso mediante QR para Aramacao Cinema.">
+  <title>Control de entrada | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=20260818-control-entrada-1">
+  <link rel="stylesheet" href="../../assets/css/ticket-scanner.css?v=20260818-control-entrada-1">
+  <link rel="stylesheet" href="../../assets/css/control-entrada.css?v=20260818-control-entrada-1">
+  <script src="../../assets/js/staff-api.js?v=20260818-control-entrada-1" defer></script>
+  <script src="../../assets/js/staff-private.js?v=20260818-control-entrada-1" defer></script>
+  <script src="../../assets/js/sales-api.js?v=20260818-control-entrada-1" defer></script>
+  <script src="../../assets/js/ticket-scanner.js?v=20260818-control-entrada-1" defer></script>
+</head>
+<body
+  class="access-control-body"
+  data-area-privada="control-entrada"
+  data-roles-permitidos="CONTROL_ACCESO"
+  data-permiso-requerido="boletos.escanear"
+  data-login-url="/pages/empleados/login.html"
+>
+  <a class="skip-link" href="#access-scanner">Saltar al escáner</a>
+
+  <!--
+    BACKEND: Django debe proteger esta vista con una sesión de CONTROL_ACCESO
+    y el permiso boletos.escanear. El empleado no recibe permisos de ventas.
+  -->
+  <header class="access-control-header">
+    <div class="access-control-brand">
+      <a class="access-control-back" href="../empleados/login.html" aria-label="Volver al acceso de empleados">←</a>
+      <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="210" height="72">
+      <div>
+        <strong>Control de entrada</strong>
+        <span>Validación de boletos</span>
+      </div>
+    </div>
+    <div class="access-control-session">
+      <span class="access-control-dot" aria-hidden="true"></span>
+      <div>
+        <strong data-session-name>Comprobando sesión…</strong>
+        <span data-session-role>Personal de entrada</span>
+      </div>
+      <button class="access-control-logout" type="button" data-logout-button disabled>Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="access-control-main">
+    <section class="access-control-intro" aria-labelledby="access-control-title">
+      <div>
+        <p class="eyebrow">Operación de ingreso</p>
+        <h1 id="access-control-title">Escanear boleto</h1>
+        <p>Valida un QR por persona. Permite el ingreso únicamente cuando la respuesta sea verde.</p>
+      </div>
+      <div class="access-control-rule" aria-label="Regla de validación">
+        <strong>Un QR · un ingreso</strong>
+        <span>El segundo intento será rechazado y mostrará la hora del primer uso.</span>
+      </div>
+    </section>
+
+    <section class="qr-scanner-panel access-scanner" id="access-scanner" aria-labelledby="qr-scanner-title">
+      <div class="panel-heading">
+        <span class="step-number">1</span>
+        <div>
+          <h2 id="qr-scanner-title">Apunta la cámara al boleto</h2>
+          <p>El sistema mostrará comprador, película, función, sala y asiento antes de permitir el ingreso.</p>
+        </div>
+      </div>
+
+      <div class="qr-scanner-grid">
+        <div class="qr-scanner-controls">
+          <div class="qr-camera-actions access-camera-actions">
+            <button class="button button-primary" id="start-qr-camera" type="button">Abrir cámara</button>
+            <button class="button button-ghost" id="stop-qr-camera" type="button" hidden>Detener cámara</button>
+          </div>
+          <video class="qr-camera-preview" id="qr-camera-preview" playsinline muted hidden></video>
+
+          <details class="access-manual-entry">
+            <summary>Ingresar código manualmente</summary>
+            <div>
+              <label for="qr-token-input">Código del boleto</label>
+              <input id="qr-token-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ARATK:…">
+              <button class="button button-ghost" id="validate-qr-button" type="button">Validar código</button>
+            </div>
+          </details>
+
+          <p class="qr-scan-status" id="qr-scan-status" role="status" aria-live="assertive"></p>
+        </div>
+        <div class="qr-scan-result" id="qr-scan-result" hidden></div>
+      </div>
+    </section>
+
+    <section class="access-control-guidance" aria-label="Guía rápida">
+      <article><span>01</span><strong>Escanea</strong><p>Centra el QR y evita reflejos sobre la pantalla o el papel.</p></article>
+      <article><span>02</span><strong>Comprueba</strong><p>Revisa función, horario, sala y asiento mostrados.</p></article>
+      <article><span>03</span><strong>Autoriza</strong><p>Verde permite ingresar; rojo requiere revisión del encargado.</p></article>
+    </section>
+  </main>
+</body>
+</html>

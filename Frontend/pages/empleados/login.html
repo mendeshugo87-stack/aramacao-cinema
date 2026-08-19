@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
   <link rel="stylesheet" href="../../assets/css/personal.css?v=8">
   <script src="../../assets/js/staff-api.js?v=8" defer></script>
-  <script src="../../assets/js/empleados-login.js?v=8" defer></script>
+  <script src="../../assets/js/empleados-login.js?v=20260818-separacion-1" defer></script>
 </head>
 <body class="staff-access-body">
   <a class="skip-link" href="#acceso-personal">Saltar al formulario</a>
@@ -34,8 +34,8 @@
 
       <ul class="staff-access-notes" aria-label="Condiciones de acceso">
         <li><span>01</span> Cada empleado utiliza su propia cuenta.</li>
-        <li><span>02</span> El vendedor solo accede a Taquilla.</li>
-        <li><span>03</span> Todas las ventas quedan asociadas al empleado.</li>
+        <li><span>02</span> Cada rol abre únicamente su área asignada.</li>
+        <li><span>03</span> Cada operación queda asociada al empleado responsable.</li>
       </ul>
     </section>
 
@@ -49,7 +49,7 @@
 
         <!--
           BACKEND:
-          - empleados-login.js envía un POST a /api/v1/autenticacion/empleados/iniciar-sesion/.
+          - empleados-login.js?v=20260818-separacion-1 envía un POST a /api/v1/autenticacion/empleados/iniciar-sesion/.
           - Validar usuario, contraseña, cuenta activa y rol en el servidor.
           - Crear la sesión con una cookie HttpOnly y devolver ruta_siguiente según el rol.
           - Proteger también el endpoint sesion-actual y el cierre de sesión.
@@ -93,7 +93,7 @@
 
           <p class="form-status" id="employee-login-status" role="status" aria-live="polite"></p>
 
-          <button class="button button-primary staff-submit" id="employee-login-submit" type="submit">Ingresar a Taquilla</button>
+          <button class="button button-primary staff-submit" id="employee-login-submit" type="submit">Ingresar al área asignada</button>
         </form>
 
         <p class="staff-help">¿No puedes ingresar? Solicita al administrador que revise el estado de tu cuenta.</p>

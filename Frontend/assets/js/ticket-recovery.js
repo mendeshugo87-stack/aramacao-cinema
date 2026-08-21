@@ -230,7 +230,7 @@
 
   async function downloadRecoveredTicket(ticketId, downloadUrl) {
     if (api.esVistaLocal()) {
-      await api.descargarBoletoDemo(ticketId);
+      await api.imprimirBoletoDemo(ticketId);
       return;
     }
     const destination = new URL(downloadUrl || api.rutaBoletoTaquilla(ticketId), global.location.origin);

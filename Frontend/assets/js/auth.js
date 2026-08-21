@@ -323,9 +323,10 @@ async function resendVerificationCode() {
 }
 
 function showLocalPreviewResult(formType) {
+  saveLocalPreviewCustomer(formType);
   const messages = {
-    register: "Demostración local: los datos son válidos. Django creará la cuenta y enviará el código; aquí no se guardó ninguna contraseña ni identificación.",
-    login: "Demostración local: el formulario está listo. Django validará la cuenta y abrirá la sesión real.",
+    register: "Demostración local: la cuenta está preparada y el nombre ya puede mostrarse en la navegación. No se guardó ninguna contraseña ni identificación.",
+    login: "Demostración local: la sesión visual está preparada. Django validará la cuenta real.",
     recover: "Demostración local: Django devolverá siempre un mensaje genérico y enviará el código si la cuenta existe.",
     "verify-email": "Demostración local: el código tiene el formato correcto. Django comprobará si es válido y no ha vencido.",
     "verify-recovery": "Demostración local: Django validará este código antes de permitir una contraseña nueva.",
@@ -333,6 +334,39 @@ function showLocalPreviewResult(formType) {
   };
   setStatus(messages[formType], "success");
   clearPasswordValuesAfterRequest(formType);
+}
+
+function saveLocalPreviewCustomer(formType) {
+  const session = window.AramacaoPublicCustomerSession;
+  if (!session?.guardarVistaLocal) return;
+
+  if (formType === "register") {
+    const fullName = getField("customer-name").value.trim();
+    session.guardarVistaLocal({
+      id: "vista-local",
+      nombre_completo: fullName,
+      nombre_corto: fullName.split(/\s+/)[0],
+      usuario: getField("customer-username").value.trim().toLowerCase(),
+      autenticado: true,
+    });
+    return;
+  }
+
+  if (formType === "login") {
+    const current = session.obtenerVistaLocal();
+    if (current) {
+      session.guardarVistaLocal({ ...current, autenticado: true });
+      return;
+    }
+    const identity = getField("login-identity").value.trim().split("@")[0];
+    session.guardarVistaLocal({
+      id: "vista-local",
+      nombre_completo: identity,
+      nombre_corto: identity,
+      usuario: identity,
+      autenticado: true,
+    });
+  }
 }
 
 function normalizeIdentification(type, value) {

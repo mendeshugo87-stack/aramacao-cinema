@@ -1,0 +1,12 @@
+[build]
+  publish = "Frontend"
+
+[build.environment]
+  TZ = "America/Tegucigalpa"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(self), geolocation=()"

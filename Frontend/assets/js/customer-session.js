@@ -42,7 +42,10 @@ async function loadCurrentCustomer() {
     document.querySelectorAll("[data-local-preview]").forEach((element) => {
       element.hidden = false;
     });
-    return { ...localPreviewCustomer };
+    return {
+      ...localPreviewCustomer,
+      ...(readPublicDemoCustomer() || {}),
+    };
   }
 
   const response = await window.AramacaoCustomerApi.obtenerSesionActual();
@@ -407,7 +410,7 @@ function renderPurchaseDetail(purchase) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "button button-primary account-small-button";
-      button.textContent = `Descargar boleto ${ticket.asiento || ""}`.trim();
+      button.textContent = `Guardar boleto ${ticket.asiento || ""} como imagen`.trim();
       button.addEventListener("click", () => window.AramacaoSalesApi.descargarBoletoDemo(ticket.id));
       tickets.append(button);
       return;
@@ -415,7 +418,7 @@ function renderPurchaseDetail(purchase) {
     const link = document.createElement("a");
     link.className = "button button-primary account-small-button";
     link.href = window.AramacaoCustomerApi.rutaDescargaBoleto(ticket.id);
-    link.textContent = `Descargar boleto ${ticket.asiento || ""}`.trim();
+    link.textContent = `Guardar boleto ${ticket.asiento || ""} como imagen`.trim();
     tickets.append(link);
   });
 }
@@ -427,6 +430,7 @@ function bindLogoutButtons() {
 
 async function logoutCustomer() {
   if (isLocalPreview()) {
+    window.localStorage.removeItem("aramacao-demo-cliente-publico-v1");
     window.location.assign("iniciar-sesion.html?motivo=sesion_cerrada");
     return;
   }
@@ -434,6 +438,15 @@ async function logoutCustomer() {
     await window.AramacaoCustomerApi.cerrarSesion();
   } finally {
     window.location.assign("iniciar-sesion.html?motivo=sesion_cerrada");
+  }
+}
+
+function readPublicDemoCustomer() {
+  try {
+    const customer = JSON.parse(window.localStorage.getItem("aramacao-demo-cliente-publico-v1") || "null");
+    return customer?.autenticado ? customer : null;
+  } catch {
+    return null;
   }
 }
 

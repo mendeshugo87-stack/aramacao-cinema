@@ -603,7 +603,7 @@
 
   async function downloadAdminTicket(ticketId) {
     requireValue(ticketId, "El boleto es obligatorio.");
-    if (isLocalPreview()) return downloadDemoTicket(ticketId);
+    if (isLocalPreview()) return printDemoTicket(ticketId);
     triggerServerDownload(routes.boletoAdministracion(ticketId));
   }
 
@@ -680,17 +680,18 @@
     };
   }
 
-  async function downloadDemoTicket(ticketId) {
-    const { purchase, ticket } = getDemoTicket(ticketId);
-    if (ticket.estado !== "RESERVADO") {
-      throw new SalesApiError(
-        ticket.estado === "OCUPADO"
-          ? "Este boleto ya registró el ingreso y no puede imprimirse como boleto válido."
-          : "Este boleto ya no está vigente y no puede imprimirse.",
-        409,
-        "BOLETO_NO_IMPRIMIBLE"
-      );
-    }
+  async function downloadDemoTicketImage(ticketId) {
+    const { purchase, ticket } = getPrintableDemoTicket(ticketId);
+    const [qrDataUrl, logoDataUrl] = await Promise.all([
+      generateQrDataUrl(ticket.contenido_qr),
+      getBrandLogoDataUrl(),
+    ]);
+    const imageBlob = await buildTicketImage(purchase, ticket, qrDataUrl, logoDataUrl);
+    await deliverTicketImage(imageBlob, `boleto-${safeFileName(ticket.numero)}.png`, ticket);
+  }
+
+  async function printDemoTicket(ticketId) {
+    const { purchase, ticket } = getPrintableDemoTicket(ticketId);
     const [qrDataUrl, logoDataUrl] = await Promise.all([
       generateQrDataUrl(ticket.contenido_qr),
       getBrandLogoDataUrl(),
@@ -702,20 +703,36 @@
       `Boleto ${ticket.asiento}`,
       `<main class="ticket">
         ${buildBrandHeader(logoDataUrl)}
-        <p class="notice">Boleto de demostración local</p>
+        <p class="document-kind">BOLETO DE ENTRADA</p>
+        <p class="notice">Demostración local · sin validez comercial</p>
         <img class="qr" src="${qrDataUrl}" alt="Código QR del boleto ${escapeHTML(ticket.asiento)}">
         <h2>${escapeHTML(purchase.pelicula)}</h2>
+        <p class="ticket-seat">Asiento <strong>${escapeHTML(ticket.asiento)}</strong></p>
         <p><strong>Comprador:</strong> ${escapeHTML(purchase.cliente_nombre)}</p>
         <p><strong>Función:</strong> ${escapeHTML(purchase.fecha_funcion)} · ${escapeHTML(purchase.hora_funcion)}</p>
         <p><strong>Formato:</strong> ${escapeHTML(purchase.formato)} · ${escapeHTML(purchase.sala)}</p>
-        <p><strong>Asiento:</strong> ${escapeHTML(ticket.asiento)}</p>
         ${promotion}
         ${purchase.canal === "TAQUILLA" ? `<p><strong>Venta:</strong> Taquilla</p>` : ""}
+        <p><strong>Compra:</strong> ${escapeHTML(purchase.numero)}</p>
         <p><strong>Boleto:</strong> ${escapeHTML(ticket.numero)}</p>
         <p class="foot">Cada QR admite un solo ingreso. No compartas esta imagen.</p>
       </main>`
     );
     downloadHtml(html, `boleto-${safeFileName(ticket.numero)}.html`);
+  }
+
+  function getPrintableDemoTicket(ticketId) {
+    const { purchase, ticket } = getDemoTicket(ticketId);
+    if (ticket.estado !== "RESERVADO") {
+      throw new SalesApiError(
+        ticket.estado === "OCUPADO"
+          ? "Este boleto ya registró el ingreso y no puede imprimirse como boleto válido."
+          : "Este boleto ya no está vigente y no puede imprimirse.",
+        409,
+        "BOLETO_NO_IMPRIMIBLE"
+      );
+    }
+    return { purchase, ticket };
   }
 
   async function downloadDemoReceipt(purchaseId) {
@@ -728,8 +745,12 @@
       `Comprobante ${purchase.numero}`,
       `<main>
         ${buildBrandHeader(logoDataUrl)}
-        <p class="notice">Comprobante de compra no fiscal · demostración local</p>
-        <p><strong>Referencia:</strong> ${escapeHTML(purchase.numero)}</p>
+        <p class="document-kind">COMPROBANTE DE COMPRA</p>
+        <p class="notice">No fiscal · demostración local</p>
+        <p><strong>Comprobante:</strong> ${escapeHTML(purchase.comprobante?.numero || `COMP-${purchase.numero}`)}</p>
+        <p><strong>Referencia de venta:</strong> ${escapeHTML(purchase.numero)}</p>
+        <p><strong>Fecha de venta:</strong> ${escapeHTML(formatDateTime(purchase.creada_en || purchase.fecha))}</p>
+        <p><strong>Estado:</strong> ${escapeHTML(purchase.estado || "PAGADA")}</p>
         <p><strong>Comprador:</strong> ${escapeHTML(purchase.cliente_nombre)}</p>
         <p><strong>Película:</strong> ${escapeHTML(purchase.pelicula)}</p>
         <p><strong>Función:</strong> ${escapeHTML(purchase.fecha_funcion)} · ${escapeHTML(purchase.hora_funcion)}</p>
@@ -968,12 +989,219 @@
 
   function buildPrintableDocument(title, body) {
     return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHTML(title)}</title><style>
-      :root{color-scheme:light}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:#fff}body{font-family:Arial,sans-serif;font-size:11px;line-height:1.35}main{width:52mm;max-width:100%;margin:0 auto;padding:2.5mm 2mm;background:#fff}.ticket{text-align:center}.brand-logo{display:block;width:38mm;max-width:90%;max-height:15mm;object-fit:contain;margin:0 auto 2mm;filter:contrast(1.08)}h1{margin:0 0 2mm;font-size:17px;line-height:1.1}h2{margin:2mm 0 1.5mm;font-size:14px;line-height:1.2}p{margin:1.2mm 0}.qr{display:block;width:34mm;height:34mm;max-width:100%;margin:2mm auto;image-rendering:pixelated}.notice{margin:1.5mm 0 2mm;padding:1.5mm;border:1px dashed #000;background:#fff;font-size:10px}.foot{margin-top:2.5mm;padding-top:2mm;border-top:1px dashed #000;color:#222;font-size:9px}table{width:100%;border-collapse:collapse;margin:2mm 0;font-size:10px;table-layout:fixed}th,td{padding:1.3mm .6mm;border-bottom:1px solid #777;text-align:left;overflow-wrap:anywhere}.total{margin-top:2mm;padding-top:1.5mm;border-top:1px dashed #000;font-size:14px}@media screen{body{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:18px;background:#dfe5ea}main{box-shadow:0 2px 14px rgba(0,0,0,.18)}}@media print{@page{margin:2mm}html,body{width:100%;background:#fff}body{display:block;padding:0}main{width:52mm;margin:0 auto;padding:0;box-shadow:none}}
-    </style></head><body>${body}</body></html>`;
+      :root{color-scheme:light;--content-width:52mm}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:#fff}body{font-family:Arial,sans-serif;font-size:11px;line-height:1.35}body[data-paper="80"]{--content-width:72mm}main{width:var(--content-width);max-width:100%;margin:0 auto;padding:2.5mm 2mm;background:#fff}.ticket{text-align:center}.brand-logo{display:block;width:38mm;max-width:90%;max-height:15mm;object-fit:contain;margin:0 auto 2mm;filter:contrast(1.08)}h1{margin:0 0 2mm;font-size:17px;line-height:1.1}h2{margin:2mm 0 1.5mm;font-size:14px;line-height:1.2}p{margin:1.2mm 0}.document-kind{margin:0 0 1.5mm;font-size:11px;font-weight:700;letter-spacing:.08em;text-align:center}.ticket-seat{margin:1.5mm 0;padding:1.5mm 1mm;border:1px solid #000;font-size:13px}.ticket-seat strong{font-size:18px}.qr{display:block;width:34mm;height:34mm;max-width:100%;margin:2mm auto;image-rendering:pixelated}.notice{margin:1.5mm 0 2mm;padding:1.5mm;border:1px dashed #000;background:#fff;font-size:10px;text-align:center}.foot{margin-top:2.5mm;padding-top:2mm;border-top:1px dashed #000;color:#222;font-size:9px}table{width:100%;border-collapse:collapse;margin:2mm 0;font-size:10px;table-layout:fixed}th,td{padding:1.3mm .6mm;border-bottom:1px solid #777;text-align:left;overflow-wrap:anywhere}.total{margin-top:2mm;padding-top:1.5mm;border-top:1px dashed #000;font-size:14px}.print-tools{display:none}@media screen{body{min-height:100vh;padding:64px 18px 18px;background:#dfe5ea}.print-tools{position:fixed;z-index:2;top:12px;left:50%;display:flex;gap:6px;align-items:center;transform:translateX(-50%);padding:6px;border-radius:10px;background:#050b16;box-shadow:0 2px 12px rgba(0,0,0,.25)}.print-tools button{min-height:34px;padding:7px 12px;border:1px solid #5a6a7a;border-radius:7px;color:#fff;background:#14283b;font:700 12px Arial,sans-serif;cursor:pointer}.print-tools button[aria-pressed="true"],.print-tools .print-primary{border-color:#ffd21c;color:#050b16;background:#ffd21c}main{box-shadow:0 2px 14px rgba(0,0,0,.18)}}@media print{@page{margin:2mm}html,body{width:100%;background:#fff}body{display:block;padding:0}main{width:var(--content-width);margin:0 auto;padding:0;box-shadow:none}.print-tools{display:none!important}}
+    </style></head><body data-paper="58"><div class="print-tools" role="group" aria-label="Tamaño de papel"><button type="button" data-paper="58" aria-pressed="true">58 mm</button><button type="button" data-paper="80" aria-pressed="false">80 mm</button><button class="print-primary" type="button" data-print>Imprimir</button></div>${body}<script>(()=>{const buttons=[...document.querySelectorAll('[data-paper]')].filter((element)=>element.tagName==='BUTTON');buttons.forEach((button)=>button.addEventListener('click',()=>{document.body.dataset.paper=button.dataset.paper;buttons.forEach((item)=>item.setAttribute('aria-pressed',String(item===button)));}));document.querySelector('[data-print]')?.addEventListener('click',()=>window.print());})();</script></body></html>`;
   }
 
-  function downloadHtml(html, fileName) {
-    const url = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
+  async function buildTicketImage(purchase, ticket, qrDataUrl, logoDataUrl) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1900;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new SalesApiError("El navegador no pudo crear la imagen del boleto.", 0, "IMAGEN_NO_DISPONIBLE");
+    }
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    context.fillStyle = "#050b16";
+
+    let y = 58;
+    if (logoDataUrl) {
+      const logo = await loadCanvasImage(logoDataUrl);
+      drawContainedImage(context, logo, 210, y, 660, 170);
+      y += 190;
+    } else {
+      context.font = "700 58px Arial, sans-serif";
+      context.fillText("Aramacao Cinema", canvas.width / 2, y + 40);
+      y += 150;
+    }
+
+    context.font = "700 34px Arial, sans-serif";
+    context.fillText("BOLETO DE ENTRADA", canvas.width / 2, y);
+    y += 58;
+
+    context.fillStyle = "#f4f6f8";
+    context.fillRect(95, y, 890, 68);
+    context.strokeStyle = "#050b16";
+    context.lineWidth = 3;
+    context.strokeRect(95, y, 890, 68);
+    context.fillStyle = "#050b16";
+    context.font = "26px Arial, sans-serif";
+    context.fillText("Demostración local · sin validez comercial", canvas.width / 2, y + 18);
+    y += 100;
+
+    const qr = await loadCanvasImage(qrDataUrl);
+    context.imageSmoothingEnabled = false;
+    context.fillStyle = "#ffffff";
+    context.fillRect(240, y, 600, 600);
+    context.drawImage(qr, 270, y + 30, 540, 540);
+    context.imageSmoothingEnabled = true;
+    y += 625;
+
+    context.fillStyle = "#050b16";
+    context.font = "700 48px Arial, sans-serif";
+    y = drawWrappedCanvasText(context, purchase.pelicula, y, 900, 58) + 18;
+
+    context.fillStyle = "#ffd21c";
+    context.fillRect(120, y, 840, 112);
+    context.strokeStyle = "#050b16";
+    context.strokeRect(120, y, 840, 112);
+    context.fillStyle = "#050b16";
+    context.font = "700 34px Arial, sans-serif";
+    context.fillText("ASIENTO", canvas.width / 2, y + 14);
+    context.font = "700 54px Arial, sans-serif";
+    context.fillText(String(ticket.asiento || "—"), canvas.width / 2, y + 52);
+    y += 138;
+
+    const details = [
+      `Comprador: ${purchase.cliente_nombre || "Cliente"}`,
+      `Función: ${purchase.fecha_funcion || "—"} · ${purchase.hora_funcion || "—"}`,
+      `Formato: ${purchase.formato || "—"} · ${purchase.sala || "—"}`,
+    ];
+    if (ticket.promocion_2x1) {
+      details.push(`Promoción 2x1: boleto ${ticket.posicion_2x1} de 2`);
+    }
+    if (purchase.canal === "TAQUILLA") details.push("Venta: Taquilla");
+
+    context.font = "30px Arial, sans-serif";
+    context.fillStyle = "#050b16";
+    details.forEach((detail) => {
+      y = drawWrappedCanvasText(context, detail, y, 920, 42) + 10;
+    });
+
+    y += 8;
+    context.setLineDash([12, 10]);
+    context.beginPath();
+    context.moveTo(90, y);
+    context.lineTo(990, y);
+    context.strokeStyle = "#050b16";
+    context.lineWidth = 2;
+    context.stroke();
+    context.setLineDash([]);
+    y += 30;
+
+    context.font = "26px Arial, sans-serif";
+    y = drawWrappedCanvasText(context, `Compra: ${purchase.numero}`, y, 900, 36) + 8;
+    y = drawWrappedCanvasText(context, `Boleto: ${ticket.numero}`, y, 900, 36) + 24;
+
+    context.font = "24px Arial, sans-serif";
+    context.fillStyle = "#2c3541";
+    drawWrappedCanvasText(
+      context,
+      "Cada QR admite un solo ingreso. Presenta esta imagen completa en Control de entrada.",
+      y,
+      860,
+      34
+    );
+
+    return canvasToPngBlob(canvas);
+  }
+
+  function drawWrappedCanvasText(context, value, y, maxWidth, lineHeight) {
+    const words = expandCanvasWords(context, String(value || ""), maxWidth);
+    const lines = [];
+    let line = "";
+
+    words.forEach((word) => {
+      const candidate = line ? `${line} ${word}` : word;
+      if (line && context.measureText(candidate).width > maxWidth) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = candidate;
+      }
+    });
+    if (line) lines.push(line);
+
+    lines.forEach((item, index) => {
+      context.fillText(item, 540, y + (index * lineHeight));
+    });
+    return y + (Math.max(lines.length, 1) * lineHeight);
+  }
+
+  function expandCanvasWords(context, value, maxWidth) {
+    return value.split(/\s+/).filter(Boolean).flatMap((word) => {
+      if (context.measureText(word).width <= maxWidth) return [word];
+      const parts = [];
+      let part = "";
+      [...word].forEach((character) => {
+        const candidate = `${part}${character}`;
+        if (part && context.measureText(candidate).width > maxWidth) {
+          parts.push(part);
+          part = character;
+        } else {
+          part = candidate;
+        }
+      });
+      if (part) parts.push(part);
+      return parts;
+    });
+  }
+
+  function drawContainedImage(context, image, x, y, width, height) {
+    const ratio = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+    const renderedWidth = image.naturalWidth * ratio;
+    const renderedHeight = image.naturalHeight * ratio;
+    context.drawImage(
+      image,
+      x + ((width - renderedWidth) / 2),
+      y + ((height - renderedHeight) / 2),
+      renderedWidth,
+      renderedHeight
+    );
+  }
+
+  function loadCanvasImage(source) {
+    return new Promise((resolve, reject) => {
+      const image = new global.Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new SalesApiError(
+        "No fue posible preparar la imagen del boleto.",
+        0,
+        "IMAGEN_NO_DISPONIBLE"
+      ));
+      image.src = source;
+    });
+  }
+
+  function canvasToPngBlob(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new SalesApiError(
+          "No fue posible convertir el boleto en una imagen.",
+          0,
+          "IMAGEN_NO_DISPONIBLE"
+        ));
+      }, "image/png");
+    });
+  }
+
+  async function deliverTicketImage(blob, fileName, ticket) {
+    const isTouchDevice = global.matchMedia?.("(pointer: coarse)")?.matches;
+    if (isTouchDevice && global.File && global.navigator?.share && global.navigator?.canShare) {
+      const file = new global.File([blob], fileName, { type: "image/png" });
+      if (global.navigator.canShare({ files: [file] })) {
+        try {
+          await global.navigator.share({
+            files: [file],
+            title: `Boleto Aramacao Cinema · asiento ${ticket.asiento}`,
+            text: "Guarda esta imagen para presentarla en Control de entrada.",
+          });
+          return;
+        } catch (error) {
+          if (error?.name === "AbortError") return;
+        }
+      }
+    }
+    downloadBlob(blob, fileName);
+  }
+
+  function downloadBlob(blob, fileName) {
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = fileName;
@@ -981,6 +1209,10 @@
     link.click();
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadHtml(html, fileName) {
+    downloadBlob(new Blob([html], { type: "text/html;charset=utf-8" }), fileName);
   }
 
   function createReference(date, sequence, prefix = "ARA") {
@@ -1053,7 +1285,8 @@
     obtenerCompraDemo: getDemoPurchase,
     obtenerBoletoDemo: getDemoTicket,
     obtenerEstadosAsientosDemo: getDemoSeatStates,
-    descargarBoletoDemo: downloadDemoTicket,
+    descargarBoletoDemo: downloadDemoTicketImage,
+    imprimirBoletoDemo: printDemoTicket,
     descargarComprobanteDemo: downloadDemoReceipt,
     listarVentasAdministracion: listAdminSales,
     obtenerVentaAdministracion: getAdminSale,

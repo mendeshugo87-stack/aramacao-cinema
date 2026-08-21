@@ -24,14 +24,14 @@
     actions.append(receiptButton);
 
     (purchase.boletos || []).forEach((ticket) => {
-      const ticketButton = createActionButton(`Descargar boleto con QR ${ticket.asiento}`, "button button-primary");
+      const ticketButton = createActionButton(`Imprimir boleto con QR ${ticket.asiento}`, "button button-primary");
       bindDownload(ticketButton, status, async () => {
         if (global.AramacaoSalesApi.esVistaLocal()) {
-          await global.AramacaoSalesApi.descargarBoletoDemo(ticket.id);
+          await global.AramacaoSalesApi.imprimirBoletoDemo(ticket.id);
           return;
         }
         global.location.assign(global.AramacaoSalesApi.rutaBoletoTaquilla(ticket.id));
-      }, `Boleto ${ticket.asiento} con QR preparado para descargar.`);
+      }, `Boleto ${ticket.asiento} con QR preparado para imprimir.`);
       actions.append(ticketButton);
     });
 

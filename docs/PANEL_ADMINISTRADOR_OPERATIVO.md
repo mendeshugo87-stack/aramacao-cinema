@@ -9,6 +9,7 @@ Permitir que un administrador autorizado cambie la información que utilizan el 
 - Inicio de sesión separado para administración.
 - Resumen de películas en cartelera, próximos estrenos, carrusel y funciones.
 - Creación y edición de películas.
+- Catálogos separados de géneros, actores y directores para evitar nombres duplicados y relacionarlos por identificador.
 - Publicación o retiro de una película sin eliminar su historial.
 - Selección independiente de **Cartelera**, **Próximamente** y **Carrusel destacado**.
 - Póster vertical con encuadre 2:3 y fondo horizontal nítido con encuadre 16:7 para Inicio.
@@ -31,6 +32,8 @@ La maqueta usa `IndexedDB` únicamente para comprobar en un mismo navegador que 
 La versión anterior repetía horarios por día de la semana y permitía varias salas. Al abrir esta versión se conservan las películas e imágenes locales, pero esas filas antiguas se descartan para que el administrador agregue funciones con fecha exacta. Los datos incluidos de fábrica ya usan la única Sala 1.
 
 Al integrar Django, `Frontend/assets/js/cinema-store.js` deberá sustituirse por solicitudes a la API. El backend decidirá las tablas, campos, relaciones y almacenamiento de archivos.
+
+La primera conexión de Cartelera debe respetar `docs/json/04-cartelera-catalogos-funciones-promociones.json`. La pantalla actual todavía acepta géneros, director y reparto como texto para la demostración local; al consumir Django esos campos se llenarán desde los catálogos y enviarán `generos_ids`, `director_id` y `actores_ids`.
 
 ## Validaciones obligatorias de backend
 

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, follow">
+  <meta name="description" content="La página solicitada no está disponible en Aramacao Cinema.">
+  <title>Página no encontrada | Aramacao Cinema</title>
+  <script>
+    (() => {
+      const local = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
+      const base = document.createElement("base");
+      base.href = local && window.location.pathname.startsWith("/Frontend/") ? "/Frontend/" : "/";
+      document.head.append(base);
+    })();
+  </script>
+  <link rel="icon" href="assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/error-pages.css">
+</head>
+<body class="error-page">
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido</a>
+
+  <header class="error-header">
+    <div class="container error-header-inner">
+      <a class="error-brand" href="index.html" aria-label="Ir al inicio de Aramacao Cinema">
+        <img src="assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="260" height="90">
+      </a>
+      <p class="error-header-label">Experiencia Aramacao</p>
+    </div>
+  </header>
+
+  <main class="error-main" id="contenido-principal">
+    <section class="container error-layout" aria-labelledby="error-title">
+      <div class="error-copy">
+        <p class="error-eyebrow">Página no encontrada</p>
+        <h1 id="error-title">Esta función no está en cartelera.</h1>
+        <p class="error-description">La dirección puede estar incompleta o la página fue retirada. Puedes regresar al inicio o consultar las películas disponibles.</p>
+        <div class="error-actions">
+          <a class="button button-primary" href="index.html">Volver al inicio</a>
+          <a class="button button-ghost" href="pages/cartelera/">Ver cartelera</a>
+        </div>
+      </div>
+
+      <div class="error-visual" aria-hidden="true">
+        <div class="error-screen">
+          <div>
+            <span class="error-code">404</span>
+            <span class="error-screen-label">Contenido no disponible</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="error-footer">
+    <div class="container error-footer-inner">
+      <p>Aramacao Cinema · Intibucá, Honduras</p>
+      <a href="pages/contacto/">¿Necesitas ayuda?</a>
+    </div>
+  </footer>
+</body>
+</html>

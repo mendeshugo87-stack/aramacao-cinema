@@ -58,6 +58,7 @@ async function approveDemoPayment() {
   showStatus("");
 
   try {
+    const customer = getCheckoutCustomer();
     const purchase = await window.AramacaoSalesApi.crearOrden({
       bloqueo_id: state.currentBlock.id,
       funcion_id: state.selectedShowtime.id,
@@ -73,10 +74,10 @@ async function approveDemoPayment() {
       subtotal: totals.subtotal,
       descuento: totals.discount,
       total: totals.total,
-      cliente_id: "vista-local",
-      cliente_nombre: "Hugo Méndez",
-      cliente_usuario: "hugomendez",
-      cliente_identificacion_enmascarada: "0801-••••-•2345",
+      cliente_id: customer.id,
+      cliente_nombre: customer.nombre_completo,
+      cliente_usuario: customer.usuario,
+      cliente_identificacion_enmascarada: customer.identificacion_enmascarada,
     });
 
     const paidSeats = [...state.selectedSeats];
@@ -107,6 +108,16 @@ async function approveDemoPayment() {
   }
 }
 
+function getCheckoutCustomer() {
+  const customer = window.AramacaoPublicCustomerSession?.obtenerVistaLocal();
+  return {
+    id: customer?.id || "vista-local",
+    nombre_completo: customer?.nombre_completo || customer?.nombre_corto || "Cliente de prueba",
+    usuario: customer?.usuario || "cliente-prueba",
+    identificacion_enmascarada: customer?.identificacion_enmascarada || "",
+  };
+}
+
 async function renderIssuedTickets(purchase) {
   finalElements.ticketReference.textContent = purchase.numero;
   finalElements.ticketList.replaceChildren();
@@ -132,7 +143,7 @@ async function renderIssuedTickets(purchase) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "button button-ghost account-small-button";
-    button.textContent = "Descargar boleto";
+    button.textContent = "Guardar boleto como imagen";
     button.addEventListener("click", () => window.AramacaoSalesApi.descargarBoletoDemo(ticket.id));
     const copyButton = document.createElement("button");
     copyButton.type = "button";

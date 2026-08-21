@@ -1,0 +1,267 @@
+{
+  "proyecto": "Aramacao Cinema",
+  "version_contrato": "2.0",
+  "estado": "LISTO_PARA_BACKEND",
+  "modulo": "Catalogos, peliculas, imagenes, funciones, precios y promocion 2x1",
+  "zona_horaria": "America/Tegucigalpa",
+  "responsabilidades": {
+    "frontend": [
+      "Mostrar formularios, listados, filtros y mensajes de validacion.",
+      "Enviar identificadores de catalogos y archivos de imagen al API.",
+      "Consumir exclusivamente los resultados que devuelva el backend al conectar Django."
+    ],
+    "backend": [
+      "Autenticar y autorizar cada operacion administrativa.",
+      "Validar datos, relaciones, archivos, cruces de horario y vigencia de promociones.",
+      "Persistir la informacion y ser la fuente oficial para la web publica, Compra en linea y Taquilla.",
+      "Decidir la estructura interna de modelos, tablas y almacenamiento sin cambiar este intercambio JSON."
+    ]
+  },
+  "reglas_negocio": [
+    "Aramacao utiliza una sola Sala 1 y el frontend no envia una sala seleccionable.",
+    "Las funciones se registran por fecha exacta, hora, formato 2D o 3D y precio.",
+    "El backend evita cruces de funciones considerando la duracion de cada pelicula.",
+    "La venta en linea y en Taquilla cierra 20 minutos despues de hora_inicio.",
+    "Solo Administracion configura el 2x1; Compra en linea y Taquilla no pueden forzarlo.",
+    "El 2x1 solo admite lunes, martes y miercoles, en peliculas y funciones seleccionadas.",
+    "Una venta 2x1 genera dos boletos, ocupa dos asientos y el backend calcula subtotal, descuento y total.",
+    "Peliculas y funciones con historial no se eliminan fisicamente: se desactivan o retiran.",
+    "Poster y fondo se guardan como archivos; no se almacenan como base64 en la base de datos final."
+  ],
+  "formato_respuesta_lista": {
+    "total": 1,
+    "pagina": 1,
+    "por_pagina": 20,
+    "resultados": []
+  },
+  "modelos_intercambio": {
+    "catalogo": {
+      "id": "uuid-o-entero-estable",
+      "nombre": "Drama",
+      "activo": true,
+      "creado_en": "2026-08-21T10:00:00-06:00",
+      "actualizado_en": "2026-08-21T10:00:00-06:00"
+    },
+    "actor": {
+      "id": "uuid-o-entero-estable",
+      "nombre": "Nombre del actor",
+      "biografia_breve": "Dato opcional para futuras fichas publicas.",
+      "foto_url": null,
+      "activo": true
+    },
+    "director": {
+      "id": "uuid-o-entero-estable",
+      "nombre": "Nombre del director",
+      "biografia_breve": "Dato opcional para futuras fichas publicas.",
+      "foto_url": null,
+      "activo": true
+    },
+    "pelicula_peticion": {
+      "titulo": "Horizonte Perdido",
+      "descripcion_breve": "Una expedicion cruza los limites de lo conocido.",
+      "sinopsis": "Descripcion completa de la pelicula.",
+      "duracion_minutos": 118,
+      "clasificacion": "B",
+      "generos_ids": ["genero-id-1"],
+      "idioma": "Doblada al español",
+      "director_id": "director-id-1",
+      "actores_ids": ["actor-id-1", "actor-id-2"],
+      "seccion": "CARTELERA",
+      "publicada": true,
+      "destacada_inicio": true,
+      "fecha_estreno": "2026-08-27",
+      "trailer_url": "https://www.youtube.com/watch?v=video",
+      "visibilidad_fondo_porcentaje": 65
+    },
+    "pelicula_respuesta": {
+      "id": "pelicula-id-1",
+      "titulo": "Horizonte Perdido",
+      "descripcion_breve": "Una expedicion cruza los limites de lo conocido.",
+      "sinopsis": "Descripcion completa de la pelicula.",
+      "duracion_minutos": 118,
+      "clasificacion": "B",
+      "generos": [{"id": "genero-id-1", "nombre": "Aventura"}],
+      "idioma": "Doblada al español",
+      "director": {"id": "director-id-1", "nombre": "Nombre del director"},
+      "actores": [
+        {"id": "actor-id-1", "nombre": "Actor 1"},
+        {"id": "actor-id-2", "nombre": "Actor 2"}
+      ],
+      "seccion": "CARTELERA",
+      "publicada": true,
+      "activa": true,
+      "destacada_inicio": true,
+      "fecha_estreno": "2026-08-27",
+      "trailer_url": "https://www.youtube.com/watch?v=video",
+      "poster_url": "https://archivos.example/poster.webp",
+      "fondo_inicio_url": "https://archivos.example/fondo.webp",
+      "visibilidad_fondo_porcentaje": 65
+    },
+    "imagenes_pelicula_multipart": {
+      "poster": "archivo JPG, PNG o WebP opcional",
+      "fondo_inicio": "archivo JPG, PNG o WebP opcional",
+      "poster_encuadre": "JSON opcional con x, y, zoom y proporcion 2:3",
+      "fondo_encuadre": "JSON opcional con x, y, zoom y proporcion 16:7",
+      "visibilidad_fondo_porcentaje": 65
+    },
+    "funcion_peticion": {
+      "fecha": "2026-08-27",
+      "hora": "14:00",
+      "formato": "2D",
+      "precio": "120.00",
+      "publicada": true
+    },
+    "funcion_respuesta": {
+      "id": "funcion-id-1",
+      "pelicula_id": "pelicula-id-1",
+      "fecha": "2026-08-27",
+      "hora": "14:00",
+      "hora_inicio": "2026-08-27T14:00:00-06:00",
+      "venta_hasta": "2026-08-27T14:20:00-06:00",
+      "venta_disponible": true,
+      "motivo_cierre": null,
+      "sala": "Sala 1",
+      "formato": "2D",
+      "precio": "120.00",
+      "publicada": true,
+      "promocion_2x1": {
+        "aplica": false,
+        "codigo": null,
+        "mensaje": null
+      }
+    },
+    "promocion_2x1_peticion": {
+      "activa": true,
+      "peliculas_ids": ["pelicula-id-1"],
+      "fecha_inicial": "2026-08-24",
+      "fecha_final": "2026-09-30",
+      "dias_semana": ["LUNES", "MARTES", "MIERCOLES"],
+      "aplica_en": "FUNCIONES_ESPECIFICAS",
+      "funciones_ids": ["funcion-id-1"],
+      "condiciones_visibles": "Por cada dos admisiones se cobra una en las funciones seleccionadas."
+    }
+  },
+  "endpoints_publicos": [
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/cartelera/peliculas/",
+      "query": "seccion=CARTELERA|PROXIMAMENTE&fecha=YYYY-MM-DD&buscar=texto",
+      "respuesta_200": "Lista paginada de pelicula_respuesta; solo contenido activo y publicado."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/cartelera/peliculas/{id}/",
+      "respuesta_200": "pelicula_respuesta con sus catalogos relacionados."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/cartelera/funciones/",
+      "query": "fecha=YYYY-MM-DD&pelicula_id={id}",
+      "respuesta_200": "Lista de funcion_respuesta publicadas."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/cartelera/peliculas/{id}/funciones/",
+      "query": "fecha=YYYY-MM-DD",
+      "respuesta_200": "Funciones publicadas de una pelicula para la fecha."
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/cartelera/promociones/activas/",
+      "query": "fecha=YYYY-MM-DD&pelicula_id={id}",
+      "respuesta_200": "Promociones visibles y funciones participantes."
+    }
+  ],
+  "endpoints_administracion": {
+    "generos": [
+      {"metodo": "GET", "ruta": "/api/v1/administracion/generos/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.generos.ver"},
+      {"metodo": "POST", "ruta": "/api/v1/administracion/generos/", "body": {"nombre": "Drama"}, "respuesta": "201 catalogo", "permiso": "cartelera.generos.crear"},
+      {"metodo": "GET", "ruta": "/api/v1/administracion/generos/{id}/", "respuesta": "200 catalogo", "permiso": "cartelera.generos.ver"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/generos/{id}/", "body": {"nombre": "Drama y suspenso"}, "respuesta": "200 catalogo", "permiso": "cartelera.generos.editar"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/generos/{id}/estado/", "body": {"activo": false}, "respuesta": "200 catalogo", "permiso": "cartelera.generos.cambiar_estado"}
+    ],
+    "actores": [
+      {"metodo": "GET", "ruta": "/api/v1/administracion/actores/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.actores.ver"},
+      {"metodo": "POST", "ruta": "/api/v1/administracion/actores/", "body": {"nombre": "Nombre del actor", "biografia_breve": "", "foto_url": null}, "respuesta": "201 actor", "permiso": "cartelera.actores.crear"},
+      {"metodo": "GET", "ruta": "/api/v1/administracion/actores/{id}/", "respuesta": "200 actor", "permiso": "cartelera.actores.ver"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/actores/{id}/", "body": {"nombre": "Nombre actualizado"}, "respuesta": "200 actor", "permiso": "cartelera.actores.editar"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/actores/{id}/estado/", "body": {"activo": false}, "respuesta": "200 actor", "permiso": "cartelera.actores.cambiar_estado"}
+    ],
+    "directores": [
+      {"metodo": "GET", "ruta": "/api/v1/administracion/directores/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.directores.ver"},
+      {"metodo": "POST", "ruta": "/api/v1/administracion/directores/", "body": {"nombre": "Nombre del director", "biografia_breve": "", "foto_url": null}, "respuesta": "201 director", "permiso": "cartelera.directores.crear"},
+      {"metodo": "GET", "ruta": "/api/v1/administracion/directores/{id}/", "respuesta": "200 director", "permiso": "cartelera.directores.ver"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/directores/{id}/", "body": {"nombre": "Nombre actualizado"}, "respuesta": "200 director", "permiso": "cartelera.directores.editar"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/directores/{id}/estado/", "body": {"activo": false}, "respuesta": "200 director", "permiso": "cartelera.directores.cambiar_estado"}
+    ],
+    "peliculas": [
+      {"metodo": "GET", "ruta": "/api/v1/administracion/peliculas/", "query": "buscar=texto&seccion=CARTELERA|PROXIMAMENTE|RETIRADA&activa=true|false", "permiso": "cartelera.peliculas.ver"},
+      {"metodo": "POST", "ruta": "/api/v1/administracion/peliculas/", "content_type": "application/json", "body": "pelicula_peticion", "respuesta": "201 pelicula_respuesta", "permiso": "cartelera.peliculas.crear"},
+      {"metodo": "GET", "ruta": "/api/v1/administracion/peliculas/{id}/", "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.ver"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/peliculas/{id}/", "content_type": "application/json", "body": "Campos parciales de pelicula_peticion", "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.editar"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/peliculas/{id}/estado/", "body": {"activa": false, "publicada": false}, "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.cambiar_estado"},
+      {"metodo": "POST", "ruta": "/api/v1/administracion/peliculas/{id}/imagenes/", "content_type": "multipart/form-data", "body": "imagenes_pelicula_multipart", "respuesta": {"poster_url": "url-o-null", "fondo_inicio_url": "url-o-null", "visibilidad_fondo_porcentaje": 65}, "permiso": "cartelera.peliculas.editar_imagenes"}
+    ],
+    "funciones": [
+      {"metodo": "POST", "ruta": "/api/v1/administracion/peliculas/{id}/funciones/", "body": "funcion_peticion", "respuesta": "201 funcion_respuesta", "permiso": "cartelera.funciones.crear"},
+      {"metodo": "GET", "ruta": "/api/v1/administracion/funciones/{id}/", "respuesta": "200 funcion_respuesta", "permiso": "cartelera.funciones.ver"},
+      {"metodo": "PATCH", "ruta": "/api/v1/administracion/funciones/{id}/", "body": "Campos parciales de funcion_peticion", "respuesta": "200 funcion_respuesta", "permiso": "cartelera.funciones.editar"},
+      {"metodo": "DELETE", "ruta": "/api/v1/administracion/funciones/{id}/", "respuesta": "204 si no tiene ventas; 409 FUNCION_CON_VENTAS si ya tiene historial", "permiso": "cartelera.funciones.retirar"}
+    ],
+    "promocion_2x1": [
+      {"metodo": "GET", "ruta": "/api/v1/administracion/promociones/2x1/", "respuesta": "200 promocion_2x1_peticion", "permiso": "cartelera.promociones.ver"},
+      {"metodo": "PUT", "ruta": "/api/v1/administracion/promociones/2x1/", "body": "promocion_2x1_peticion", "respuesta": "200 configuracion validada con funciones efectivas", "permiso": "cartelera.promociones.editar"}
+    ]
+  },
+  "validaciones": {
+    "catalogos": [
+      "nombre obligatorio y unico sin distinguir mayusculas o espacios laterales",
+      "no desactivar un catalogo si deja una pelicula publicada en estado invalido; devolver 409 o conservar la relacion historica"
+    ],
+    "peliculas": [
+      "titulo de 2 a 120 caracteres",
+      "duracion_minutos entre 1 y 500",
+      "al menos un genero activo",
+      "director y actores deben existir y estar activos al asociarlos",
+      "seccion en CARTELERA, PROXIMAMENTE o RETIRADA",
+      "visibilidad_fondo_porcentaje entre 35 y 85",
+      "trailer_url debe ser una URL permitida"
+    ],
+    "imagenes": [
+      "poster con proporcion final 2:3 y minimo recomendado de 1000x1500",
+      "fondo con proporcion final 16:7 y minimo recomendado de 1920x840",
+      "formatos JPG, PNG o WebP; el backend valida MIME real, peso y dimensiones",
+      "la respuesta devuelve URL publica o firmada; nunca base64"
+    ],
+    "funciones": [
+      "fecha YYYY-MM-DD, hora HH:MM, formato 2D o 3D y precio mayor o igual a cero",
+      "Sala 1 se asigna en backend",
+      "no permitir cruces de horario",
+      "venta_hasta se calcula como hora_inicio mas 20 minutos"
+    ],
+    "promocion_2x1": [
+      "periodo valido y al menos una pelicula",
+      "dias limitados a LUNES, MARTES y MIERCOLES",
+      "FUNCIONES_ESPECIFICAS requiere funciones_ids",
+      "las funciones deben pertenecer a las peliculas, fechas y dias seleccionados"
+    ]
+  },
+  "errores": [
+    {"http": 400, "codigo": "ERROR_VALIDACION", "uso": "Campos ausentes o invalidos."},
+    {"http": 400, "codigo": "CRUCE_HORARIO_SALA", "uso": "Sala 1 ocupada durante el intervalo."},
+    {"http": 400, "codigo": "IMAGEN_INVALIDA", "uso": "Tipo, peso, dimensiones o encuadre invalido."},
+    {"http": 400, "codigo": "PROMOCION_INVALIDA", "uso": "Reglas del 2x1 incumplidas."},
+    {"http": 401, "codigo": "AUTENTICACION_REQUERIDA", "uso": "No existe credencial valida."},
+    {"http": 403, "codigo": "PERMISO_DENEGADO", "uso": "El empleado no posee el permiso."},
+    {"http": 404, "codigo": "RECURSO_NO_ENCONTRADO", "uso": "Catalogo, pelicula, funcion o promocion inexistente."},
+    {"http": 409, "codigo": "NOMBRE_DUPLICADO", "uso": "Ya existe un catalogo con ese nombre."},
+    {"http": 409, "codigo": "RECURSO_EN_USO", "uso": "No se puede retirar sin conservar relaciones historicas."},
+    {"http": 409, "codigo": "FUNCION_CON_VENTAS", "uso": "La funcion tiene historial y no se elimina."},
+    {"http": 409, "codigo": "VENTA_CERRADA_20_MIN", "uso": "La confirmacion llego fuera del limite."}
+  ],
+  "formato_error": {
+    "codigo": "ERROR_VALIDACION",
+    "mensaje": "Revisa los datos enviados.",
+    "errores": {"campo": ["Descripcion del error."]}
+  }
+}

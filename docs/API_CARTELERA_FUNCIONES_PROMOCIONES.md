@@ -1,6 +1,6 @@
 # Contrato API — cartelera, funciones y promoción 2x1
 
-**Versión:** 1.1
+**Versión:** 2.0
 **Zona horaria:** `America/Tegucigalpa`
 **Sala disponible:** `Sala 1`
 
@@ -9,6 +9,7 @@ Este contrato define el intercambio entre Administración, el sitio público y T
 ## 1. Reglas generales
 
 - El backend es la fuente oficial de películas, funciones, precios, promociones y disponibilidad de venta.
+- Géneros, actores y directores son catálogos administrables. El frontend envía sus identificadores al guardar una película y no crea registros duplicados como texto libre.
 - El administrador operativo puede crear y modificar contenido; el vendedor de Taquilla solo consulta la cartelera y registra ventas.
 - Aramacao tiene una sola sala. El frontend no envía una sala elegida por el administrador: el backend asigna `Sala 1`.
 - Una función pertenece a una película y tiene fecha exacta, hora, formato `2D` o `3D` y precio.
@@ -24,6 +25,7 @@ Este contrato define el intercambio entre Administración, el sitio público y T
 | Método | Endpoint | Uso |
 |---|---|---|
 | `GET` | `/api/v1/cartelera/peliculas/` | Películas publicadas en cartelera y próximos estrenos. |
+| `GET` | `/api/v1/cartelera/peliculas/{id}/` | Ficha pública de una película. |
 | `GET` | `/api/v1/cartelera/funciones/?fecha=2026-08-10` | Funciones publicadas para una fecha. |
 | `GET` | `/api/v1/cartelera/peliculas/{id}/funciones/?fecha=2026-08-10` | Funciones de una película para una fecha. |
 | `GET` | `/api/v1/cartelera/promociones/activas/?fecha=2026-08-10` | Promociones visibles y funciones participantes. |
@@ -32,13 +34,47 @@ Este contrato define el intercambio entre Administración, el sitio público y T
 
 Todos requieren sesión con rol `ADMINISTRADOR_OPERATIVO` y permiso específico.
 
+### 3.1 Catálogos
+
+Los tres catálogos usan la misma forma de trabajo: listar, crear, consultar, editar y activar/desactivar. Un cambio de estado se mantiene separado de la edición para que el backend pueda asignar permisos y auditoría específicos.
+
+| Recurso | Listar y crear | Consultar y editar | Cambiar estado |
+|---|---|---|---|
+| Géneros | `/api/v1/administracion/generos/` | `/api/v1/administracion/generos/{id}/` | `/api/v1/administracion/generos/{id}/estado/` |
+| Actores | `/api/v1/administracion/actores/` | `/api/v1/administracion/actores/{id}/` | `/api/v1/administracion/actores/{id}/estado/` |
+| Directores | `/api/v1/administracion/directores/` | `/api/v1/administracion/directores/{id}/` | `/api/v1/administracion/directores/{id}/estado/` |
+
+- `GET` lista y permite `?buscar=texto&activo=true|false`.
+- `POST` crea un registro.
+- `GET /{id}/` consulta un registro.
+- `PATCH /{id}/` modifica sus datos.
+- `PATCH /{id}/estado/` recibe `{ "activo": false }` o `{ "activo": true }`.
+- El backend debe impedir nombres duplicados sin distinguir mayúsculas, minúsculas ni espacios laterales.
+
+Ejemplo mínimo de catálogo:
+
+```json
+{
+  "id": "genero-id-1",
+  "nombre": "Aventura",
+  "activo": true
+}
+```
+
+Actores y directores pueden agregar `biografia_breve` y `foto_url` como campos opcionales. No son obligatorios para la primera conexión del frontend.
+
+### 3.2 Películas, imágenes, funciones y promoción
+
 | Método | Endpoint | Uso |
 |---|---|---|
 | `GET` | `/api/v1/administracion/peliculas/` | Listar películas activas y retiradas. |
 | `POST` | `/api/v1/administracion/peliculas/` | Crear una película. |
 | `GET` | `/api/v1/administracion/peliculas/{id}/` | Consultar una película. |
 | `PATCH` | `/api/v1/administracion/peliculas/{id}/` | Actualizar datos o publicación. |
+| `PATCH` | `/api/v1/administracion/peliculas/{id}/estado/` | Activar, retirar o cambiar publicación. |
+| `POST` | `/api/v1/administracion/peliculas/{id}/imagenes/` | Subir o reemplazar póster y fondo. |
 | `POST` | `/api/v1/administracion/peliculas/{id}/funciones/` | Crear una función. |
+| `GET` | `/api/v1/administracion/funciones/{id}/` | Consultar una función. |
 | `PATCH` | `/api/v1/administracion/funciones/{id}/` | Actualizar una función. |
 | `DELETE` | `/api/v1/administracion/funciones/{id}/` | Retirar una función sin ventas. |
 | `GET` | `/api/v1/administracion/promociones/2x1/` | Consultar la configuración actual. |
@@ -48,7 +84,29 @@ Si una película o función ya tiene ventas, no se elimina físicamente. El back
 
 ## 4. Película
 
-Ejemplo de respuesta:
+La petición usa identificadores de catálogos:
+
+```json
+{
+  "titulo": "Horizonte Perdido",
+  "descripcion_breve": "Una expedición cruza los límites de lo conocido.",
+  "sinopsis": "Descripción completa de la película.",
+  "duracion_minutos": 118,
+  "clasificacion": "B",
+  "generos_ids": ["genero-id-1"],
+  "idioma": "Doblada al español",
+  "director_id": "director-id-1",
+  "actores_ids": ["actor-id-1", "actor-id-2"],
+  "seccion": "CARTELERA",
+  "publicada": true,
+  "destacada_inicio": true,
+  "fecha_estreno": "2026-08-27",
+  "trailer_url": "https://www.youtube.com/watch?v=video",
+  "visibilidad_fondo_porcentaje": 65
+}
+```
+
+La respuesta devuelve resúmenes de los catálogos para evitar consultas adicionales:
 
 ```json
 {
@@ -58,12 +116,19 @@ Ejemplo de respuesta:
   "sinopsis": "Descripción completa de la película.",
   "duracion_minutos": 118,
   "clasificacion": "B",
-  "generos": ["Aventura", "Ciencia ficcion"],
+  "generos": [
+    {"id": "genero-id-1", "nombre": "Aventura"},
+    {"id": "genero-id-2", "nombre": "Ciencia ficcion"}
+  ],
   "idioma": "Doblada al español",
-  "director": "Nombre del director",
-  "reparto": ["Actor 1", "Actor 2"],
+  "director": {"id": "director-id-1", "nombre": "Nombre del director"},
+  "actores": [
+    {"id": "actor-id-1", "nombre": "Actor 1"},
+    {"id": "actor-id-2", "nombre": "Actor 2"}
+  ],
   "seccion": "CARTELERA",
   "publicada": true,
+  "activa": true,
   "destacada_inicio": true,
   "fecha_estreno": "2026-08-06",
   "trailer_url": "https://www.youtube.com/watch?v=video",
@@ -86,6 +151,37 @@ Recomendaciones de imágenes:
 - `visibilidad_fondo_porcentaje`: entero entre `35` y `85`; permite que Administración previsualice y elija cuánto se ve la imagen detrás del texto.
 - Formatos: JPG, PNG o WebP.
 - El backend valida tipo real, peso y dimensiones antes de publicar.
+
+### 4.1 Carga de imágenes
+
+Las imágenes se envían después de crear la película:
+
+```http
+POST /api/v1/administracion/peliculas/{id}/imagenes/
+Content-Type: multipart/form-data
+```
+
+Campos admitidos:
+
+| Campo | Uso |
+|---|---|
+| `poster` | Archivo JPG, PNG o WebP opcional. |
+| `fondo_inicio` | Archivo JPG, PNG o WebP opcional. |
+| `poster_encuadre` | JSON opcional con `x`, `y`, `zoom` y proporción `2:3`. |
+| `fondo_encuadre` | JSON opcional con `x`, `y`, `zoom` y proporción `16:7`. |
+| `visibilidad_fondo_porcentaje` | Entero entre 35 y 85. |
+
+El backend puede guardar el archivo ya recortado o conservar el original y el encuadre. Esa decisión es interna; la respuesta que necesita el frontend es:
+
+```json
+{
+  "poster_url": "https://archivos.example/poster.webp",
+  "fondo_inicio_url": "https://archivos.example/fondo.webp",
+  "visibilidad_fondo_porcentaje": 65
+}
+```
+
+Las URLs pueden ser públicas o firmadas según el proveedor elegido. Nunca deben devolverse datos base64 como almacenamiento definitivo.
 
 ## 5. Crear una función
 
@@ -218,10 +314,13 @@ Ninguno de los dos canales puede activar, desactivar ni forzar la promoción. El
 |---:|---|---|
 | `400` | `ERROR_VALIDACION` | Faltan campos o el formato es inválido. |
 | `400` | `CRUCE_HORARIO_SALA` | La única sala está ocupada durante ese intervalo. |
+| `400` | `IMAGEN_INVALIDA` | El tipo, peso, dimensiones o encuadre no es aceptado. |
 | `400` | `PROMOCION_INVALIDA` | La configuración del 2x1 no cumple las reglas. |
 | `401` | `AUTENTICACION_REQUERIDA` | No existe sesión válida. |
 | `403` | `PERMISO_DENEGADO` | El empleado no puede realizar la operación. |
 | `404` | `RECURSO_NO_ENCONTRADO` | No existe la película, función o promoción. |
+| `409` | `NOMBRE_DUPLICADO` | Ya existe un género, actor o director con ese nombre. |
+| `409` | `RECURSO_EN_USO` | El catálogo está relacionado con películas y debe conservar historial. |
 | `409` | `FUNCION_CON_VENTAS` | No puede eliminarse una función con ventas. |
 | `409` | `VENTA_CERRADA_20_MIN` | La confirmación llegó después del límite. |
 
@@ -234,3 +333,15 @@ docs/json/cartelera/
 ```
 
 Son un contrato de intercambio, no una base de datos ni una API estática.
+
+El contrato completo y directamente validable por el backend está en:
+
+```text
+docs/json/04-cartelera-catalogos-funciones-promociones.json
+```
+
+La colección para pruebas manuales está en:
+
+```text
+docs/postman/Aramacao-Cartelera-Catalogos-Funciones.postman_collection.json
+```

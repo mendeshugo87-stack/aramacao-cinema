@@ -36,6 +36,7 @@
     "Un segundo escaneo del mismo QR se rechaza y devuelve la fecha y hora del primer uso.",
     "Una reemisión anula el token anterior, crea otro token y registra empleado, motivo y fecha.",
     "El comprobante agrupa la compra completa; no sustituye una factura fiscal.",
+    "La descarga del boleto para el cliente se entrega como image/png; el comprobante y la impresión térmica de Taquilla permanecen como documentos separados.",
     "Los importes monetarios viajan como cadenas decimales con dos posiciones y moneda HNL.",
     "Crear orden, iniciar pago, procesar webhook y escanear QR deben ser idempotentes o estar protegidos contra solicitudes repetidas.",
     "Todas las operaciones usan la zona America/Tegucigalpa y conservan fecha y hora con desplazamiento -06:00.",
@@ -191,7 +192,11 @@
       "metodo": "GET",
       "ruta": "/api/v1/clientes/mi-cuenta/boletos/{boleto_id}/descargar/",
       "autenticacion": "CLIENTE_DUEÑO",
-      "uso": "Descargar el boleto individual con su QR."
+      "uso": "Descargar el boleto individual completo con su QR como imagen PNG.",
+      "response_200": {
+        "content_type": "image/png",
+        "content_disposition": "attachment; filename=\"boleto-{numero}.png\""
+      }
     },
     {
       "metodo": "GET",
@@ -274,7 +279,8 @@
     "nota": "La demostración local se construyó en el frontend desde cero sobre las pantallas P3; Django sustituirá localStorage y volverá a validar permisos, importes, disponibilidad, pagos y tokens.",
     "seleccion_2x1_taquilla": "Frontend/assets/js/taquilla.js propone parejas contiguas; Django conserva la validación definitiva.",
     "administracion_ventas": "Frontend/pages/gestion/ventas.html y Frontend/assets/js/admin-sales.js",
-    "recuperacion_taquilla": "Frontend/assets/js/ticket-recovery.js; contrato detallado en docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json"
+    "recuperacion_taquilla": "Frontend/assets/js/ticket-recovery.js; contrato detallado en docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json",
+    "modelo_impresion": "docs/MODELO_COMPROBANTE_BOLETO_QR.md"
   },
   "biblioteca_renderizado_qr": {
     "nombre": "qrcode",

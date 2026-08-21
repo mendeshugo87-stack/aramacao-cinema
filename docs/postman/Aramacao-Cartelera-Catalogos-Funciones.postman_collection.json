@@ -1,0 +1,220 @@
+{
+  "info": {
+    "_postman_id": "9e42b0af-d82f-4ad8-95b8-aramacao-cartelera",
+    "name": "Aramacao - Cartelera, catalogos y funciones",
+    "description": "Contrato de frontend para que Django implemente y pruebe generos, actores, directores, peliculas, imagenes, funciones, precios y promocion 2x1. Las respuestas incluidas son ejemplos; el backend sigue siendo la fuente oficial.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {"key": "token", "value": "{{access_token}}", "type": "string"}
+    ]
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000", "type": "string"},
+    {"key": "access_token", "value": "", "type": "string"},
+    {"key": "genero_id", "value": "", "type": "string"},
+    {"key": "actor_id", "value": "", "type": "string"},
+    {"key": "director_id", "value": "", "type": "string"},
+    {"key": "pelicula_id", "value": "", "type": "string"},
+    {"key": "funcion_id", "value": "", "type": "string"}
+  ],
+  "item": [
+    {
+      "name": "Cartelera publica",
+      "auth": {"type": "noauth"},
+      "item": [
+        {
+          "name": "Listar peliculas publicadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/cartelera/peliculas/?seccion=CARTELERA&fecha=2026-08-27"
+          }
+        },
+        {
+          "name": "Consultar pelicula publica",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/cartelera/peliculas/{{pelicula_id}}/"
+          }
+        },
+        {
+          "name": "Listar funciones por fecha",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/cartelera/funciones/?fecha=2026-08-27&pelicula_id={{pelicula_id}}"
+          }
+        },
+        {
+          "name": "Consultar promocion activa",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/cartelera/promociones/activas/?fecha=2026-08-27&pelicula_id={{pelicula_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generos",
+      "item": [
+        {
+          "name": "Listar generos",
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/generos/?activo=true"}
+        },
+        {
+          "name": "Crear genero",
+          "event": [{"listen": "test", "script": {"exec": ["if (pm.response.code === 201) {", "  pm.collectionVariables.set('genero_id', pm.response.json().id);", "}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Aventura\"\n}"},
+            "url": "{{base_url}}/api/v1/administracion/generos/"
+          }
+        },
+        {
+          "name": "Editar genero",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Aventura familiar\"\n}"},
+            "url": "{{base_url}}/api/v1/administracion/generos/{{genero_id}}/"
+          }
+        },
+        {
+          "name": "Desactivar genero",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"activo\": false\n}"},
+            "url": "{{base_url}}/api/v1/administracion/generos/{{genero_id}}/estado/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Actores y directores",
+      "item": [
+        {
+          "name": "Crear actor",
+          "event": [{"listen": "test", "script": {"exec": ["if (pm.response.code === 201) {", "  pm.collectionVariables.set('actor_id', pm.response.json().id);", "}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Actor de prueba\",\n  \"biografia_breve\": \"\"\n}"},
+            "url": "{{base_url}}/api/v1/administracion/actores/"
+          }
+        },
+        {
+          "name": "Listar actores",
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/actores/?activo=true"}
+        },
+        {
+          "name": "Crear director",
+          "event": [{"listen": "test", "script": {"exec": ["if (pm.response.code === 201) {", "  pm.collectionVariables.set('director_id', pm.response.json().id);", "}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Director de prueba\",\n  \"biografia_breve\": \"\"\n}"},
+            "url": "{{base_url}}/api/v1/administracion/directores/"
+          }
+        },
+        {
+          "name": "Listar directores",
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/directores/?activo=true"}
+        }
+      ]
+    },
+    {
+      "name": "Peliculas e imagenes",
+      "item": [
+        {
+          "name": "Crear pelicula",
+          "event": [{"listen": "test", "script": {"exec": ["if (pm.response.code === 201) {", "  pm.collectionVariables.set('pelicula_id', pm.response.json().id);", "}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Horizonte Perdido\",\n  \"descripcion_breve\": \"Una expedicion cruza los limites de lo conocido.\",\n  \"sinopsis\": \"Descripcion completa de la pelicula.\",\n  \"duracion_minutos\": 118,\n  \"clasificacion\": \"B\",\n  \"generos_ids\": [\"{{genero_id}}\"],\n  \"idioma\": \"Doblada al español\",\n  \"director_id\": \"{{director_id}}\",\n  \"actores_ids\": [\"{{actor_id}}\"],\n  \"seccion\": \"CARTELERA\",\n  \"publicada\": true,\n  \"destacada_inicio\": true,\n  \"fecha_estreno\": \"2026-08-27\",\n  \"trailer_url\": \"https://www.youtube.com/watch?v=video\",\n  \"visibilidad_fondo_porcentaje\": 65\n}"
+            },
+            "url": "{{base_url}}/api/v1/administracion/peliculas/"
+          }
+        },
+        {
+          "name": "Listar peliculas administrativas",
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/peliculas/?seccion=CARTELERA"}
+        },
+        {
+          "name": "Editar pelicula",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"descripcion_breve\": \"Descripcion actualizada.\",\n  \"destacada_inicio\": false\n}"},
+            "url": "{{base_url}}/api/v1/administracion/peliculas/{{pelicula_id}}/"
+          }
+        },
+        {
+          "name": "Subir imagenes de pelicula",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "poster", "type": "file", "src": []},
+                {"key": "fondo_inicio", "type": "file", "src": []},
+                {"key": "visibilidad_fondo_porcentaje", "value": "65", "type": "text"}
+              ]
+            },
+            "url": "{{base_url}}/api/v1/administracion/peliculas/{{pelicula_id}}/imagenes/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Funciones y promocion 2x1",
+      "item": [
+        {
+          "name": "Crear funcion",
+          "event": [{"listen": "test", "script": {"exec": ["if (pm.response.code === 201) {", "  pm.collectionVariables.set('funcion_id', pm.response.json().id);", "}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"fecha\": \"2026-08-27\",\n  \"hora\": \"14:00\",\n  \"formato\": \"2D\",\n  \"precio\": \"120.00\",\n  \"publicada\": true\n}"},
+            "url": "{{base_url}}/api/v1/administracion/peliculas/{{pelicula_id}}/funciones/"
+          }
+        },
+        {
+          "name": "Editar funcion",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"hora\": \"16:00\",\n  \"precio\": \"130.00\"\n}"},
+            "url": "{{base_url}}/api/v1/administracion/funciones/{{funcion_id}}/"
+          }
+        },
+        {
+          "name": "Consultar promocion 2x1",
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/promociones/2x1/"}
+        },
+        {
+          "name": "Guardar promocion 2x1",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activa\": true,\n  \"peliculas_ids\": [\"{{pelicula_id}}\"],\n  \"fecha_inicial\": \"2026-08-24\",\n  \"fecha_final\": \"2026-09-30\",\n  \"dias_semana\": [\"LUNES\", \"MARTES\", \"MIERCOLES\"],\n  \"aplica_en\": \"FUNCIONES_ESPECIFICAS\",\n  \"funciones_ids\": [\"{{funcion_id}}\"],\n  \"condiciones_visibles\": \"Por cada dos admisiones se cobra una en las funciones seleccionadas.\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/administracion/promociones/2x1/"
+          }
+        }
+      ]
+    }
+  ]
+}

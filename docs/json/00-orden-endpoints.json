@@ -41,10 +41,12 @@
                     },
                     {
                         "orden":  4,
-                        "modulo":  "Películas, funciones y promoción 2x1",
-                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+                        "modulo":  "Catálogos, películas, imágenes, funciones, precios y promoción 2x1",
+                        "estado":  "LISTO_PARA_BACKEND",
                         "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/04-siguientes-endpoints.json"
+                        "contrato":  "docs/json/04-cartelera-catalogos-funciones-promociones.json",
+                        "documentacion":  "docs/API_CARTELERA_FUNCIONES_PROMOCIONES.md",
+                        "postman":  "docs/postman/Aramacao-Cartelera-Catalogos-Funciones.postman_collection.json"
                     },
                     {
                         "orden":  5,

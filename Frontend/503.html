@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Aramacao Cinema se encuentra temporalmente en mantenimiento.">
+  <title>Servicio en mantenimiento | Aramacao Cinema</title>
+  <script>
+    (() => {
+      const local = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
+      const base = document.createElement("base");
+      base.href = local && window.location.pathname.startsWith("/Frontend/") ? "/Frontend/" : "/";
+      document.head.append(base);
+    })();
+  </script>
+  <link rel="icon" href="assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/error-pages.css">
+</head>
+<body class="error-page">
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido</a>
+
+  <header class="error-header">
+    <div class="container error-header-inner">
+      <a class="error-brand" href="index.html" aria-label="Ir al inicio de Aramacao Cinema">
+        <img src="assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="260" height="90">
+      </a>
+      <p class="error-header-label">Experiencia Aramacao</p>
+    </div>
+  </header>
+
+  <main class="error-main" id="contenido-principal">
+    <section class="container error-layout" aria-labelledby="error-title">
+      <div class="error-copy">
+        <p class="error-eyebrow">Servicio temporalmente no disponible</p>
+        <h1 id="error-title">Estamos preparando la sala.</h1>
+        <p class="error-description">Realizamos una actualización para mejorar tu experiencia. Intenta nuevamente dentro de unos minutos.</p>
+        <div class="error-actions">
+          <a class="button button-primary" href="">Intentar nuevamente</a>
+          <a class="button button-ghost" href="pages/contacto/">Contactar al cine</a>
+        </div>
+      </div>
+
+      <div class="error-visual" aria-hidden="true">
+        <div class="error-screen">
+          <div>
+            <span class="error-code">503</span>
+            <span class="error-screen-label">Actualización en curso</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="error-footer">
+    <div class="container error-footer-inner">
+      <p>Aramacao Cinema · Intibucá, Honduras</p>
+      <a href="tel:+50497891997">+504 9789-1997</a>
+    </div>
+  </footer>
+</body>
+</html>

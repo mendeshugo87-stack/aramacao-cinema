@@ -8,6 +8,8 @@
  * precios, disponibilidad, pagos y estados de asientos.
  */
 const DATA_URL = "../../assets/data/cartelera.json";
+const DEMO_SALES_STORAGE_KEY = "aramacao-demo-ventas-v1";
+const AVAILABILITY_REFRESH_MS = 5000;
 
 const state = {
   data: null,
@@ -22,6 +24,9 @@ const state = {
    * En la maqueta permanece vacío para no inventar reservas en el navegador.
    */
   seatStatuses: new Map(),
+  availabilitySignature: "",
+  availabilityRefreshPending: false,
+  availabilityRefreshQueued: false,
 };
 
 const elements = {
@@ -30,6 +35,7 @@ const elements = {
   showtimes: document.querySelector("#ticket-showtimes"),
   seatMap: document.querySelector("#seat-map"),
   seatInstruction: document.querySelector("#seat-instruction"),
+  seatSyncStatus: document.querySelector("#seat-sync-status"),
   promotionBox: document.querySelector("#promotion-box"),
   promotionStatus: document.querySelector("#promotion-status"),
   summaryMovie: document.querySelector("#summary-movie"),
@@ -52,6 +58,7 @@ document.addEventListener("DOMContentLoaded", initializeTicketOffice);
 
 async function initializeTicketOffice() {
   bindEvents();
+  startAvailabilitySynchronization();
   configureDateInput();
   renderEmptySeatMap("Selecciona una película y una función para ver los asientos.");
 
@@ -109,6 +116,20 @@ function bindEvents() {
   elements.cashReceived.addEventListener("input", updateSummary);
   elements.clearSale.addEventListener("click", () => resetCurrentSale(false));
   elements.confirmSale.addEventListener("click", confirmSale);
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === DEMO_SALES_STORAGE_KEY) refreshSelectedShowtimeAvailability({ force: true });
+  });
+  window.addEventListener("focus", () => refreshSelectedShowtimeAvailability());
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshSelectedShowtimeAvailability();
+  });
+}
+
+function startAvailabilitySynchronization() {
+  window.setInterval(() => {
+    if (!document.hidden) refreshSelectedShowtimeAvailability();
+  }, AVAILABILITY_REFRESH_MS);
 }
 
 function configureDateInput() {
@@ -196,6 +217,7 @@ function selectShowtime(showtime) {
   state.selectedSeats.clear();
   state.seatPairs.clear();
   state.seatStatuses.clear();
+  state.availabilitySignature = "";
   if (window.AramacaoSalesApi?.esVistaLocal()) {
     const paidStates = window.AramacaoSalesApi.obtenerEstadosAsientosDemo(showtime.id);
     paidStates.reservados.forEach((seat) => state.seatStatuses.set(seat, "reserved"));
@@ -216,6 +238,102 @@ function selectShowtime(showtime) {
   renderSeatMap();
   updatePromotionAvailability();
   updateSummary();
+  setSeatSyncStatus("Sincronización automática activa.");
+  refreshSelectedShowtimeAvailability({ force: true });
+}
+
+async function refreshSelectedShowtimeAvailability({ force = false } = {}) {
+  const selectedShowtime = state.selectedShowtime;
+  if (!selectedShowtime) return;
+  if (state.availabilityRefreshPending) {
+    state.availabilityRefreshQueued = state.availabilityRefreshQueued || force;
+    return;
+  }
+
+  state.availabilityRefreshPending = true;
+  try {
+    const nextStatuses = await fetchSelectedShowtimeStatuses(selectedShowtime);
+    if (String(state.selectedShowtime?.id || "") !== String(selectedShowtime.id)) return;
+
+    const signature = seatStatusSignature(nextStatuses);
+    if (force || signature !== state.availabilitySignature) {
+      const conflicts = [...state.selectedSeats].filter((seat) =>
+        ["reserved", "occupied"].includes(nextStatuses.get(seat))
+      );
+      if (conflicts.length) {
+        state.selectedSeats.clear();
+        state.seatPairs.clear();
+        showError(`La disponibilidad cambió. Se liberó tu selección porque ${conflicts.join(", ")} ya no está disponible.`);
+      }
+
+      state.seatStatuses = nextStatuses;
+      state.availabilitySignature = signature;
+      renderSeatMap();
+      updateSummary();
+    }
+    setSeatSyncStatus(`Actualizado automáticamente: ${formatSyncTime(new Date())}.`);
+  } catch (error) {
+    setSeatSyncStatus("No se pudo actualizar la disponibilidad. Se intentará nuevamente.", true);
+    console.warn("No se pudo sincronizar la disponibilidad de Taquilla:", error);
+  } finally {
+    state.availabilityRefreshPending = false;
+    const refreshAgain = state.availabilityRefreshQueued
+      || (state.selectedShowtime && String(state.selectedShowtime.id) !== String(selectedShowtime.id));
+    state.availabilityRefreshQueued = false;
+    if (refreshAgain) {
+      refreshSelectedShowtimeAvailability({ force: true });
+    }
+  }
+}
+
+async function fetchSelectedShowtimeStatuses(showtime) {
+  const statuses = new Map();
+  if (window.AramacaoSalesApi?.esVistaLocal()) {
+    const paidStates = window.AramacaoSalesApi.obtenerEstadosAsientosDemo(showtime.id);
+    paidStates.reservados.forEach((seat) => statuses.set(String(seat).toUpperCase(), "reserved"));
+    paidStates.ocupados.forEach((seat) => statuses.set(String(seat).toUpperCase(), "occupied"));
+    return statuses;
+  }
+
+  if (!window.AramacaoSeatApi?.consultarDisponibilidad) {
+    throw new Error("No se cargó el adaptador de disponibilidad.");
+  }
+  const availability = await window.AramacaoSeatApi.consultarDisponibilidad(showtime.id, {
+    fecha: toLocalISODate(state.selectedDate),
+    hora: showtime.rawTime,
+  });
+  addSeatStatuses(statuses, availability?.asientos_bloqueados_temporalmente, "reserved");
+  addSeatStatuses(statuses, availability?.asientos_reservados, "reserved");
+  addSeatStatuses(statuses, availability?.asientos_ocupados, "occupied");
+  return statuses;
+}
+
+function addSeatStatuses(statuses, seats, status) {
+  (Array.isArray(seats) ? seats : []).forEach((item) => {
+    const seat = typeof item === "string" ? item : item?.codigo || item?.asiento;
+    if (seat) statuses.set(String(seat).toUpperCase(), status);
+  });
+}
+
+function seatStatusSignature(statuses) {
+  return [...statuses.entries()]
+    .sort(([first], [second]) => sortSeats(first, second))
+    .map(([seat, status]) => `${seat}:${status}`)
+    .join("|");
+}
+
+function setSeatSyncStatus(message, error = false) {
+  if (!elements.seatSyncStatus) return;
+  elements.seatSyncStatus.textContent = message;
+  elements.seatSyncStatus.classList.toggle("is-error", error);
+}
+
+function formatSyncTime(date) {
+  return new Intl.DateTimeFormat("es-HN", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
 }
 
 function renderSeatMap() {
@@ -523,6 +641,7 @@ function getShowtimes(movie, date) {
     .map((showtime) => ({
       id: showtime.id,
       time: formatTimeForDisplay(showtime.hora),
+      rawTime: showtime.hora,
       room: "Sala 1",
       format: showtime.formato,
       price: Number(showtime.precio),

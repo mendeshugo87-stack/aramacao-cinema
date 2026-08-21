@@ -34,6 +34,7 @@
 .qr-scan-result dl div { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid #31554d; }
 .qr-scan-result dt { color: #a8c1bb; }
 .qr-scan-result dd { min-width: 0; margin: 0; text-align: right; font-weight: 800; overflow-wrap: anywhere; }
+.qr-scan-next { width: 100%; margin-top: 16px; }
 .pair-pending { color: #ffe36b; font-weight: 800; }
 .pair-complete { color: #79efbb; font-weight: 800; }
 

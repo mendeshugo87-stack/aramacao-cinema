@@ -1,5 +1,6 @@
 {
   "modulo": "Aforo, asientos y bloqueos por función",
+  "version": "1.1",
   "estado": "CONTRATO_PREPARADO_SIN_DJANGO",
   "sala": {
     "nombre": "Sala 1",
@@ -52,8 +53,20 @@
     "Un segundo escaneo del mismo QR debe rechazarse con BOLETO_YA_UTILIZADO.",
     "Cada asiento genera un boleto individual; el 2x1 genera dos boletos y ocupa dos asientos.",
     "La venta en línea y Taquilla comparten la misma disponibilidad.",
+    "Compra en línea y Taquilla consultan automáticamente la función seleccionada cada 5 segundos y al recuperar el foco.",
+    "La respuesta de disponibilidad usa Cache-Control: no-store y refleja ventas y escaneos ya confirmados.",
+    "La actualización visual no sustituye la revalidación transaccional que impide vender dos veces el mismo asiento.",
     "venta_hasta corresponde a 20 minutos después de hora_inicio; después de ese límite no se crean bloqueos."
   ],
+  "sincronizacion_frontend": {
+    "intervalo_segundos": 5,
+    "eventos_adicionales": [
+      "foco de la ventana",
+      "pestaña vuelve a estar visible",
+      "cambio de localStorage únicamente en la demostración local"
+    ],
+    "mejora_futura_opcional": "WebSocket o Server-Sent Events puede reemplazar la consulta periódica sin cambiar el contrato de estados."
+  },
   "fuera_de_este_bloque": [
     "Procesamiento del pago.",
     "Emisión de comprobantes o facturas.",

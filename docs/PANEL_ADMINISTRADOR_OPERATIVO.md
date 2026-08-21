@@ -18,6 +18,11 @@ Permitir que un administrador autorizado cambie la información que utilizan el 
 - Sala única `Sala 1`, fija y no editable por el administrador.
 - Configuración completa del 2x1: películas, periodo, lunes/martes/miércoles y todas las funciones o funciones específicas.
 - Acceso al formulario de creación de vendedores.
+- Consulta global de ventas en línea y de Taquilla con filtros.
+- Detalle de pago, función, asientos, comprobante y boletos.
+- Reimpresión de comprobantes y boletos sin cambiar el QR.
+- Reemisión protegida que invalida el QR anterior y conserva el asiento.
+- Anulación y reembolso con motivo, permisos separados y auditoría.
 
 ## Comportamiento de la maqueta
 
@@ -56,10 +61,6 @@ El frontend visual ya incluye:
 1. Cartelera y Próximamente como páginas independientes.
 2. Dulcería, Servicios y Contacto.
 3. Crear cuenta, iniciar sesión y recuperar contraseña.
-Queda pendiente para los siguientes módulos de backend:
-
-1. Selección y bloqueo temporal de asientos por función.
-2. Confirmación de ventas y pagos en línea o en Taquilla.
-3. Emisión de comprobantes, boletos individuales con QR, escaneo y reemisión.
+El frontend y sus contratos ya preparan selección y bloqueo de asientos, ventas en línea y Taquilla, comprobantes, boletos QR, Control de entrada y Administración de ventas. Falta que Django implemente los endpoints y sustituya el almacenamiento local de demostración.
 
 El botón **Comprar boletos** lleva al formulario de cuenta conservando la película, fecha y horario elegidos. Cuando exista backend, si el cliente ya tiene una sesión válida podrá pasar directamente a la compra; si no, deberá crear su cuenta o iniciar sesión y luego regresar al mismo paso.

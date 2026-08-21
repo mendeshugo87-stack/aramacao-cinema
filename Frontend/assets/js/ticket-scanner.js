@@ -89,7 +89,30 @@ function renderScannerResult(response) {
 
   scannerElements.result.append(title, list);
   if (pair) scannerElements.result.append(pairMessage);
+  const nextButton = document.createElement("button");
+  nextButton.className = "button button-primary qr-scan-next";
+  nextButton.type = "button";
+  nextButton.textContent = "Escanear otro boleto";
+  nextButton.addEventListener("click", prepareNextScan, { once: true });
+  scannerElements.result.append(nextButton);
   scannerElements.result.hidden = false;
+}
+
+function prepareNextScan() {
+  stopQrCamera();
+  scannerElements.result.hidden = true;
+  scannerElements.result.replaceChildren();
+  scannerElements.input.value = "";
+  setScannerStatus("Listo para escanear el siguiente boleto.", "");
+
+  if (("BarcodeDetector" in window) && navigator.mediaDevices?.getUserMedia) {
+    startQrCamera();
+    return;
+  }
+
+  const manualEntry = scannerElements.input.closest("details");
+  if (manualEntry) manualEntry.open = true;
+  scannerElements.input.focus();
 }
 
 async function startQrCamera() {

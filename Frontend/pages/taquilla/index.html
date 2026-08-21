@@ -8,15 +8,18 @@
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/taquilla.css?v=20260819-taquilla-qa1">
+  <link rel="stylesheet" href="../../assets/css/taquilla.css?v=20260821-sincronizacion-1">
   <link rel="stylesheet" href="../../assets/css/ticket-office-checkout.css?v=20260819-taquilla-qa1">
+  <link rel="stylesheet" href="../../assets/css/ticket-recovery.css?v=20260820-fechas-2">
   <script src="../../assets/js/staff-api.js?v=8" defer></script>
   <script src="../../assets/js/staff-private.js?v=8" defer></script>
   <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
   <script src="../../assets/vendor/qrcode/qrcode.js?v=20260819-taquilla-qa1" defer></script>
-  <script src="../../assets/js/sales-api.js?v=20260818-zona-hn-1" defer></script>
-  <script src="../../assets/js/taquilla.js?v=20260819-taquilla-qa1" defer></script>
+  <script src="../../assets/js/sales-api.js?v=20260820-fechas-2" defer></script>
+  <script src="../../assets/js/seat-api.js?v=20260821-sincronizacion-1" defer></script>
+  <script src="../../assets/js/taquilla.js?v=20260821-sincronizacion-1" defer></script>
   <script src="../../assets/js/ticket-office-checkout.js?v=20260818-separacion-1" defer></script>
+  <script src="../../assets/js/ticket-recovery.js?v=20260820-fechas-2" defer></script>
 </head>
 <body
   class="ticket-office-body"
@@ -123,6 +126,7 @@
           <div class="seat-map-scroll" tabindex="0" aria-label="Desplaza horizontalmente para ver todos los asientos">
             <div class="seat-map" id="seat-map" role="group" aria-label="Mapa de asientos"></div>
           </div>
+          <p class="seat-sync-status" id="seat-sync-status" role="status" aria-live="polite">Selecciona una función para activar la sincronización automática.</p>
         </section>
       </div>
 
@@ -188,6 +192,77 @@
       </div>
       <p class="ticket-office-result-status" id="ticket-office-sale-status" role="status" aria-live="polite"></p>
       <div class="ticket-office-result-actions" id="ticket-office-sale-actions"></div>
+    </section>
+
+    <section class="ticket-recovery" id="ticket-recovery" aria-labelledby="ticket-recovery-title" hidden>
+      <div class="ticket-recovery-heading">
+        <div>
+          <p class="eyebrow">Atención al cliente</p>
+          <h2 id="ticket-recovery-title">Recuperar boleto perdido</h2>
+          <p>Busca una cuenta, compara su documento físico y reemplaza el QR perdido. Se muestran únicamente funciones de hoy y futuras.</p>
+        </div>
+        <span class="ticket-recovery-rule">Hoy y próximas · solo pagados y sin ingreso</span>
+      </div>
+
+      <form class="ticket-recovery-search" id="ticket-recovery-search" novalidate>
+        <label class="field">
+          <span>Buscar por</span>
+          <select id="ticket-recovery-criteria" name="criterio">
+            <option value="IDENTIFICACION">Número de identidad</option>
+            <option value="NOMBRE">Nombre del cliente</option>
+            <option value="USUARIO">Usuario</option>
+          </select>
+        </label>
+        <label class="field ticket-recovery-query-field">
+          <span>Dato de búsqueda</span>
+          <input id="ticket-recovery-query" name="valor" type="search" autocomplete="off" placeholder="13 dígitos de identidad" required>
+        </label>
+        <button class="button button-primary" id="ticket-recovery-search-button" type="submit">Buscar cliente</button>
+      </form>
+
+      <p class="ticket-recovery-status" id="ticket-recovery-status" role="status" aria-live="polite"></p>
+
+      <div class="ticket-recovery-results" id="ticket-recovery-results" hidden>
+        <div class="ticket-recovery-table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Usuario</th><th>Identificación</th><th></th></tr></thead>
+            <tbody id="ticket-recovery-customers"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="ticket-recovery-purchases" id="ticket-recovery-purchases" aria-labelledby="ticket-recovery-customer-title" hidden>
+        <div class="ticket-recovery-customer-heading">
+          <div>
+            <span>Cliente seleccionado</span>
+            <h3 id="ticket-recovery-customer-title">—</h3>
+            <p id="ticket-recovery-customer-detail">—</p>
+          </div>
+          <button class="button button-ghost" id="ticket-recovery-change-customer" type="button">Cambiar cliente</button>
+        </div>
+        <div class="ticket-recovery-purchase-list" id="ticket-recovery-purchase-list"></div>
+      </section>
+
+      <form class="ticket-recovery-confirm" id="ticket-recovery-confirm" novalidate hidden>
+        <div>
+          <span>Boleto seleccionado</span>
+          <strong id="ticket-recovery-selected-ticket">—</strong>
+        </div>
+        <input id="ticket-recovery-ticket-id" type="hidden">
+        <label class="ticket-recovery-check">
+          <input id="ticket-recovery-document-checked" type="checkbox">
+          <span>Comparé el documento físico con el nombre y la identidad enmascarada mostrados.</span>
+        </label>
+        <label class="field">
+          <span>Motivo obligatorio</span>
+          <textarea id="ticket-recovery-reason" rows="3" maxlength="300" placeholder="Ejemplo: el cliente reporta que perdió el teléfono con el QR." required></textarea>
+        </label>
+        <p class="ticket-recovery-action-status" id="ticket-recovery-action-status" role="status"></p>
+        <div class="ticket-recovery-confirm-actions">
+          <button class="button button-ghost" id="ticket-recovery-cancel" type="button">Cancelar</button>
+          <button class="button button-primary" id="ticket-recovery-confirm-button" type="submit">Invalidar QR anterior y emitir nuevo</button>
+        </div>
+      </form>
     </section>
   </main>
 

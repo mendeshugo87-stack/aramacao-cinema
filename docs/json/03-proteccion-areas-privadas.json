@@ -5,6 +5,10 @@
       "ruta": "/pages/taquilla/",
       "rol": "VENDEDOR_TAQUILLA",
       "permiso": "ventas.crear_venta",
+      "permisos_por_accion": {
+        "buscar_cliente_para_recuperacion": "clientes.buscar_para_recuperacion",
+        "recuperar_boleto_cliente": "boletos.recuperar_cliente"
+      },
       "sin_sesion_ir_a": "/pages/empleados/login.html"
     },
     {
@@ -26,6 +30,19 @@
       "sin_sesion_ir_a": "/pages/gestion/login.html"
     },
     {
+      "ruta": "/pages/gestion/ventas.html",
+      "rol": "ADMINISTRADOR_OPERATIVO",
+      "permiso": "ventas.consultar",
+      "permisos_por_accion": {
+        "reimprimir_comprobante": "ventas.reimprimir_comprobante",
+        "reimprimir_boleto": "boletos.reimprimir",
+        "reemitir_qr": "boletos.reemitir",
+        "anular_venta": "ventas.anular",
+        "reembolsar_pago": "pagos.reembolsar"
+      },
+      "sin_sesion_ir_a": "/pages/gestion/login.html"
+    },
+    {
       "ruta": "/pages/empleados/cambiar-contrasena.html",
       "roles": [
         "VENDEDOR_TAQUILLA",
@@ -42,8 +59,10 @@
     "El vendedor no entra a Gestión y el administrador operativo no entra a Django Admin.",
     "Cerrar sesión invalida la sesión en el servidor.",
     "Registrar accesos y cambios sin guardar contraseñas.",
-    "VENDEDOR_TAQUILLA puede vender e imprimir, pero no usa el endpoint de escaneo.",
-    "CONTROL_ACCESO puede escanear boletos, pero no crea ventas ni cobra pagos."
+    "VENDEDOR_TAQUILLA puede vender e imprimir y, con permisos específicos, recuperar el QR de un cliente verificado; no usa el endpoint de escaneo.",
+    "CONTROL_ACCESO puede escanear boletos, pero no crea ventas ni cobra pagos.",
+    "Solo ADMINISTRADOR_OPERATIVO consulta ventas globales, anula ventas o registra reembolsos. La recuperación limitada en Taquilla no concede esas facultades.",
+    "El backend comprueba el permiso específico de cada botón; ventas.consultar no autoriza por sí solo acciones económicas."
   ],
   "nota_frontend": "staff-private.js muestra la sesión y guía las redirecciones, pero Django aplica la autorización real."
 }

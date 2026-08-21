@@ -1,0 +1,304 @@
+.ticket-recovery {
+  max-width: 1240px;
+  margin: 26px auto 0;
+  padding: 26px;
+  color: #dbe8f5;
+  background: #0b1728;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+}
+
+.ticket-recovery[hidden],
+.ticket-recovery [hidden] {
+  display: none !important;
+}
+
+.ticket-recovery-heading,
+.ticket-recovery-customer-heading,
+.ticket-recovery-confirm-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.ticket-recovery-heading h2,
+.ticket-recovery-customer-heading h3 {
+  margin: 0;
+  color: #fff;
+}
+
+.ticket-recovery-heading > div > p:last-child,
+.ticket-recovery-customer-heading p {
+  margin: 7px 0 0;
+  color: var(--color-muted);
+}
+
+.ticket-recovery-rule {
+  max-width: 300px;
+  padding: 10px 13px;
+  color: #ffe46d;
+  background: rgba(255, 212, 40, 0.08);
+  border: 1px solid rgba(255, 212, 40, 0.32);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ticket-recovery-search {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.65fr) minmax(260px, 1.35fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ticket-recovery-search .button {
+  min-height: 47px;
+  margin: 0;
+}
+
+.ticket-recovery-status,
+.ticket-recovery-action-status {
+  min-height: 1.4em;
+  margin: 14px 0 0;
+  color: #9bb0c4;
+}
+
+.ticket-recovery-status.is-error,
+.ticket-recovery-action-status.is-error {
+  color: #ff9da4;
+}
+
+.ticket-recovery-status.is-success,
+.ticket-recovery-action-status.is-success {
+  color: #7ff5c4;
+}
+
+.ticket-recovery-table-wrap {
+  margin-top: 18px;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 13px;
+}
+
+.ticket-recovery table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.ticket-recovery th,
+.ticket-recovery td {
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.ticket-recovery th {
+  color: #8fa5bb;
+  background: #081320;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ticket-recovery tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ticket-recovery td:last-child {
+  text-align: right;
+}
+
+.ticket-recovery td button,
+.ticket-recovery-ticket button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #fff;
+  background: #14263b;
+  border: 1px solid #496078;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.ticket-recovery td button:hover,
+.ticket-recovery-ticket button:not(:disabled):hover {
+  border-color: var(--color-yellow);
+}
+
+.ticket-recovery-purchases,
+.ticket-recovery-confirm {
+  margin-top: 20px;
+  padding: 20px;
+  background: #081320;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.ticket-recovery-customer-heading > div > span,
+.ticket-recovery-confirm > div > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #8fa5bb;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ticket-recovery-purchase-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.ticket-recovery-purchase {
+  padding: 16px;
+  background: #0b1728;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.ticket-recovery-purchase-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.ticket-recovery-purchase-header strong,
+.ticket-recovery-purchase-header span {
+  display: block;
+}
+
+.ticket-recovery-purchase-header span {
+  margin-top: 3px;
+  color: #95abc1;
+  font-size: 0.78rem;
+}
+
+.ticket-recovery-ticket-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ticket-recovery-ticket {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(160px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  background: #07111e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.ticket-recovery-ticket strong,
+.ticket-recovery-ticket small {
+  display: block;
+}
+
+.ticket-recovery-ticket small {
+  margin-top: 3px;
+  color: #91a6bb;
+}
+
+.ticket-recovery-ticket-state {
+  color: #7ff5c4;
+  font-size: 0.78rem;
+}
+
+.ticket-recovery-ticket-state.is-blocked {
+  color: #ff9da4;
+}
+
+.ticket-recovery-ticket button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.ticket-recovery-confirm {
+  border-color: rgba(255, 212, 40, 0.35);
+}
+
+.ticket-recovery-confirm > div > strong {
+  color: #ffe46d;
+}
+
+.ticket-recovery-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
+  color: #d8e4ef;
+}
+
+.ticket-recovery-check input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--color-yellow);
+}
+
+.ticket-recovery textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  color: #fff;
+  background: #07111e;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+}
+
+.ticket-recovery textarea:focus-visible {
+  outline: 3px solid rgba(255, 212, 40, 0.4);
+  border-color: var(--color-yellow);
+}
+
+.ticket-recovery-confirm-actions {
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.ticket-recovery-confirm-actions .button {
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .ticket-recovery-search,
+  .ticket-recovery-ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket-recovery-heading,
+  .ticket-recovery-customer-heading {
+    display: grid;
+  }
+
+  .ticket-recovery-rule {
+    max-width: none;
+    text-align: left;
+  }
+
+  .ticket-recovery-ticket button,
+  .ticket-recovery-search .button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .ticket-recovery {
+    padding: 18px 14px;
+  }
+
+  .ticket-recovery-confirm-actions {
+    display: grid;
+  }
+
+  .ticket-recovery-confirm-actions .button {
+    width: 100%;
+  }
+}

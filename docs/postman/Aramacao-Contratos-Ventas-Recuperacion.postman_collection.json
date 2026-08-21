@@ -1,0 +1,167 @@
+{
+  "info": {
+    "_postman_id": "4ff4d915-5a95-44aa-8ff5-a1aca0206820",
+    "name": "Aramacao Cinema - Ventas, administración y recuperación",
+    "description": "Rutas esperadas por el frontend. Importar y comparar con la colección del backend antes de cambiar nombres.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('idempotencyKey')) {",
+          "  pm.collectionVariables.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8000/api/v1"},
+    {"key": "clienteId", "value": "1"},
+    {"key": "ventaId", "value": "1"},
+    {"key": "boletoId", "value": "1"},
+    {"key": "csrfToken", "value": ""},
+    {"key": "idempotencyKey", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "Recuperación en Taquilla",
+      "item": [
+        {
+          "name": "Buscar cliente por identidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"},
+              {"key": "X-CSRFToken", "value": "{{csrfToken}}", "type": "text"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"criterio\": \"IDENTIFICACION\",\n  \"valor\": \"0801199012345\"\n}"
+            },
+            "url": "{{baseUrl}}/taquilla/clientes/buscar/",
+            "description": "Requiere clientes.buscar_para_recuperacion. La identidad va en el cuerpo y la respuesta debe enmascararla."
+          }
+        },
+        {
+          "name": "Listar compras recuperables del cliente",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": "{{baseUrl}}/taquilla/clientes/{{clienteId}}/compras-recuperables/",
+            "description": "Debe devolver únicamente funciones de hoy en America/Tegucigalpa y futuras, ordenadas por fecha y hora ascendente. El plazo de 20 minutos bloquea la recuperación, pero no libera un asiento pagado."
+          }
+        },
+        {
+          "name": "Recuperar boleto e invalidar QR anterior",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"},
+              {"key": "Idempotency-Key", "value": "{{idempotencyKey}}", "type": "text"},
+              {"key": "X-CSRFToken", "value": "{{csrfToken}}", "type": "text"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": \"{{clienteId}}\",\n  \"motivo\": \"El cliente perdió el teléfono donde tenía el boleto.\",\n  \"documento_verificado\": true\n}"
+            },
+            "url": "{{baseUrl}}/taquilla/boletos/{{boletoId}}/recuperacion/"
+          }
+        },
+        {
+          "name": "Descargar boleto recuperado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/taquilla/boletos/{{boletoId}}/descargar/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Administración de ventas",
+      "item": [
+        {
+          "name": "Listar ventas",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": "{{baseUrl}}/administracion/ventas/?buscar=&estado=&canal=&fecha_desde=&fecha_hasta="
+          }
+        },
+        {
+          "name": "Detalle de venta",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": "{{baseUrl}}/administracion/ventas/{{ventaId}}/"
+          }
+        },
+        {
+          "name": "Reimprimir comprobante",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/administracion/ventas/{{ventaId}}/comprobante/descargar/"
+          }
+        },
+        {
+          "name": "Reimprimir boleto reservado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/administracion/boletos/{{boletoId}}/descargar/",
+            "description": "Debe responder 409 BOLETO_NO_IMPRIMIBLE si está OCUPADO, ANULADO o REEMBOLSADO."
+          }
+        },
+        {
+          "name": "Reemitir QR como administrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Idempotency-Key", "value": "{{idempotencyKey}}", "type": "text"},
+              {"key": "X-CSRFToken", "value": "{{csrfToken}}", "type": "text"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"motivo\": \"El cliente perdió la copia original del boleto.\"\n}"},
+            "url": "{{baseUrl}}/administracion/boletos/{{boletoId}}/reemision/"
+          }
+        },
+        {
+          "name": "Anular venta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Idempotency-Key", "value": "{{idempotencyKey}}", "type": "text"},
+              {"key": "X-CSRFToken", "value": "{{csrfToken}}", "type": "text"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"motivo\": \"Venta duplicada detectada antes de la función.\"\n}"},
+            "url": "{{baseUrl}}/administracion/ventas/{{ventaId}}/anulacion/"
+          }
+        },
+        {
+          "name": "Registrar reembolso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Idempotency-Key", "value": "{{idempotencyKey}}", "type": "text"},
+              {"key": "X-CSRFToken", "value": "{{csrfToken}}", "type": "text"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"motivo\": \"Función cancelada por el cine.\"\n}"},
+            "url": "{{baseUrl}}/administracion/ventas/{{ventaId}}/reembolso/"
+          }
+        }
+      ]
+    }
+  ]
+}

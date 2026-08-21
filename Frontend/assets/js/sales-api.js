@@ -13,6 +13,14 @@
   const API_ROOT = "/api/v1";
   const DEMO_STORAGE_KEY = "aramacao-demo-ventas-v1";
   const LOGO_RELATIVE_URL = "../../assets/images/AraMacao Completo Degradado (3).png";
+  const DEMO_RECOVERY_CUSTOMER = Object.freeze({
+    id: "vista-local",
+    nombre_completo: "Hugo Méndez",
+    usuario: "hugomendez",
+    tipo_identificacion: "IDENTIDAD_HN",
+    identificacion_enmascarada: "0801-••••-•2345",
+    identificacion_busqueda_demo: "0801199012345",
+  });
   let logoDataUrlPromise = null;
 
   const routes = Object.freeze({
@@ -26,7 +34,26 @@
       `${API_ROOT}/taquilla/ventas/${encodeURIComponent(saleId)}/comprobante/descargar/`,
     boletoTaquilla: (ticketId) =>
       `${API_ROOT}/taquilla/boletos/${encodeURIComponent(ticketId)}/descargar/`,
+    buscarClientesRecuperacion: () => `${API_ROOT}/taquilla/clientes/buscar/`,
+    comprasClienteRecuperacion: (customerId) =>
+      `${API_ROOT}/taquilla/clientes/${encodeURIComponent(customerId)}/compras-recuperables/`,
+    recuperarBoletoTaquilla: (ticketId) =>
+      `${API_ROOT}/taquilla/boletos/${encodeURIComponent(ticketId)}/recuperacion/`,
     escanearBoleto: () => `${API_ROOT}/taquilla/boletos/escanear/`,
+    listarVentasAdministracion: (query = "") =>
+      `${API_ROOT}/administracion/ventas/${query ? `?${query}` : ""}`,
+    detalleVentaAdministracion: (saleId) =>
+      `${API_ROOT}/administracion/ventas/${encodeURIComponent(saleId)}/`,
+    comprobanteAdministracion: (saleId) =>
+      `${API_ROOT}/administracion/ventas/${encodeURIComponent(saleId)}/comprobante/descargar/`,
+    boletoAdministracion: (ticketId) =>
+      `${API_ROOT}/administracion/boletos/${encodeURIComponent(ticketId)}/descargar/`,
+    reemitirBoletoAdministracion: (ticketId) =>
+      `${API_ROOT}/administracion/boletos/${encodeURIComponent(ticketId)}/reemision/`,
+    anularVentaAdministracion: (saleId) =>
+      `${API_ROOT}/administracion/ventas/${encodeURIComponent(saleId)}/anulacion/`,
+    reembolsarVentaAdministracion: (saleId) =>
+      `${API_ROOT}/administracion/ventas/${encodeURIComponent(saleId)}/reembolso/`,
   });
 
   class SalesApiError extends Error {
@@ -173,7 +200,16 @@
       numero: reference,
       referencia: reference,
       bloqueo_id: String(payload.bloqueo_id),
+      cliente_id: channel === "TAQUILLA"
+        ? String(payload.cliente_id || "")
+        : String(payload.cliente_id || DEMO_RECOVERY_CUSTOMER.id),
       cliente_nombre: String(payload.cliente_nombre || "Cliente de prueba"),
+      cliente_usuario: channel === "TAQUILLA"
+        ? String(payload.cliente_usuario || "")
+        : String(payload.cliente_usuario || DEMO_RECOVERY_CUSTOMER.usuario),
+      cliente_identificacion_enmascarada: channel === "TAQUILLA"
+        ? String(payload.cliente_identificacion_enmascarada || "")
+        : String(payload.cliente_identificacion_enmascarada || DEMO_RECOVERY_CUSTOMER.identificacion_enmascarada),
       pelicula: String(payload.pelicula || "Película"),
       pelicula_id: String(payload.pelicula_id || ""),
       funcion_id: String(payload.funcion_id),
@@ -244,6 +280,342 @@
     throw new SalesApiError("No se encontró el boleto.", 404, "BOLETO_NO_ENCONTRADO");
   }
 
+  async function listAdminSales(filters = {}) {
+    if (isLocalPreview()) return listAdminDemoSales(filters);
+    const query = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (String(value || "").trim()) query.set(key, String(value).trim());
+    });
+    return request(routes.listarVentasAdministracion(query.toString()));
+  }
+
+  async function getAdminSale(saleId) {
+    requireValue(saleId, "La venta es obligatoria.");
+    if (isLocalPreview()) return getDemoPurchase(saleId);
+    return request(routes.detalleVentaAdministracion(saleId));
+  }
+
+  async function searchRecoveryCustomers({ criterio = "IDENTIFICACION", valor = "" } = {}) {
+    const normalizedCriteria = String(criterio || "").trim().toUpperCase();
+    validateRecoverySearch(normalizedCriteria, valor);
+    if (isLocalPreview()) return searchDemoRecoveryCustomers(normalizedCriteria, valor);
+    return request(routes.buscarClientesRecuperacion(), {
+      method: "POST",
+      body: JSON.stringify({ criterio: normalizedCriteria, valor: String(valor).trim() }),
+    });
+  }
+
+  async function listRecoveryPurchases(customerId) {
+    requireValue(customerId, "Selecciona un cliente.");
+    if (isLocalPreview()) return listDemoRecoveryPurchases(customerId);
+    return request(routes.comprasClienteRecuperacion(customerId));
+  }
+
+  async function recoverTicketAtOffice(ticketId, { cliente_id = "", motivo = "", documento_verificado = false } = {}) {
+    requireValue(ticketId, "Selecciona un boleto.");
+    requireValue(cliente_id, "Selecciona el cliente que presentó el documento.");
+    validateReason(motivo);
+    if (documento_verificado !== true) {
+      throw new SalesApiError(
+        "Confirma que comparaste el documento físico con los datos del cliente.",
+        400,
+        "DOCUMENTO_NO_VERIFICADO"
+      );
+    }
+    if (isLocalPreview()) return recoverDemoTicketAtOffice(ticketId, cliente_id, motivo);
+    return request(routes.recuperarBoletoTaquilla(ticketId), {
+      method: "POST",
+      headers: buildIdempotencyHeaders(),
+      body: JSON.stringify({
+        cliente_id: String(cliente_id),
+        motivo: String(motivo).trim(),
+        documento_verificado: true,
+      }),
+    });
+  }
+
+  async function reissueAdminTicket(ticketId, reason) {
+    requireValue(ticketId, "El boleto es obligatorio.");
+    validateReason(reason);
+    if (isLocalPreview()) return reissueDemoTicket(ticketId, reason);
+    return request(routes.reemitirBoletoAdministracion(ticketId), {
+      method: "POST",
+      headers: buildIdempotencyHeaders(),
+      body: JSON.stringify({ motivo: String(reason).trim() }),
+    });
+  }
+
+  async function annulAdminSale(saleId, reason) {
+    return updateAdminSaleState(saleId, reason, "ANULADA");
+  }
+
+  async function refundAdminSale(saleId, reason) {
+    return updateAdminSaleState(saleId, reason, "REEMBOLSADA");
+  }
+
+  async function updateAdminSaleState(saleId, reason, targetState) {
+    requireValue(saleId, "La venta es obligatoria.");
+    validateReason(reason);
+    if (isLocalPreview()) return updateDemoSaleState(saleId, reason, targetState);
+    const route = targetState === "ANULADA"
+      ? routes.anularVentaAdministracion(saleId)
+      : routes.reembolsarVentaAdministracion(saleId);
+    return request(route, {
+      method: "POST",
+      headers: buildIdempotencyHeaders(),
+      body: JSON.stringify({ motivo: String(reason).trim() }),
+    });
+  }
+
+  function listAdminDemoSales(filters = {}) {
+    const search = normalizeSearch(filters.buscar);
+    const status = String(filters.estado || "").trim().toUpperCase();
+    const channel = String(filters.canal || "").trim().toUpperCase();
+    const paymentMethod = String(filters.metodo_pago || "").trim().toUpperCase();
+    const from = normalizeDateFilter(filters.fecha_desde);
+    const to = normalizeDateFilter(filters.fecha_hasta);
+    const purchases = readStorage().compras.filter((purchase) => {
+      const purchaseDate = String(purchase.fecha || purchase.creada_en || "").slice(0, 10);
+      const searchable = normalizeSearch([
+        purchase.numero,
+        purchase.referencia,
+        purchase.cliente_nombre,
+        purchase.pelicula,
+        purchase.vendedor_nombre,
+        ...(purchase.asientos || []),
+        ...(purchase.boletos || []).map((ticket) => ticket.numero),
+      ].join(" "));
+      return (!search || searchable.includes(search))
+        && (!status || String(purchase.estado || "").toUpperCase() === status)
+        && (!channel || String(purchase.canal || "ONLINE").toUpperCase() === channel)
+        && (!paymentMethod || String(purchase.metodo_pago || "").toUpperCase() === paymentMethod)
+        && (!from || purchaseDate >= from)
+        && (!to || purchaseDate <= to);
+    });
+    return {
+      total: purchases.length,
+      resumen: {
+        total_ventas: purchases.length,
+        ventas_online: purchases.filter((item) => String(item.canal).toUpperCase() !== "TAQUILLA").length,
+        ventas_taquilla: purchases.filter((item) => String(item.canal).toUpperCase() === "TAQUILLA").length,
+        monto_total: moneyNumber(purchases
+          .filter((item) => item.estado === "PAGADA")
+          .reduce((sum, item) => sum + moneyNumber(item.total), 0)).toFixed(2),
+      },
+      resultados: structuredClone(purchases),
+    };
+  }
+
+  function searchDemoRecoveryCustomers(criteria, value) {
+    const needle = normalizeLookup(value);
+    const customerValue = criteria === "IDENTIFICACION"
+      ? DEMO_RECOVERY_CUSTOMER.identificacion_busqueda_demo
+      : criteria === "USUARIO"
+        ? DEMO_RECOVERY_CUSTOMER.usuario
+        : DEMO_RECOVERY_CUSTOMER.nombre_completo;
+    const hayCompras = readStorage().compras.some((purchase) =>
+      String(purchase.canal || "ONLINE").toUpperCase() !== "TAQUILLA"
+    );
+    const matches = normalizeLookup(customerValue).includes(needle);
+    const result = matches && hayCompras ? [publicDemoCustomer()] : [];
+    return { total: result.length, resultados: structuredClone(result) };
+  }
+
+  function listDemoRecoveryPurchases(customerId) {
+    if (String(customerId) !== DEMO_RECOVERY_CUSTOMER.id) {
+      throw new SalesApiError("No se encontró el cliente.", 404, "CLIENTE_NO_ENCONTRADO");
+    }
+    const purchases = readStorage().compras
+      .filter((purchase) => String(purchase.canal || "ONLINE").toUpperCase() !== "TAQUILLA")
+      .filter(isCurrentOrFuturePurchase)
+      .sort(comparePurchasesByFunction)
+      .map((purchase) => ({
+        ...purchase,
+        boletos: (purchase.boletos || []).map((ticket) => ({
+          ...ticket,
+          ...recoveryEligibility(purchase, ticket),
+        })),
+      }));
+    return {
+      cliente: publicDemoCustomer(),
+      total: purchases.length,
+      resultados: structuredClone(purchases),
+    };
+  }
+
+  function recoverDemoTicketAtOffice(ticketId, customerId, reason) {
+    const storage = readStorage();
+    const located = findStoredTicket(storage, ticketId);
+    const ownerId = located.purchase.cliente_id
+      || (String(located.purchase.canal || "ONLINE").toUpperCase() !== "TAQUILLA" ? DEMO_RECOVERY_CUSTOMER.id : "");
+    if (String(customerId) !== ownerId) {
+      throw new SalesApiError("El boleto no pertenece al cliente verificado.", 404, "BOLETO_NO_ENCONTRADO");
+    }
+    const eligibility = recoveryEligibility(located.purchase, located.ticket);
+    if (!eligibility.recuperable) {
+      throw new SalesApiError(
+        eligibility.motivo_no_recuperable,
+        409,
+        located.ticket.estado === "OCUPADO" ? "BOLETO_YA_UTILIZADO" : "BOLETO_NO_RECUPERABLE"
+      );
+    }
+    const result = reissueDemoTicket(ticketId, reason, {
+      action: "BOLETO_RECUPERADO_TAQUILLA",
+      employee: "Vendedor de Taquilla local",
+    });
+    return { ...result, codigo: "BOLETO_RECUPERADO" };
+  }
+
+  function publicDemoCustomer() {
+    return {
+      id: DEMO_RECOVERY_CUSTOMER.id,
+      nombre_completo: DEMO_RECOVERY_CUSTOMER.nombre_completo,
+      usuario: DEMO_RECOVERY_CUSTOMER.usuario,
+      tipo_identificacion: DEMO_RECOVERY_CUSTOMER.tipo_identificacion,
+      identificacion_enmascarada: DEMO_RECOVERY_CUSTOMER.identificacion_enmascarada,
+    };
+  }
+
+  function recoveryEligibility(purchase, ticket) {
+    if (String(purchase.estado || "").toUpperCase() !== "PAGADA") {
+      return { recuperable: false, motivo_no_recuperable: "La venta no está pagada." };
+    }
+    const ticketState = String(ticket.estado || "").toUpperCase();
+    if (ticketState === "OCUPADO") {
+      return {
+        recuperable: false,
+        motivo_no_recuperable: `El ingreso ya fue registrado${ticket.escaneado_en ? ` el ${formatDateTime(ticket.escaneado_en)}` : ""}.`,
+      };
+    }
+    if (ticketState !== "RESERVADO") {
+      return { recuperable: false, motivo_no_recuperable: `El boleto está ${ticketState.toLowerCase()} y ya no es válido.` };
+    }
+    const cutoff = functionRecoveryCutoff(purchase.fecha_funcion, purchase.hora_funcion);
+    if (cutoff && Date.now() > cutoff.getTime()) {
+      return {
+        recuperable: false,
+        motivo_no_recuperable: "Terminó el plazo de recuperación: han pasado más de 20 minutos desde el inicio de la función.",
+      };
+    }
+    return { recuperable: true, motivo_no_recuperable: "" };
+  }
+
+  function reissueDemoTicket(ticketId, reason, audit = {}) {
+    const storage = readStorage();
+    const located = findStoredTicket(storage, ticketId);
+    if (located.purchase.estado !== "PAGADA") {
+      throw new SalesApiError("La venta no está pagada y no permite reemitir boletos.", 409, "VENTA_NO_REEMITIBLE");
+    }
+    if (located.ticket.estado !== "RESERVADO") {
+      throw new SalesApiError(
+        located.ticket.estado === "OCUPADO"
+          ? "El boleto ya fue utilizado y no puede reemitirse."
+          : "El boleto anulado o reembolsado no puede reemitirse.",
+        409,
+        "BOLETO_NO_REEMITIBLE"
+      );
+    }
+    const now = new Date().toISOString();
+    const reissueNumber = Number(located.ticket.numero_reemisiones || 0) + 1;
+    const opaqueToken = createOpaqueToken();
+    located.ticket.token_qr_demo = opaqueToken;
+    located.ticket.contenido_qr = `ARATK:${opaqueToken}`;
+    located.ticket.numero_reemisiones = reissueNumber;
+    located.ticket.reemitido_en = now;
+    located.ticket.historial_reemisiones = [
+      ...(Array.isArray(located.ticket.historial_reemisiones) ? located.ticket.historial_reemisiones : []),
+      { numero: reissueNumber, motivo: String(reason).trim(), fecha: now },
+    ];
+    appendDemoAudit(located.purchase, audit.action || "BOLETO_REEMITIDO", reason, {
+      boleto_id: ticketId,
+      empleado: audit.employee || "Administrador local de demostración",
+    });
+    writeStorage(storage);
+    return {
+      codigo: "BOLETO_REEMITIDO",
+      mensaje: "El QR anterior quedó invalidado y se generó uno nuevo.",
+      boleto: structuredClone(located.ticket),
+    };
+  }
+
+  function updateDemoSaleState(saleId, reason, targetState) {
+    const storage = readStorage();
+    const purchase = storage.compras.find((item) => item.id === saleId);
+    if (!purchase) {
+      throw new SalesApiError("No se encontró la venta.", 404, "VENTA_NO_ENCONTRADA");
+    }
+    if (purchase.estado !== "PAGADA") {
+      throw new SalesApiError("La venta ya tiene un estado final.", 409, "VENTA_ESTADO_FINAL");
+    }
+    if ((purchase.boletos || []).some((ticket) => ticket.estado === "OCUPADO")) {
+      throw new SalesApiError(
+        "La venta contiene boletos ya utilizados y requiere revisión del encargado.",
+        409,
+        "VENTA_CON_INGRESOS_REGISTRADOS"
+      );
+    }
+    const now = new Date().toISOString();
+    purchase.estado = targetState;
+    purchase.estado_pago = targetState === "REEMBOLSADA" ? "REEMBOLSADO_DEMO" : "ANULADO_DEMO";
+    purchase.actualizada_en = now;
+    purchase.boletos.forEach((ticket) => {
+      ticket.estado = targetState === "REEMBOLSADA" ? "REEMBOLSADO" : "ANULADO";
+      ticket.anulado_en = now;
+    });
+    appendDemoAudit(purchase, targetState === "ANULADA" ? "VENTA_ANULADA" : "VENTA_REEMBOLSADA", reason);
+    writeStorage(storage);
+    return {
+      codigo: targetState === "ANULADA" ? "VENTA_ANULADA" : "VENTA_REEMBOLSADA",
+      mensaje: targetState === "ANULADA"
+        ? "La venta y sus boletos fueron anulados."
+        : "El reembolso de demostración fue registrado y los boletos quedaron invalidados.",
+      compra: structuredClone(purchase),
+    };
+  }
+
+  function findStoredTicket(storage, ticketId) {
+    for (const purchase of storage.compras) {
+      const ticket = (purchase.boletos || []).find((item) => item.id === ticketId);
+      if (ticket) return { purchase, ticket };
+    }
+    throw new SalesApiError("No se encontró el boleto.", 404, "BOLETO_NO_ENCONTRADO");
+  }
+
+  function appendDemoAudit(purchase, action, reason, extra = {}) {
+    purchase.auditoria = [
+      ...(Array.isArray(purchase.auditoria) ? purchase.auditoria : []),
+      {
+        id: createId(),
+        accion: action,
+        motivo: String(reason).trim(),
+        fecha: new Date().toISOString(),
+        empleado: "Administrador local de demostración",
+        ...extra,
+      },
+    ];
+  }
+
+  async function downloadAdminReceipt(saleId) {
+    requireValue(saleId, "La venta es obligatoria.");
+    if (isLocalPreview()) return downloadDemoReceipt(saleId);
+    triggerServerDownload(routes.comprobanteAdministracion(saleId));
+  }
+
+  async function downloadAdminTicket(ticketId) {
+    requireValue(ticketId, "El boleto es obligatorio.");
+    if (isLocalPreview()) return downloadDemoTicket(ticketId);
+    triggerServerDownload(routes.boletoAdministracion(ticketId));
+  }
+
+  function triggerServerDownload(url) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.rel = "noopener";
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }
+
   function getDemoSeatStates(functionId) {
     const reserved = [];
     const occupied = [];
@@ -310,6 +682,15 @@
 
   async function downloadDemoTicket(ticketId) {
     const { purchase, ticket } = getDemoTicket(ticketId);
+    if (ticket.estado !== "RESERVADO") {
+      throw new SalesApiError(
+        ticket.estado === "OCUPADO"
+          ? "Este boleto ya registró el ingreso y no puede imprimirse como boleto válido."
+          : "Este boleto ya no está vigente y no puede imprimirse.",
+        409,
+        "BOLETO_NO_IMPRIMIBLE"
+      );
+    }
     const [qrDataUrl, logoDataUrl] = await Promise.all([
       generateQrDataUrl(ticket.contenido_qr),
       getBrandLogoDataUrl(),
@@ -435,6 +816,89 @@
 
   function normalizeQrToken(value) {
     return String(value || "").trim().replace(/^ARATK:/i, "");
+  }
+
+  function validateReason(reason) {
+    if (String(reason || "").trim().length < 10) {
+      throw new SalesApiError("Escribe un motivo de al menos 10 caracteres.", 400, "MOTIVO_REQUERIDO");
+    }
+  }
+
+  function validateRecoverySearch(criteria, value) {
+    if (!new Set(["IDENTIFICACION", "NOMBRE", "USUARIO"]).has(criteria)) {
+      throw new SalesApiError("Selecciona un criterio de búsqueda válido.", 400, "CRITERIO_INVALIDO");
+    }
+    const normalized = String(value || "").trim();
+    if (criteria === "IDENTIFICACION" && !/^\d{13}$/.test(normalized.replace(/\D/g, ""))) {
+      throw new SalesApiError("Escribe los 13 dígitos de la identidad.", 400, "IDENTIFICACION_INVALIDA");
+    }
+    if (criteria === "NOMBRE" && normalized.length < 3) {
+      throw new SalesApiError("Escribe al menos 3 caracteres del nombre.", 400, "BUSQUEDA_MUY_CORTA");
+    }
+    if (criteria === "USUARIO" && normalized.length < 4) {
+      throw new SalesApiError("Escribe al menos 4 caracteres del usuario.", 400, "BUSQUEDA_MUY_CORTA");
+    }
+  }
+
+  function functionRecoveryCutoff(dateValue, timeValue) {
+    const date = functionStartDate(dateValue, timeValue);
+    if (!date) return null;
+    date.setMinutes(date.getMinutes() + 20);
+    return date;
+  }
+
+  function functionStartDate(dateValue, timeValue) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dateValue || ""))) return null;
+    const rawTime = String(timeValue || "").toLocaleLowerCase("es-HN");
+    const match = rawTime.match(/(\d{1,2})(?::(\d{2}))?/);
+    if (!match) return null;
+    let hour = Number(match[1]);
+    const minute = Number(match[2] || 0);
+    const isPm = /p\.?\s*m\.?/.test(rawTime);
+    const isAm = /a\.?\s*m\.?/.test(rawTime);
+    if (isPm && hour < 12) hour += 12;
+    if (isAm && hour === 12) hour = 0;
+    const date = new Date(`${dateValue}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00-06:00`);
+    if (Number.isNaN(date.getTime())) return null;
+    return date;
+  }
+
+  function currentHondurasDate() {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Tegucigalpa",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function isCurrentOrFuturePurchase(purchase) {
+    const functionDate = String(purchase?.fecha_funcion || "");
+    return /^\d{4}-\d{2}-\d{2}$/.test(functionDate) && functionDate >= currentHondurasDate();
+  }
+
+  function comparePurchasesByFunction(left, right) {
+    const leftStart = functionStartDate(left?.fecha_funcion, left?.hora_funcion)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    const rightStart = functionStartDate(right?.fecha_funcion, right?.hora_funcion)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    return leftStart - rightStart;
+  }
+
+  function normalizeSearch(value) {
+    return String(value || "").trim().toLocaleLowerCase("es-HN");
+  }
+
+  function normalizeLookup(value) {
+    return normalizeSearch(value)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  function normalizeDateFilter(value) {
+    const normalized = String(value || "").trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : "";
   }
 
   function normalizeSeats(seats) {
@@ -581,6 +1045,9 @@
     registrarVentaTaquilla: registerTicketOfficeSale,
     rutaComprobanteTaquilla: ticketOfficeReceiptUrl,
     rutaBoletoTaquilla: ticketOfficeTicketUrl,
+    buscarClientesRecuperacion: searchRecoveryCustomers,
+    listarComprasRecuperablesCliente: listRecoveryPurchases,
+    recuperarBoletoTaquilla: recoverTicketAtOffice,
     escanearBoleto: scanTicket,
     listarComprasDemo: listDemoPurchases,
     obtenerCompraDemo: getDemoPurchase,
@@ -588,6 +1055,13 @@
     obtenerEstadosAsientosDemo: getDemoSeatStates,
     descargarBoletoDemo: downloadDemoTicket,
     descargarComprobanteDemo: downloadDemoReceipt,
+    listarVentasAdministracion: listAdminSales,
+    obtenerVentaAdministracion: getAdminSale,
+    descargarComprobanteAdministracion: downloadAdminReceipt,
+    descargarBoletoAdministracion: downloadAdminTicket,
+    reemitirBoletoAdministracion: reissueAdminTicket,
+    anularVentaAdministracion: annulAdminSale,
+    reembolsarVentaAdministracion: refundAdminSale,
     generarQrDataUrl: generateQrDataUrl,
     esVistaLocal: isLocalPreview,
     SalesApiError,

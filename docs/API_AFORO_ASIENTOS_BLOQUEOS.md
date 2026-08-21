@@ -1,6 +1,6 @@
 # Contrato API — aforo, asientos y bloqueos por función
 
-**Versión:** 1.0
+**Versión:** 1.1
 **Zona horaria:** `America/Tegucigalpa`
 
 ## 1. Distribución oficial de Sala 1
@@ -79,6 +79,14 @@ Si dos personas solicitan el mismo asiento, solamente una operación puede obten
 
 La confirmación futura del pago debe ejecutarse como una operación segura: validar el bloqueo, registrar la venta, generar los boletos y cambiar los asientos a `RESERVADO`. El frontend no decide el resultado.
 
+## 6.1 Actualización automática de pantallas
+
+Compra en línea y Taquilla vuelven a consultar la disponibilidad de la función seleccionada cada 5 segundos y también cuando la pestaña recupera el foco. En la demostración local, el evento de cambio de `localStorage` permite actualizar inmediatamente las otras pestañas después de una venta o un escaneo.
+
+El `GET /api/v1/funciones/{funcion_id}/asientos/` debe devolver siempre el estado transaccional más reciente y usar `Cache-Control: no-store`. Cuando el primer escaneo cambia un boleto a utilizado y el asiento a `OCUPADO`, la siguiente consulta debe reflejarlo sin que el empleado vuelva a seleccionar la película o recargue la página.
+
+La consulta periódica mejora la interfaz, pero no sustituye la protección contra doble venta. Django sigue obligado a revalidar y bloquear las filas dentro de la transacción de venta. Más adelante se puede sustituir la consulta periódica por WebSocket o eventos del servidor sin cambiar el mapa de asientos.
+
 ## 7. Cierre de venta
 
 `venta_hasta` corresponde a 20 minutos después de `hora_inicio`.
@@ -136,7 +144,7 @@ Ejemplos de error:
 
 ## 11. Estado actual del frontend
 
-Taquilla ya muestra las 8 filas, 14 asientos por fila, el pasillo central y los cuatro estados visuales. Todavía no persiste disponibilidad ni confirma ventas.
+Taquilla ya muestra las 8 filas, 14 asientos por fila, el pasillo central y los estados visuales. Compra en línea y Taquilla actualizan automáticamente la función seleccionada; en producción Django será la fuente definitiva.
 
 La compra en línea posee una ruta protegida, pero el mapa de asientos se integrará después de conectar este contrato.
 

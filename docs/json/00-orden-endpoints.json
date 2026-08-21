@@ -81,6 +81,23 @@
                         "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
                         "se_sube_en_esta_version":  true,
                         "contrato":  "docs/json/07-09-ventas-pagos-boletos-qr.json"
+                    },
+                    {
+                        "orden":  10,
+                        "modulo":  "Administración de ventas, reimpresión, reemisión, anulación y reembolso",
+                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+                        "se_sube_en_esta_version":  true,
+                        "contrato":  "docs/json/10-administracion-ventas-reemisiones.json",
+                        "documentacion":  "docs/API_ADMINISTRACION_VENTAS_REEMISIONES.md"
+                    },
+                    {
+                        "orden":  11,
+                        "modulo":  "Búsqueda de clientes y recuperación de boletos en Taquilla",
+                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+                        "se_sube_en_esta_version":  true,
+                        "contrato":  "docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json",
+                        "documentacion":  "docs/API_RECUPERACION_BOLETOS_TAQUILLA.md",
+                        "integracion_db":  "docs/INTEGRACION_DB_BACKEND_VENTAS_CLIENTES.md"
                     }
                 ]
 }

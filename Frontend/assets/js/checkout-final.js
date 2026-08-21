@@ -73,7 +73,10 @@ async function approveDemoPayment() {
       subtotal: totals.subtotal,
       descuento: totals.discount,
       total: totals.total,
-      cliente_nombre: "Cliente de prueba",
+      cliente_id: "vista-local",
+      cliente_nombre: "Hugo Méndez",
+      cliente_usuario: "hugomendez",
+      cliente_identificacion_enmascarada: "0801-••••-•2345",
     });
 
     const paidSeats = [...state.selectedSeats];

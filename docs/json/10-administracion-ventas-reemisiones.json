@@ -1,0 +1,192 @@
+{
+  "proyecto": "Aramacao Cinema",
+  "modulo": "Administración de ventas y reemisión de boletos",
+  "version": "1.0",
+  "prefijo": "/api/v1/administracion",
+  "zona_horaria": "America/Tegucigalpa",
+  "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+  "acceso": {
+    "rol": "ADMINISTRADOR_OPERATIVO",
+    "pagina": "/pages/gestion/ventas.html",
+    "permiso_pagina": "ventas.consultar",
+    "regla": "Django valida además el permiso específico de cada acción; poder consultar no permite reemitir, anular ni reembolsar."
+  },
+  "permisos": {
+    "listar_y_ver_detalle": "ventas.consultar",
+    "reimprimir_comprobante": "ventas.reimprimir_comprobante",
+    "reimprimir_boleto": "boletos.reimprimir",
+    "reemitir_qr": "boletos.reemitir",
+    "anular_venta": "ventas.anular",
+    "reembolsar_pago": "pagos.reembolsar"
+  },
+  "reglas_obligatorias": [
+    "Todas las consultas y acciones se limitan al personal autenticado, activo y autorizado.",
+    "Reimprimir conserva el mismo boleto y el mismo token QR; solamente se permite si el boleto continúa RESERVADO y registra quién descargó el documento y cuándo.",
+    "Reemitir conserva venta, número de boleto, función y asiento, pero invalida el token anterior y genera uno nuevo de forma atómica.",
+    "Solo se reemite un boleto RESERVADO de una venta PAGADA; nunca uno OCUPADO, ANULADO o REEMBOLSADO.",
+    "Cada reemisión exige motivo de 10 a 300 caracteres y registra empleado, fecha, boleto y número de reemisión.",
+    "Los tokens QR completos y secretos del proveedor de pago nunca se devuelven en listados, detalles ni auditorías.",
+    "Anulación y reembolso se rechazan si existe al menos un boleto OCUPADO; esos casos pasan a revisión manual autorizada fuera de este endpoint.",
+    "Anular una venta invalida sus boletos en una sola transacción. Reembolsar solo termina cuando el proveedor o el procedimiento autorizado confirma el movimiento.",
+    "Todas las acciones mutables aceptan Idempotency-Key y no duplican reemisiones, anulaciones ni reembolsos al repetir una solicitud.",
+    "Django registra auditoría inmutable con empleado, permiso, IP, agente de usuario, fecha, motivo, estado anterior y estado posterior.",
+    "La respuesta 200 de una acción representa un cambio confirmado; un proceso asíncrono de reembolso devuelve 202 y estado REEMBOLSO_PENDIENTE.",
+    "Los importes se devuelven como cadenas decimales de dos posiciones y moneda HNL."
+  ],
+  "objeto_venta_resumida": {
+    "id": "98acc4b3-7f35-4d9a-bf20-5b59e98d8224",
+    "numero": "TAQ-20260818190000-001",
+    "fecha": "2026-08-18T19:00:00-06:00",
+    "cliente_nombre": "Cliente de ventanilla",
+    "pelicula": "Guardianes del Bosque",
+    "canal": "TAQUILLA",
+    "metodo_pago": "EFECTIVO",
+    "cantidad_boletos": 2,
+    "asientos": ["B6", "B7"],
+    "total": "120.00",
+    "moneda": "HNL",
+    "estado": "PAGADA"
+  },
+  "objeto_boleto_administrativo": {
+    "id": "5b20131d-e525-46de-b652-d1fbef7718e0",
+    "numero": "TAQ-20260818190000-001-01",
+    "asiento": "B6",
+    "formato": "3D",
+    "estado": "RESERVADO",
+    "promocion_2x1": true,
+    "posicion_2x1": 1,
+    "numero_reemisiones": 0,
+    "reemitido_en": null,
+    "escaneado_en": null,
+    "regla_privacidad": "No incluir token_qr, hash_token ni contenido_qr."
+  },
+  "endpoints": [
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/administracion/ventas/?buscar=&fecha_desde=&fecha_hasta=&estado=&canal=&metodo_pago=&pagina=1",
+      "permiso": "ventas.consultar",
+      "uso": "Listar ventas en línea y de Taquilla con filtros combinables y paginación.",
+      "filtros": {
+        "buscar": "Referencia, cliente, película, asiento, vendedor o número de boleto.",
+        "fecha_desde": "YYYY-MM-DD inclusiva en America/Tegucigalpa.",
+        "fecha_hasta": "YYYY-MM-DD inclusiva en America/Tegucigalpa.",
+        "estado": "PAGADA, ANULADA, REEMBOLSO_PENDIENTE o REEMBOLSADA.",
+        "canal": "ONLINE o TAQUILLA.",
+        "metodo_pago": "ONLINE, EFECTIVO, TARJETA o TRANSFERENCIA."
+      },
+      "respuesta_200": {
+        "total": 1,
+        "pagina": 1,
+        "paginas": 1,
+        "resumen": {
+          "total_ventas": 1,
+          "ventas_online": 0,
+          "ventas_taquilla": 1,
+          "monto_total": "120.00",
+          "moneda": "HNL"
+        },
+        "resultados": ["objeto_venta_resumida"]
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/administracion/ventas/{venta_id}/",
+      "permiso": "ventas.consultar",
+      "uso": "Consultar datos completos, pago, comprobante, boletos y auditoría sin exponer tokens QR.",
+      "respuesta_200": {
+        "venta": "objeto_venta_completo",
+        "boletos": ["objeto_boleto_administrativo"],
+        "auditoria": [
+          {
+            "id": "uuid",
+            "accion": "VENTA_CREADA",
+            "fecha": "2026-08-18T19:00:00-06:00",
+            "empleado": "Nombre visible",
+            "motivo": null
+          }
+        ]
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/administracion/ventas/{venta_id}/comprobante/descargar/",
+      "permiso": "ventas.reimprimir_comprobante",
+      "uso": "Reimprimir el comprobante no fiscal sin cambiar venta, pago ni boletos.",
+      "respuesta_200": "Archivo HTML o PDF con Content-Disposition attachment; sin datos de tarjeta.",
+      "auditoria": "COMPROBANTE_REIMPRESO"
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/administracion/boletos/{boleto_id}/descargar/",
+      "permiso": "boletos.reimprimir",
+      "uso": "Reimprimir el boleto actual con su QR vigente, sin generar un token nuevo. Solo acepta estado RESERVADO.",
+      "respuesta_200": "Archivo HTML o PDF con Content-Disposition attachment.",
+      "auditoria": "BOLETO_REIMPRESO"
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/administracion/boletos/{boleto_id}/reemision/",
+      "permiso": "boletos.reemitir",
+      "cabeceras": {"Idempotency-Key": "UUID obligatorio"},
+      "request": {"motivo": "El cliente perdió el boleto impreso."},
+      "uso": "Invalidar el QR anterior, emitir uno nuevo y registrar auditoría en una transacción.",
+      "respuesta_200": {
+        "codigo": "BOLETO_REEMITIDO",
+        "mensaje": "El QR anterior quedó invalidado y se generó uno nuevo.",
+        "boleto": "objeto_boleto_administrativo con numero_reemisiones actualizado",
+        "descarga_url": "/api/v1/administracion/boletos/{boleto_id}/descargar/"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/administracion/ventas/{venta_id}/anulacion/",
+      "permiso": "ventas.anular",
+      "cabeceras": {"Idempotency-Key": "UUID obligatorio"},
+      "request": {"motivo": "Venta duplicada detectada antes de la función."},
+      "uso": "Anular la venta y todos sus boletos si ninguno ha sido utilizado.",
+      "respuesta_200": {
+        "codigo": "VENTA_ANULADA",
+        "mensaje": "La venta y sus boletos fueron anulados.",
+        "venta_id": "uuid",
+        "estado": "ANULADA",
+        "boletos_actualizados": 2
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/administracion/ventas/{venta_id}/reembolso/",
+      "permiso": "pagos.reembolsar",
+      "cabeceras": {"Idempotency-Key": "UUID obligatorio"},
+      "request": {"motivo": "Función cancelada por el cine."},
+      "uso": "Solicitar o registrar el reembolso y, cuando se confirme, invalidar todos los boletos.",
+      "respuesta_200_o_202": {
+        "codigo": "VENTA_REEMBOLSADA o REEMBOLSO_PENDIENTE",
+        "mensaje": "Estado explicativo",
+        "venta_id": "uuid",
+        "estado": "REEMBOLSADA o REEMBOLSO_PENDIENTE",
+        "pago_estado": "REEMBOLSADO o REEMBOLSO_PENDIENTE"
+      }
+    }
+  ],
+  "errores": [
+    {"http": 400, "codigo": "ERROR_VALIDACION", "cuando": "Filtros o identificadores inválidos."},
+    {"http": 400, "codigo": "MOTIVO_REQUERIDO", "cuando": "El motivo tiene menos de 10 o más de 300 caracteres."},
+    {"http": 401, "codigo": "AUTENTICACION_REQUERIDA", "cuando": "No existe una sesión válida."},
+    {"http": 403, "codigo": "PERMISO_INSUFICIENTE", "cuando": "El empleado no tiene el permiso específico de la acción."},
+    {"http": 404, "codigo": "VENTA_NO_ENCONTRADA", "cuando": "No existe la venta."},
+    {"http": 404, "codigo": "BOLETO_NO_ENCONTRADO", "cuando": "No existe el boleto."},
+    {"http": 409, "codigo": "BOLETO_NO_IMPRIMIBLE", "cuando": "El boleto está OCUPADO, ANULADO o REEMBOLSADO y no puede descargarse como boleto válido."},
+    {"http": 409, "codigo": "BOLETO_NO_REEMITIBLE", "cuando": "El boleto está OCUPADO, ANULADO o REEMBOLSADO."},
+    {"http": 409, "codigo": "VENTA_ESTADO_FINAL", "cuando": "La venta ya está anulada o reembolsada."},
+    {"http": 409, "codigo": "VENTA_CON_INGRESOS_REGISTRADOS", "cuando": "Algún boleto ya fue utilizado."},
+    {"http": 409, "codigo": "REEMBOLSO_NO_CONFIRMADO", "cuando": "El proveedor no confirmó el movimiento."},
+    {"http": 429, "codigo": "DEMASIADAS_SOLICITUDES", "cuando": "Se excede el límite de acciones sensibles."}
+  ],
+  "frontend": {
+    "pagina": "Frontend/pages/gestion/ventas.html",
+    "estilos": "Frontend/assets/css/admin-sales.css",
+    "controlador": "Frontend/assets/js/admin-sales.js",
+    "adaptador_compartido": "Frontend/assets/js/sales-api.js",
+    "modo_local": "Usa aramacao-demo-ventas-v1 para QA en un solo navegador; no sustituye Django ni sincroniza dispositivos."
+  }
+}

@@ -10,7 +10,9 @@
     "Un boleto y un QR único por asiento",
     "Historial y detalle de compras del cliente",
     "Control de entrada separado para validar el QR",
-    "Rechazo de un QR utilizado o anulado"
+    "Rechazo de un QR utilizado o anulado",
+    "Consulta administrativa de ventas y reimpresión controlada",
+    "Recuperación en Taquilla para clientes identificados"
   ],
   "fuera_de_alcance_por_ahora": [
     "Dulcería e inventario",
@@ -30,6 +32,7 @@
     "El QR contiene únicamente un token opaco aleatorio o una URL de validación con ese token; no contiene nombre, identidad, correo, teléfono, película ni asiento en texto legible.",
     "El backend guarda solamente una representación segura del token cuando la estrategia elegida lo permita.",
     "El primer escaneo válido cambia únicamente ese boleto y ese asiento de RESERVADO a OCUPADO.",
+    "Después de una venta o un escaneo, Compra en línea y Taquilla actualizan automáticamente la disponibilidad de la función seleccionada sin recargar la página.",
     "Un segundo escaneo del mismo QR se rechaza y devuelve la fecha y hora del primer uso.",
     "Una reemisión anula el token anterior, crea otro token y registra empleado, motivo y fecha.",
     "El comprobante agrupa la compra completa; no sustituye una factura fiscal.",
@@ -37,6 +40,11 @@
     "Crear orden, iniciar pago, procesar webhook y escanear QR deben ser idempotentes o estar protegidos contra solicitudes repetidas.",
     "Todas las operaciones usan la zona America/Tegucigalpa y conservan fecha y hora con desplazamiento -06:00.",
     "El vendedor de Taquilla vende, cobra e imprime; no valida ingresos.",
+    "Con permisos adicionales, el vendedor de Taquilla busca un cliente, verifica físicamente su documento y recupera únicamente boletos RESERVADOS dentro del plazo permitido.",
+    "La recuperación en Taquilla lista solo compras con función de hoy o futura y las ordena desde la función más cercana.",
+    "Después de 20 minutos del inicio de la función se cierra la recuperación ordinaria del QR, pero un asiento ya pagado no se libera ni se revende automáticamente.",
+    "Los bloqueos temporales sin pago sí se liberan al expirar; una futura política de no presentación para boletos pagados requiere un estado y condiciones de negocio explícitas.",
+    "Un boleto OCUPADO, ANULADO o REEMBOLSADO no puede descargarse nuevamente como boleto válido.",
     "Control de entrada valida QR con boletos.escanear; no registra ventas ni pagos."
   ],
   "estados": {
@@ -194,14 +202,14 @@
     {
       "metodo": "GET",
       "ruta": "/api/v1/taquilla/ventas/{venta_id}/comprobante/descargar/",
-      "autenticacion": "EMPLEADO_CON_PERMISO_VENTAS_CONSULTAR",
+      "autenticacion": "VENDEDOR_TAQUILLA_CON_PERMISO_VENTAS_IMPRIMIR_COMPROBANTE_PROPIO",
       "uso": "Imprimir o reimprimir el comprobante de una venta física con auditoría."
     },
     {
       "metodo": "GET",
       "ruta": "/api/v1/taquilla/boletos/{boleto_id}/descargar/",
-      "autenticacion": "EMPLEADO_CON_PERMISO_BOLETOS_REIMPRIMIR",
-      "uso": "Imprimir un boleto individual de Taquilla; una reemisión de QR usa el endpoint protegido de reemisión."
+      "autenticacion": "VENDEDOR_TAQUILLA_CON_PERMISO_BOLETOS_IMPRIMIR_VENTA_PROPIA",
+      "uso": "Imprimir un boleto individual únicamente si está RESERVADO; una reemisión de QR usa el endpoint protegido de recuperación."
     },
     {
       "metodo": "POST",
@@ -237,8 +245,8 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/taquilla/boletos/{boleto_id}/reemision/",
-      "autenticacion": "EMPLEADO_CON_PERMISO_BOLETOS_REEMITIR",
+      "ruta": "/api/v1/administracion/boletos/{boleto_id}/reemision/",
+      "autenticacion": "ADMINISTRADOR_OPERATIVO_CON_PERMISO_BOLETOS_REEMITIR",
       "uso": "Anular el QR anterior y emitir uno nuevo con auditoría.",
       "request": {
         "motivo": "El cliente perdió el boleto impreso."
@@ -259,11 +267,14 @@
     "integracion_compra_en_linea": "Frontend/assets/js/checkout-final.js",
     "integracion_venta_taquilla": "Frontend/assets/js/taquilla.js y Frontend/assets/js/ticket-office-checkout.js",
     "validacion_qr": "Frontend/pages/control-entrada/index.html y Frontend/assets/js/ticket-scanner.js",
+    "siguiente_escaneo": "Después de un ingreso válido, Control de entrada ofrece Escanear otro boleto y reinicia cámara o entrada manual sin recargar.",
     "disponibilidad_compartida": "Frontend/assets/js/seat-api.js y AramacaoSalesApi.obtenerEstadosAsientosDemo",
     "biblioteca_qr_local": "Frontend/assets/vendor/qrcode/qrcode.js",
     "logo_oficial_reutilizado": "Frontend/assets/images/AraMacao Completo Degradado (3).png",
     "nota": "La demostración local se construyó en el frontend desde cero sobre las pantallas P3; Django sustituirá localStorage y volverá a validar permisos, importes, disponibilidad, pagos y tokens.",
-    "seleccion_2x1_taquilla": "Frontend/assets/js/taquilla.js propone parejas contiguas; Django conserva la validación definitiva."
+    "seleccion_2x1_taquilla": "Frontend/assets/js/taquilla.js propone parejas contiguas; Django conserva la validación definitiva.",
+    "administracion_ventas": "Frontend/pages/gestion/ventas.html y Frontend/assets/js/admin-sales.js",
+    "recuperacion_taquilla": "Frontend/assets/js/ticket-recovery.js; contrato detallado en docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json"
   },
   "biblioteca_renderizado_qr": {
     "nombre": "qrcode",

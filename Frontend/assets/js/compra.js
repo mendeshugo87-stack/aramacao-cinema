@@ -8,6 +8,8 @@
  * con Django. Esta etapa todavía no cobra ni genera boletos.
  */
 const DATA_URL = "../../assets/data/cartelera.json";
+const DEMO_SALES_STORAGE_KEY = "aramacao-demo-ventas-v1";
+const AVAILABILITY_REFRESH_MS = 5000;
 
 const state = {
   data: null,
@@ -20,6 +22,8 @@ const state = {
   distribution: [],
   currentBlock: null,
   blockTimer: null,
+  availabilityRefreshPending: false,
+  availabilityRefreshQueued: false,
 };
 
 const elements = {
@@ -54,6 +58,7 @@ document.addEventListener("DOMContentLoaded", initializePurchase);
 
 async function initializePurchase() {
   bindEvents();
+  startAvailabilitySynchronization();
   configureDate();
   renderEmptySeatMap("Selecciona una función para consultar los asientos.");
 
@@ -111,6 +116,20 @@ function bindEvents() {
 
   elements.continueButton.addEventListener("click", createTemporaryBlock);
   elements.releaseButton.addEventListener("click", () => releaseCurrentBlock());
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === DEMO_SALES_STORAGE_KEY) refreshCurrentAvailability();
+  });
+  window.addEventListener("focus", refreshCurrentAvailability);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshCurrentAvailability();
+  });
+}
+
+function startAvailabilitySynchronization() {
+  window.setInterval(() => {
+    if (!document.hidden) refreshCurrentAvailability();
+  }, AVAILABILITY_REFRESH_MS);
 }
 
 async function requireCustomerSession() {
@@ -221,17 +240,38 @@ async function selectShowtime(showtime) {
   showError("");
   showStatus("Consultando la disponibilidad de Sala 1…");
 
+  await refreshCurrentAvailability({ initial: true });
+}
+
+async function refreshCurrentAvailability({ initial = false } = {}) {
+  const selectedShowtime = state.selectedShowtime;
+  if (!selectedShowtime) return;
+  if (state.availabilityRefreshPending) {
+    state.availabilityRefreshQueued = true;
+    return;
+  }
+
+  state.availabilityRefreshPending = true;
   try {
     const availability = await window.AramacaoSeatApi.consultarDisponibilidad(
-      showtime.id,
-      { fecha: state.selectedDate, hora: showtime.rawTime }
+      selectedShowtime.id,
+      { fecha: state.selectedDate, hora: selectedShowtime.rawTime }
     );
+    if (String(state.selectedShowtime?.id || "") !== String(selectedShowtime.id)) return;
     applyAvailability(availability);
-    showStatus("");
+    if (initial) showStatus("");
   } catch (error) {
-    renderEmptySeatMap("No fue posible consultar los asientos.");
-    showStatus("");
+    if (initial) renderEmptySeatMap("No fue posible consultar los asientos.");
+    if (initial) showStatus("");
     showError(getErrorMessage(error));
+  } finally {
+    state.availabilityRefreshPending = false;
+    const refreshAgain = state.availabilityRefreshQueued
+      || (state.selectedShowtime && String(state.selectedShowtime.id) !== String(selectedShowtime.id));
+    state.availabilityRefreshQueued = false;
+    if (refreshAgain) {
+      refreshCurrentAvailability({ initial: true });
+    }
   }
 }
 
@@ -243,12 +283,26 @@ function applyAvailability(availability) {
   addStatuses(availability?.asientos_reservados, "reserved");
   addStatuses(availability?.asientos_ocupados, "occupied");
 
+  const conflicts = [...state.selectedSeats].filter((seat) =>
+    ["blocked", "reserved", "occupied"].includes(state.statuses.get(seat))
+  );
+
   const ownBlock = availability?.mi_bloqueo;
   if (ownBlock?.id && Array.isArray(ownBlock.asientos)) {
     state.currentBlock = ownBlock;
     state.selectedSeats = new Set(ownBlock.asientos);
     ownBlock.asientos.forEach((seat) => state.statuses.set(seat, "mine"));
     startBlockCountdown();
+  } else {
+    if (state.currentBlock) {
+      stopBlockCountdown();
+      state.currentBlock = null;
+    }
+    if (conflicts.length) {
+      state.selectedSeats.clear();
+      state.seatPairs.clear();
+      showError(`La disponibilidad cambió. ${conflicts.join(", ")} ya no está disponible; vuelve a seleccionar.`);
+    }
   }
 
   renderSeatMap();

@@ -1,19 +1,152 @@
 {
-  "modulo": "Consulta de clientes y reposición de boletos en Taquilla",
-  "estado": "NO_IMPLEMENTAR_HASTA_TERMINAR_VENTAS_Y_BOLETOS",
-  "acceso": "Vendedor autenticado con permiso boletos.consultar_y_reemitir",
-  "endpoints_futuros": [
-    "GET /api/v1/taquilla/clientes/?buscar=...",
-    "GET /api/v1/taquilla/clientes/{id}/compras/",
-    "GET /api/v1/taquilla/compras/{id}/boletos/",
-    "POST /api/v1/taquilla/boletos/{id}/reemitir/"
+  "proyecto": "Aramacao Cinema",
+  "modulo": "Búsqueda de clientes y recuperación de boletos en Taquilla",
+  "version": "1.1",
+  "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+  "zona_horaria": "America/Tegucigalpa",
+  "pagina": "/pages/taquilla/",
+  "acceso": {
+    "rol": "VENDEDOR_TAQUILLA",
+    "permisos": [
+      "clientes.buscar_para_recuperacion",
+      "boletos.recuperar_cliente"
+    ],
+    "limite": "Estos permisos no conceden acceso al historial administrativo global, anulaciones ni reembolsos."
+  },
+  "mapeo_cliente_existente": {
+    "tabla_sql": "cliente_cliente",
+    "id_interno": "cliente_cliente.id",
+    "identificacion_actual": "cliente_cliente.dni es UNIQUE en el respaldo recibido",
+    "usuario": "cliente_cliente.usuario_id enlaza con auth_user.id y es UNIQUE",
+    "regla_compra": "venta_venta.cliente_id siempre identifica al dueño; nunca enlazar compras por nombre, correo, usuario o identidad."
+  },
+  "reglas_obligatorias": [
+    "No cargar automáticamente a todos los clientes; el vendedor debe iniciar una búsqueda concreta.",
+    "La identidad se busca con coincidencia exacta. Nombre y usuario admiten coincidencia parcial con longitud mínima y límite de resultados.",
+    "La identificación viaja en el cuerpo POST por HTTPS; no se coloca en la URL, parámetros de consulta, auditoría ni mensajes de error.",
+    "La respuesta enmascara la identificación y nunca devuelve contraseña, hash, correo completo, token de sesión ni token QR.",
+    "El vendedor compara físicamente el documento con el nombre y la identificación enmascarada antes de recuperar un boleto.",
+    "Solo se muestran compras asociadas al id interno del cliente seleccionado cuya fecha de función sea hoy en America/Tegucigalpa o una fecha futura.",
+    "Las compras se ordenan por fecha y hora de función ascendente para presentar primero la función más cercana.",
+    "Solo se recupera un boleto RESERVADO perteneciente a una venta PAGADA y antes de 20 minutos después del inicio de la función.",
+    "El plazo de 20 minutos cierra la recuperación ordinaria del QR, pero no libera ni revende automáticamente un asiento ya pagado.",
+    "Solo los bloqueos temporales sin pago se liberan por expiración; una política futura de no presentación requerirá estado, auditoría y condiciones explícitas separadas.",
+    "Un boleto OCUPADO, ANULADO o REEMBOLSADO no puede imprimirse como boleto válido ni recuperar su QR.",
+    "Recuperar conserva venta, número de boleto, función y asiento; invalida el QR anterior y crea uno nuevo de forma atómica.",
+    "El backend bloquea la fila del boleto durante la operación y garantiza que solo quede un token QR activo.",
+    "Cada recuperación exige motivo de 10 a 300 caracteres, Idempotency-Key y auditoría con vendedor, fecha, boleto, verificación, IP y estados anterior y posterior.",
+    "La confirmación documento_verificado=true registra la declaración operativa del vendedor; no sustituye la comparación del documento físico.",
+    "Aplicar rate limit a búsquedas y recuperaciones para impedir enumeración de clientes o abuso."
   ],
-  "reglas": [
-    "No cargar automáticamente a todos los clientes; exigir una búsqueda.",
-    "Buscar por identificación, usuario, correo o número de compra, pero nunca colocar la identificación en la URL completa.",
-    "Mostrar identificación enmascarada y nunca contraseñas.",
-    "El vendedor verifica físicamente el documento antes de reemitir.",
-    "Reemitir anula el QR anterior, crea uno nuevo y registra vendedor, fecha y motivo.",
-    "Solo puede quedar un QR válido por boleto."
-  ]
+  "endpoints": [
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/taquilla/clientes/buscar/",
+      "permiso": "clientes.buscar_para_recuperacion",
+      "request": {
+        "criterio": "IDENTIFICACION | NOMBRE | USUARIO",
+        "valor": "dato escrito por el vendedor"
+      },
+      "validacion": {
+        "IDENTIFICACION": "13 dígitos normalizados y coincidencia exacta.",
+        "NOMBRE": "Mínimo 3 caracteres.",
+        "USUARIO": "Mínimo 4 caracteres.",
+        "limite": "Máximo 20 resultados, sin paginación abierta para enumerar toda la tabla."
+      },
+      "respuesta_200": {
+        "total": 1,
+        "resultados": [
+          {
+            "id": "uuid-o-id-opaco",
+            "nombre_completo": "Hugo Méndez",
+            "usuario": "hugomendez",
+            "tipo_identificacion": "IDENTIDAD_HN",
+            "identificacion_enmascarada": "0801-••••-•2345"
+          }
+        ]
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/v1/taquilla/clientes/{cliente_id}/compras-recuperables/",
+      "permiso": "clientes.buscar_para_recuperacion",
+      "uso": "Consultar únicamente compras con función de hoy o futura del cliente seleccionado, ordenarlas por función ascendente y calcular en servidor si cada boleto es recuperable.",
+      "filtro_servidor_obligatorio": {
+        "fecha_desde": "Fecha actual calculada en America/Tegucigalpa; no depende de la zona horaria del navegador.",
+        "fecha_hasta": "Sin límite mientras la función sea futura.",
+        "orden": "fecha_funcion ASC, hora_funcion ASC",
+        "excluye": "Toda función con fecha anterior a hoy, aunque la compra siga almacenada en el historial."
+      },
+      "respuesta_200": {
+        "cliente": "Objeto enmascarado devuelto por la búsqueda",
+        "total": 1,
+        "resultados": [
+          {
+            "id": "venta-id",
+            "numero": "ARA-20260820180000-001",
+            "estado": "PAGADA",
+            "pelicula": "Guardianes del Bosque",
+            "fecha_funcion": "2026-08-21",
+            "hora_funcion": "18:00:00",
+            "boletos": [
+              {
+                "id": "boleto-id",
+                "numero": "ARA-20260820180000-001-01",
+                "asiento": "E12",
+                "estado": "RESERVADO",
+                "escaneado_en": null,
+                "recuperable": true,
+                "motivo_no_recuperable": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/taquilla/boletos/{boleto_id}/recuperacion/",
+      "permiso": "boletos.recuperar_cliente",
+      "cabeceras": {
+        "Idempotency-Key": "UUID obligatorio"
+      },
+      "request": {
+        "cliente_id": "id del cliente cuyo documento se verificó",
+        "motivo": "El cliente perdió el teléfono donde tenía el boleto.",
+        "documento_verificado": true
+      },
+      "respuesta_200": {
+        "codigo": "BOLETO_RECUPERADO",
+        "mensaje": "El QR anterior quedó invalidado y se generó uno nuevo.",
+        "boleto": {
+          "id": "boleto-id",
+          "numero": "ARA-20260820180000-001-01",
+          "asiento": "E12",
+          "estado": "RESERVADO",
+          "numero_reemisiones": 1
+        },
+        "descarga_url": "/api/v1/taquilla/boletos/{boleto_id}/descargar/"
+      }
+    }
+  ],
+  "errores": [
+    {"http": 400, "codigo": "CRITERIO_INVALIDO", "cuando": "El criterio no está permitido."},
+    {"http": 400, "codigo": "IDENTIFICACION_INVALIDA", "cuando": "La identidad no tiene 13 dígitos."},
+    {"http": 400, "codigo": "BUSQUEDA_MUY_CORTA", "cuando": "Nombre o usuario no alcanza la longitud mínima."},
+    {"http": 400, "codigo": "DOCUMENTO_NO_VERIFICADO", "cuando": "No se confirmó la comparación física."},
+    {"http": 401, "codigo": "AUTENTICACION_REQUERIDA", "cuando": "No existe sesión de empleado válida."},
+    {"http": 403, "codigo": "PERMISO_INSUFICIENTE", "cuando": "El vendedor no tiene el permiso específico."},
+    {"http": 404, "codigo": "CLIENTE_NO_ENCONTRADO", "cuando": "No existe el cliente."},
+    {"http": 404, "codigo": "BOLETO_NO_ENCONTRADO", "cuando": "No existe el boleto o no pertenece al cliente verificado."},
+    {"http": 409, "codigo": "BOLETO_YA_UTILIZADO", "cuando": "El ingreso ya fue registrado."},
+    {"http": 409, "codigo": "BOLETO_NO_RECUPERABLE", "cuando": "Está anulado, reembolsado, fuera de tiempo o su venta no está pagada."},
+    {"http": 409, "codigo": "QR_REEMITIDO_CONCURRENTEMENTE", "cuando": "Otra operación reemplazó el QR al mismo tiempo."},
+    {"http": 429, "codigo": "DEMASIADAS_SOLICITUDES", "cuando": "Se excedió el límite de búsquedas o recuperaciones."}
+  ],
+  "frontend": {
+    "pagina": "Frontend/pages/taquilla/index.html",
+    "controlador": "Frontend/assets/js/ticket-recovery.js",
+    "estilos": "Frontend/assets/css/ticket-recovery.css",
+    "adaptador": "Frontend/assets/js/sales-api.js"
+  }
 }

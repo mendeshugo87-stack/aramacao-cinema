@@ -360,6 +360,17 @@
   outline-offset: 4px;
 }
 
+.seat-sync-status {
+  margin: 0;
+  color: #7da8c8;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.seat-sync-status.is-error {
+  color: #ff8da0;
+}
+
 .seat-map {
   display: grid;
   width: min(100%, 930px);

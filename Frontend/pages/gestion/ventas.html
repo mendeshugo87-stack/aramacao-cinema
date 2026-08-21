@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Consulta, reimpresión y reemisión de ventas y boletos de Aramacao Cinema.">
+  <title>Ventas y boletos | Aramacao Cinema</title>
+
+  <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/gestion.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/admin-sales.css?v=20260819-ventas-1">
+  <script src="../../assets/js/staff-api.js?v=8" defer></script>
+  <script src="../../assets/js/staff-private.js?v=20260818-separacion-1" defer></script>
+  <script src="../../assets/vendor/qrcode/qrcode.js" defer></script>
+  <script src="../../assets/js/sales-api.js?v=20260819-ventas-1" defer></script>
+  <script src="../../assets/js/admin-sales.js?v=20260820-dialogos-1" defer></script>
+</head>
+<body
+  class="admin-body"
+  data-area-privada="gestion-ventas"
+  data-roles-permitidos="ADMINISTRADOR_OPERATIVO"
+  data-permiso-requerido="ventas.consultar"
+  data-login-url="/pages/gestion/login.html"
+>
+  <a class="skip-link" href="#admin-content">Saltar al contenido</a>
+
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="../../index.html" aria-label="Aramacao Cinema">
+      <img src="../../assets/images/AraMacao%20Completo%20Degradado%20(3).png" alt="Aramacao Cinema" width="190" height="66">
+    </a>
+    <nav class="admin-nav" aria-label="Navegación de administración">
+      <a href="index.html#resumen"><span>▦</span> Resumen</a>
+      <a href="index.html#peliculas"><span>▶</span> Películas</a>
+      <a href="index.html#funciones"><span>◷</span> Funciones</a>
+      <a href="index.html#promociones"><span>%</span> Promociones</a>
+      <a href="personal.html"><span>♙</span> Personal</a>
+      <a class="active" href="ventas.html" aria-current="page"><span>▤</span> Ventas</a>
+    </nav>
+    <div class="admin-sidebar-note">
+      <strong>Acciones auditadas</strong>
+      <p>Reemisiones, anulaciones y reembolsos siempre exigen un motivo.</p>
+    </div>
+  </aside>
+
+  <div class="admin-shell">
+    <header class="admin-topbar">
+      <button class="admin-menu-button" id="admin-menu-button" type="button" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      <div>
+        <strong data-session-name>Comprobando sesión…</strong>
+        <span data-session-role>Administración de ventas</span>
+      </div>
+      <button class="admin-session-button" type="button" data-logout-button disabled>Cerrar sesión</button>
+    </header>
+
+    <main class="admin-content admin-sales-content" id="admin-content">
+      <section class="admin-welcome">
+        <div>
+          <p class="eyebrow">Operación y seguimiento</p>
+          <h1>Ventas y boletos</h1>
+          <p>Consulta compras en línea y de Taquilla, reimprime documentos y controla cada reemisión de QR.</p>
+        </div>
+        <div class="demo-badge" data-admin-sales-mode><span></span> Cargando conexión</div>
+      </section>
+
+      <p class="sales-page-notice" data-local-preview hidden>
+        <strong>Vista local de demostración.</strong>
+        Muestra las ventas de prueba guardadas en este navegador. Django será la fuente real y compartida entre equipos.
+      </p>
+
+      <section class="admin-metrics" aria-label="Resumen de ventas filtradas">
+        <article><span>Ventas</span><strong id="sales-metric-total">0</strong><small>resultados actuales</small></article>
+        <article><span>En línea</span><strong id="sales-metric-online">0</strong><small>compras de clientes</small></article>
+        <article><span>Taquilla</span><strong id="sales-metric-office">0</strong><small>ventas físicas</small></article>
+        <article><span>Monto pagado</span><strong class="metric-money" id="sales-metric-amount">L 0.00</strong><small>solo ventas pagadas</small></article>
+      </section>
+
+      <section class="admin-panel sales-list-panel" aria-labelledby="sales-list-title">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="eyebrow">Historial operativo</p>
+            <h2 id="sales-list-title">Ventas registradas</h2>
+            <p>Busca por referencia, comprador, película, asiento o número de boleto.</p>
+          </div>
+          <button class="button button-ghost" id="sales-refresh-button" type="button">Actualizar</button>
+        </div>
+
+        <form class="sales-filters" id="sales-filter-form">
+          <label class="sales-field sales-search-field" for="sales-search">
+            <span>Buscar</span>
+            <input id="sales-search" name="buscar" type="search" placeholder="Referencia, cliente, película, asiento…">
+          </label>
+          <label class="sales-field" for="sales-date-from">
+            <span>Desde</span>
+            <input id="sales-date-from" name="fecha_desde" type="date">
+          </label>
+          <label class="sales-field" for="sales-date-to">
+            <span>Hasta</span>
+            <input id="sales-date-to" name="fecha_hasta" type="date">
+          </label>
+          <label class="sales-field" for="sales-status">
+            <span>Estado</span>
+            <select id="sales-status" name="estado">
+              <option value="">Todos</option>
+              <option value="PAGADA">Pagada</option>
+              <option value="ANULADA">Anulada</option>
+              <option value="REEMBOLSADA">Reembolsada</option>
+            </select>
+          </label>
+          <label class="sales-field" for="sales-channel">
+            <span>Canal</span>
+            <select id="sales-channel" name="canal">
+              <option value="">Todos</option>
+              <option value="ONLINE">En línea</option>
+              <option value="TAQUILLA">Taquilla</option>
+            </select>
+          </label>
+          <label class="sales-field" for="sales-payment-method">
+            <span>Método</span>
+            <select id="sales-payment-method" name="metodo_pago">
+              <option value="">Todos</option>
+              <option value="ONLINE">En línea</option>
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="TARJETA">Tarjeta</option>
+              <option value="TRANSFERENCIA">Transferencia</option>
+            </select>
+          </label>
+          <div class="sales-filter-actions">
+            <button class="button button-ghost" id="sales-clear-filters" type="button">Limpiar</button>
+            <button class="button button-primary" type="submit">Aplicar filtros</button>
+          </div>
+        </form>
+
+        <p class="sales-status-message" id="sales-list-status" role="status" aria-live="polite"></p>
+        <div class="sales-table-wrap" id="sales-table-wrap" hidden>
+          <table class="sales-table">
+            <thead>
+              <tr>
+                <th>Venta</th>
+                <th>Cliente y película</th>
+                <th>Canal y pago</th>
+                <th>Boletos</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody id="sales-table-body"></tbody>
+          </table>
+        </div>
+        <div class="sales-empty" id="sales-empty" hidden>
+          <span aria-hidden="true">🎟️</span>
+          <h3>No hay ventas que coincidan</h3>
+          <p>En la vista local primero crea una compra de demostración o una venta desde Taquilla.</p>
+        </div>
+      </section>
+
+      <section class="admin-panel sale-detail-panel" id="sale-detail-panel" aria-labelledby="sale-detail-title" hidden>
+        <div class="admin-panel-heading compact-heading">
+          <div>
+            <p class="eyebrow">Venta seleccionada</p>
+            <h2 id="sale-detail-title">Detalle de venta</h2>
+          </div>
+          <button class="icon-close" id="close-sale-detail" type="button" aria-label="Cerrar detalle">×</button>
+        </div>
+
+        <p class="sales-status-message" id="sale-detail-status" role="status" aria-live="polite"></p>
+        <div id="sale-detail-content"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="sales-action-dialog" id="sales-action-dialog">
+    <form id="sales-action-form" novalidate>
+      <input id="sales-action-type" type="hidden">
+      <input id="sales-action-resource-id" type="hidden">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow" id="sales-action-eyebrow">Acción protegida</p>
+          <h2 id="sales-action-title">Confirmar acción</h2>
+        </div>
+        <button class="icon-close" data-close-sales-dialog type="button" aria-label="Cerrar">×</button>
+      </div>
+      <p id="sales-action-description"></p>
+      <label class="sales-field" for="sales-action-reason">
+        <span>Motivo obligatorio</span>
+        <textarea id="sales-action-reason" rows="4" minlength="10" maxlength="300" placeholder="Explica por qué se realiza esta acción…" required></textarea>
+        <small>Mínimo 10 caracteres. El backend lo guardará en la auditoría.</small>
+      </label>
+      <p class="sales-status-message" id="sales-action-status" role="status" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button class="button button-ghost" data-close-sales-dialog type="button">Cancelar</button>
+        <button class="button button-primary" id="confirm-sales-action" type="submit">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

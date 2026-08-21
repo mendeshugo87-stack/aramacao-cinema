@@ -38,7 +38,11 @@
           "nombre_rol": "Vendedor de taquilla",
           "permisos": [
             "ventas.crear_venta",
-            "ventas.consultar_turno_propio"
+            "ventas.consultar_turno_propio",
+            "ventas.imprimir_comprobante_propio",
+            "boletos.imprimir_venta_propia",
+            "clientes.buscar_para_recuperacion",
+            "boletos.recuperar_cliente"
           ]
         },
         "debe_cambiar_contrasena": false,
@@ -87,14 +91,24 @@
   "permisos_por_rol": {
     "VENDEDOR_TAQUILLA": [
       "ventas.crear_venta",
-      "ventas.consultar_turno_propio"
+      "ventas.consultar_turno_propio",
+      "ventas.imprimir_comprobante_propio",
+      "boletos.imprimir_venta_propia",
+      "clientes.buscar_para_recuperacion",
+      "boletos.recuperar_cliente"
     ],
     "CONTROL_ACCESO": [
       "boletos.escanear"
     ],
     "ADMINISTRADOR_OPERATIVO": [
       "cartelera.gestionar",
-      "personal.gestionar"
+      "personal.gestionar",
+      "ventas.consultar",
+      "ventas.reimprimir_comprobante",
+      "boletos.reimprimir",
+      "boletos.reemitir",
+      "ventas.anular",
+      "pagos.reembolsar"
     ]
   },
   "regla_control_acceso": "Usa el mismo inicio de sesión. Django devuelve rol CONTROL_ACCESO, permiso boletos.escanear y ruta /pages/control-entrada/."

@@ -1,18 +1,13 @@
 "use strict";
 
-/*
- * INTEGRACIÓN CON BACKEND
- * -----------------------
- * Durante la maqueta, Inicio, Taquilla y Administración comparten CinemaStore.
- * Cuando Django exponga la API, cinema-store.js será sustituido por solicitudes
- * autenticadas, por ejemplo GET /api/cartelera/. La presentación puede conservarse.
- */
 const DATA_URL = "assets/data/cartelera.json";
 
 const state = {
-  data: null,
   selectedDate: new Date(),
   featuredMovies: [],
+  currentMovies: [],
+  upcomingMovies: [],
+  promotion: null,
   heroIndex: 0,
   heroTimer: null,
   lastFocusedElement: null,
@@ -64,10 +59,17 @@ async function initializePage() {
   document.querySelector("#current-year").textContent = new Date().getFullYear();
 
   try {
-    state.data = await fetchCinemaData();
-    state.featuredMovies = state.data.movies.filter(
-      (movie) => movie.status === "cartelera" && movie.featured && movie.active !== false
-    );
+    const fechaInicial = toLocalISODate(state.selectedDate);
+    const [inicio, cartelera, proximamente] = await Promise.all([
+      window.CinemaPublicApi.cargarInicio(DATA_URL),
+      window.CinemaPublicApi.cargarCartelera(DATA_URL, fechaInicial),
+      window.CinemaPublicApi.cargarProximamente(DATA_URL),
+    ]);
+
+    state.featuredMovies = inicio.peliculas;
+    state.currentMovies = cartelera.peliculas;
+    state.upcomingMovies = proximamente.peliculas;
+    state.promotion = inicio.promocion || cartelera.promocion;
 
     renderDateTabs();
     renderMovies();
@@ -79,10 +81,6 @@ async function initializePage() {
     console.error("No se pudo cargar la cartelera:", error);
     showDataError();
   }
-}
-
-async function fetchCinemaData() {
-  return window.CinemaStore.getData(DATA_URL);
 }
 
 function bindStaticEvents() {
@@ -166,7 +164,7 @@ function renderDateTabs() {
     })
     .join("");
 
-  elements.dateTabs.addEventListener("click", (event) => {
+  elements.dateTabs.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-date]");
     if (!button) return;
 
@@ -178,14 +176,27 @@ function renderDateTabs() {
       tab.setAttribute("aria-pressed", String(isSelected));
     });
 
-    renderMovies();
+    await updateCartelera();
   });
 }
 
+async function updateCartelera() {
+  try {
+    const fecha = toLocalISODate(state.selectedDate);
+    const cartelera = await window.CinemaPublicApi.cargarCartelera(DATA_URL, fecha);
+    state.currentMovies = cartelera.peliculas;
+    state.promotion = cartelera.promocion || state.promotion;
+    renderMovies();
+    renderActivePromotion();
+  } catch (error) {
+    console.error("No se pudo actualizar la cartelera:", error);
+    elements.movieGrid.innerHTML =
+      '<p class="error-message">No fue posible consultar las funciones de esta fecha.</p>';
+  }
+}
+
 function renderMovies() {
-  const movies = state.data.movies.filter(
-    (movie) => movie.status === "cartelera" && movie.active !== false
-  );
+  const movies = state.currentMovies;
 
   if (!movies.length) {
     elements.movieGrid.innerHTML = '<p class="empty-message">No hay películas publicadas para esta fecha.</p>';
@@ -231,23 +242,21 @@ function renderMovies() {
 
   elements.movieGrid.querySelectorAll("[data-movie-details]").forEach((button) => {
     button.addEventListener("click", () => {
-      const movie = state.data.movies.find((item) => item.id === button.dataset.movieDetails);
+      const movie = state.currentMovies.find((item) => item.id === button.dataset.movieDetails);
       if (movie) openMovieModal(movie);
     });
   });
 
   elements.movieGrid.querySelectorAll("[data-movie-trailer]").forEach((button) => {
     button.addEventListener("click", () => {
-      const movie = state.data.movies.find((item) => item.id === button.dataset.movieTrailer);
+      const movie = state.currentMovies.find((item) => item.id === button.dataset.movieTrailer);
       if (movie) openTrailerModal(movie);
     });
   });
 }
 
 function renderUpcomingMovies() {
-  const upcoming = state.data.movies.filter(
-    (movie) => movie.status === "proximamente" && movie.active !== false
-  );
+  const upcoming = state.upcomingMovies;
 
   elements.upcomingGrid.innerHTML = upcoming.length
     ? upcoming
@@ -273,7 +282,7 @@ function renderUpcomingMovies() {
 }
 
 function renderActivePromotion() {
-  const promotion = state.data?.promotion;
+  const promotion = state.promotion;
   const participatingMovies = getEffectivePromotionMovies(promotion);
   const validConfiguration = isVisiblePromotion(promotion, participatingMovies);
 
@@ -350,7 +359,7 @@ function renderHero() {
 }
 
 function renderHeroPromotionIndicator(movie) {
-  const promotion = state.data?.promotion;
+  const promotion = state.promotion;
   const participatingMovies = getEffectivePromotionMovies(promotion);
   const visible = isVisiblePromotion(promotion, participatingMovies);
   const currentMovieParticipates = participatingMovies.some((item) => item.id === movie.id);
@@ -365,7 +374,7 @@ function renderHeroPromotionIndicator(movie) {
 function getEffectivePromotionMovies(promotion) {
   if (!promotion) return [];
   const selectedMovieIds = Array.isArray(promotion.movieIds) ? promotion.movieIds : [];
-  return state.data.movies.filter((movie) => {
+  return state.currentMovies.filter((movie) => {
     if (!selectedMovieIds.includes(movie.id) || movie.status !== "cartelera" || movie.active === false) return false;
     return (movie.funciones || []).some((showtime) => {
       const weekday = parseLocalDate(showtime.fecha).getDay();
@@ -483,12 +492,14 @@ function getShowtimes(movie, date) {
       room: "Sala 1",
       format: showtime.formato,
       price: Number(showtime.precio),
-      promotion: isFunctionInPromotion(movie.id, showtime, selectedDate),
+      promotion:
+        showtime.promotion === true ||
+        isFunctionInPromotion(movie.id, showtime, selectedDate),
     }));
 }
 
 function isFunctionInPromotion(movieId, showtime, selectedDate) {
-  const promotion = state.data?.promotion;
+  const promotion = state.promotion;
   const weekday = parseLocalDate(selectedDate).getDay();
   return Boolean(
     promotion?.enabled &&

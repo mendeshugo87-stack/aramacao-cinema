@@ -6,7 +6,11 @@
   <title>Próximamente | Aramacao Cinema</title>
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css"><link rel="stylesheet" href="../../assets/css/public-pages.css">
-  <script src="../../assets/js/customer-api.js" defer></script><script src="../../assets/js/public-customer-session.js" defer></script><script src="../../assets/js/cinema-store.js?v=5.2" defer></script><script src="../../assets/js/public-pages.js" defer></script>
+  <script src="../../assets/js/customer-api.js" defer></script>
+  <script src="../../assets/js/public-customer-session.js" defer></script>
+  <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
+  <script src="../../assets/js/public-cinema-api.js" defer></script>
+  <script src="../../assets/js/public-pages.js" defer></script>
 </head>
 <body class="public-page-body" data-cinema-view="proximamente">
   <a class="skip-link" href="#contenido-principal">Saltar al contenido</a>
@@ -23,7 +27,7 @@
     </div></section>
     <section class="page-section" aria-labelledby="upcoming-title"><div class="container">
       <div class="page-toolbar"><div><h2 id="upcoming-title">Próximos estrenos</h2><p>Las fechas pueden actualizarse desde el panel administrativo cuando la programación sea confirmada.</p></div></div>
-      <!-- BACKEND: esta lista provendrá de las películas con estado Próximamente. -->
+      <!-- La vista consulta solamente el endpoint público de Próximamente. -->
       <div class="upcoming-grid" id="public-movie-grid" aria-live="polite"><p class="loading-message">Cargando próximos estrenos…</p></div>
     </div></section>
   </main>

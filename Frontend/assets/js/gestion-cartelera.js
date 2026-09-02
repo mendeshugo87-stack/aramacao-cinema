@@ -2,9 +2,10 @@
 
 const DATA_URL = "../../assets/data/cartelera.json";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MOVIES_PER_PAGE = 10;
 const DEFAULT_ACCENT = "#0877d1";
 const DEFAULT_BANNER_VISIBILITY = 65;
-const CORRECT_PROMOTION_DESCRIPTION = "Por cada dos admisiones se cobra una en las funciones seleccionadas. Administración configura la promoción y Taquilla solamente informa al cliente.";
+const DEFAULT_PROMOTION_WEEKDAYS = [1, 2, 3];
 const CROP_PRESETS = {
   posterImage: { label: "Póster vertical", ratio: 2 / 3, width: 1000, height: 1500 },
   bannerImage: { label: "Fondo horizontal de Inicio", ratio: 16 / 7, width: 2560, height: 1120 },
@@ -12,12 +13,21 @@ const CROP_PRESETS = {
 
 const state = {
   data: null,
+  moviePage: 1,
   editingMovieId: null,
   originalFunctionsSignature: "",
   posterImage: "",
   bannerImage: "",
   bannerVisibility: DEFAULT_BANNER_VISIBILITY,
-  promotionEditorOpen: false,
+  promotionWeekdays: DEFAULT_PROMOTION_WEEKDAYS,
+  formSelections: {
+    genreIds: [],
+    actorIds: [],
+  },
+  personModal: {
+    type: "",
+    lastFocus: null,
+  },
   crop: {
     targetKey: "",
     source: "",
@@ -35,6 +45,7 @@ const elements = {
   sidebar: document.querySelector(".admin-sidebar"),
   menuButton: document.querySelector("#admin-menu-button"),
   movieList: document.querySelector("#admin-movie-list"),
+  moviePagination: document.querySelector("#movie-pagination"),
   search: document.querySelector("#movie-search"),
   statusFilter: document.querySelector("#movie-status-filter"),
   editor: document.querySelector("#movie-editor"),
@@ -51,6 +62,22 @@ const elements = {
   bannerVisibilityValue: document.querySelector("#movie-banner-visibility-value"),
   reframePoster: document.querySelector("#reframe-poster"),
   reframeBanner: document.querySelector("#reframe-banner"),
+  classificationSelect: document.querySelector("#movie-classification"),
+  genreSelect: document.querySelector("#movie-genre-select"),
+  genreTags: document.querySelector("#movie-genres"),
+  languageSelect: document.querySelector("#movie-language-select"),
+  directorSelect: document.querySelector("#movie-director"),
+  actorSelect: document.querySelector("#movie-actor-select"),
+  castTags: document.querySelector("#movie-cast"),
+  personModal: document.querySelector("#person-modal"),
+  personModalTitle: document.querySelector("#person-modal-title"),
+  personForm: document.querySelector("#person-form"),
+  personFormStatus: document.querySelector("#person-form-status"),
+  personType: document.querySelector("#person-type"),
+  personFirstName: document.querySelector("#person-first-name"),
+  personLastName: document.querySelector("#person-last-name"),
+  personStageName: document.querySelector("#person-stage-name"),
+  personBiography: document.querySelector("#person-biography"),
   cropModal: document.querySelector("#image-crop-modal"),
   cropModalTitle: document.querySelector("#crop-modal-title"),
   cropModalHelp: document.querySelector("#crop-modal-help"),
@@ -59,25 +86,6 @@ const elements = {
   cropZoom: document.querySelector("#crop-zoom"),
   cropStatus: document.querySelector("#crop-status"),
   applyCrop: document.querySelector("#apply-crop"),
-  promotionForm: document.querySelector("#promotion-form"),
-  promotionEnabled: document.querySelector("#promotion-enabled"),
-  promotionMovieOptions: document.querySelector("#promotion-movie-options"),
-  promotionStartDate: document.querySelector("#promotion-start-date"),
-  promotionEndDate: document.querySelector("#promotion-end-date"),
-  promotionScope: document.querySelector("#promotion-scope"),
-  promotionFunctionFieldset: document.querySelector("#promotion-function-fieldset"),
-  promotionFunctionOptions: document.querySelector("#promotion-function-options"),
-  promotionDescription: document.querySelector("#promotion-description"),
-  promotionStatus: document.querySelector("#promotion-status"),
-  promotionEditor: document.querySelector("#promotion-form"),
-  promotionSummary: document.querySelector("#promotion-summary"),
-  promotionSummaryState: document.querySelector("#promotion-summary-state"),
-  promotionSummaryTitle: document.querySelector("#promotion-summary-title"),
-  promotionSummaryPeriod: document.querySelector("#promotion-summary-period"),
-  promotionSummaryMovies: document.querySelector("#promotion-summary-movies"),
-  promotionSummaryFeedback: document.querySelector("#promotion-summary-feedback"),
-  editPromotionButton: document.querySelector("#edit-promotion-button"),
-  closePromotionEditor: document.querySelector("#close-promotion-editor"),
 };
 
 document.addEventListener("DOMContentLoaded", initializeAdmin);
@@ -109,15 +117,21 @@ function bindEvents() {
     }
   });
 
-  elements.search.addEventListener("input", renderMovieList);
-  elements.statusFilter.addEventListener("change", renderMovieList);
+  elements.search.addEventListener("input", restartMoviePagination);
+  elements.statusFilter.addEventListener("change", restartMoviePagination);
   document.querySelector("#new-movie-button").addEventListener("click", () => openMovieEditor());
   document.querySelector("#close-movie-editor").addEventListener("click", closeMovieEditor);
   document.querySelector("#cancel-movie-edit").addEventListener("click", closeMovieEditor);
   document.querySelector("#add-showtime").addEventListener("click", () => addShowtimeRow());
+  document.querySelector("#add-director").addEventListener("click", () => openPersonModal("director"));
+  document.querySelector("#add-actor").addEventListener("click", () => openPersonModal("actor"));
+  elements.genreSelect.addEventListener("change", addGenreSelection);
+  elements.actorSelect.addEventListener("change", addActorSelection);
   document.querySelector("#reset-demo-data").addEventListener("click", resetDemoData);
 
   elements.movieList.addEventListener("click", handleMovieListAction);
+  elements.moviePagination.addEventListener("click", handleMoviePagination);
+  elements.movieForm.addEventListener("click", handleSelectedTagRemoval);
   elements.showtimeList.addEventListener("click", (event) => {
     const removeButton = event.target.closest("[data-remove-showtime]");
     if (!removeButton) return;
@@ -128,10 +142,15 @@ function bindEvents() {
     const timeInput = event.target.closest('[data-showtime-field="time"]');
     if (timeInput) normalizeVisibleTimeInput(timeInput);
   });
+  elements.showtimeList.addEventListener("change", (event) => {
+    const row = event.target.closest(".showtime-row");
+    if (row && event.target.matches('[data-showtime-field="date"], [data-showtime-field="promotion"]')) {
+      updateShowtimePromotionMessage(row);
+    }
+  });
 
   elements.movieForm.addEventListener("submit", saveMovie);
-  elements.promotionForm.addEventListener("submit", savePromotion);
-  elements.promotionForm.addEventListener("change", handlePromotionFormChange);
+  elements.personForm.addEventListener("submit", savePerson);
   elements.posterInput.addEventListener("change", () => handleImageSelection(elements.posterInput, "posterImage"));
   elements.bannerInput.addEventListener("change", () => handleImageSelection(elements.bannerInput, "bannerImage"));
   elements.reframePoster.addEventListener("click", () => openImageCropper(state.posterImage, "posterImage"));
@@ -141,8 +160,6 @@ function bindEvents() {
     renderBannerPreview();
   });
   document.querySelector("#movie-title").addEventListener("input", renderBannerPreview);
-  elements.editPromotionButton.addEventListener("click", openPromotionEditor);
-  elements.closePromotionEditor.addEventListener("click", closePromotionEditor);
   elements.cropZoom.addEventListener("input", () => {
     state.crop.zoom = Number(elements.cropZoom.value);
     updateCropTransform();
@@ -156,40 +173,40 @@ function bindEvents() {
   document.querySelectorAll("[data-cancel-crop]").forEach((button) => {
     button.addEventListener("click", closeImageCropper);
   });
+  document.querySelectorAll("[data-cancel-person]").forEach((button) => {
+    button.addEventListener("click", closePersonModal);
+  });
   window.addEventListener("resize", updateCropTransform);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && elements.cropModal.classList.contains("open")) closeImageCropper();
+    if (event.key === "Escape" && elements.personModal.classList.contains("open")) closePersonModal();
   });
-  document.querySelector("#movie-status").addEventListener("change", syncFeaturedAvailability);
 }
 
 function ensureDataShape() {
   state.data.movies = Array.isArray(state.data.movies) ? state.data.movies : [];
-  state.data.promotion = {
-    enabled: false,
-    movieIds: [],
-    startDate: "",
-    endDate: "",
-    allowedWeekdays: [1, 2, 3],
-    appliesTo: "todas",
-    functionIds: [],
-    description: "",
-    ...(state.data.promotion || {}),
-  };
-  if (/vendedor\s+decide/i.test(state.data.promotion.description || "")) {
-    state.data.promotion.description = CORRECT_PROMOTION_DESCRIPTION;
-  }
+  state.data.directors = Array.isArray(state.data.directors) ? state.data.directors : [];
+  state.data.actors = Array.isArray(state.data.actors) ? state.data.actors : [];
+  state.data.genres = Array.isArray(state.data.genres) ? state.data.genres : [];
+  state.data.languages = Array.isArray(state.data.languages) ? state.data.languages : [];
+  state.data.classifications = Array.isArray(state.data.classifications) ? state.data.classifications : [];
+  state.promotionWeekdays = Array.isArray(state.data.promotion?.allowedWeekdays)
+    ? state.data.promotion.allowedWeekdays.map(Number)
+    : DEFAULT_PROMOTION_WEEKDAYS;
+
   state.data.movies.forEach((movie) => {
     if (typeof movie.active !== "boolean") movie.active = true;
     movie.funciones = Array.isArray(movie.funciones) ? movie.funciones : [];
     movie.bannerVisibility = normalizeBannerVisibility(movie.bannerVisibility);
   });
+
+  prepareMovieCatalogs();
+  preparePeopleCatalogs();
 }
 
 function renderAll() {
   renderMetrics();
   renderMovieList();
-  renderPromotionForm();
 }
 
 function renderMetrics() {
@@ -208,7 +225,7 @@ function renderMovieList() {
   const query = normalizeText(elements.search.value);
   const selectedStatus = elements.statusFilter.value;
 
-  const movies = state.data.movies.filter((movie) => {
+  const filteredMovies = state.data.movies.filter((movie) => {
     const searchable = normalizeText([movie.title, movie.classification, ...(movie.genres || [])].join(" "));
     const matchesQuery = !query || searchable.includes(query);
     const matchesStatus =
@@ -217,12 +234,65 @@ function renderMovieList() {
     return matchesQuery && matchesStatus;
   });
 
-  if (!movies.length) {
+  const totalPages = Math.max(1, Math.ceil(filteredMovies.length / MOVIES_PER_PAGE));
+  state.moviePage = clamp(state.moviePage, 1, totalPages);
+  const firstMovie = (state.moviePage - 1) * MOVIES_PER_PAGE;
+  // En la demostración dividimos el catálogo local. El endpoint real entregará estos mismos bloques de 10.
+  const moviesOnPage = filteredMovies.slice(firstMovie, firstMovie + MOVIES_PER_PAGE);
+
+  if (!moviesOnPage.length) {
     elements.movieList.innerHTML = '<p class="empty-admin-list">No hay películas que coincidan con el filtro.</p>';
-    return;
+  } else {
+    elements.movieList.innerHTML = moviesOnPage.map(renderMovieRow).join("");
   }
 
-  elements.movieList.innerHTML = movies.map(renderMovieRow).join("");
+  renderMoviePagination(filteredMovies.length, totalPages);
+}
+
+function restartMoviePagination() {
+  state.moviePage = 1;
+  renderMovieList();
+}
+
+function handleMoviePagination(event) {
+  const button = event.target.closest("[data-movie-page]");
+  if (!button || button.disabled) return;
+
+  state.moviePage = Number(button.dataset.moviePage);
+  renderMovieList();
+  document.querySelector("#peliculas").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderMoviePagination(totalMovies, totalPages) {
+  const previousPage = Math.max(1, state.moviePage - 1);
+  const nextPage = Math.min(totalPages, state.moviePage + 1);
+  const pageButtons = getVisibleMoviePages(totalPages).map((page) => {
+    if (page === "…") return '<span class="movie-pagination-gap" aria-hidden="true">…</span>';
+    const current = page === state.moviePage;
+    return `<button type="button" data-movie-page="${page}" ${current ? 'class="active" aria-current="page"' : ""}>${page}</button>`;
+  }).join("");
+
+  elements.moviePagination.innerHTML = `
+    <p>Página ${state.moviePage} de ${totalPages} · ${totalMovies} ${totalMovies === 1 ? "película" : "películas"}</p>
+    <div>
+      <button type="button" data-movie-page="${previousPage}" ${state.moviePage === 1 ? "disabled" : ""}>Anterior</button>
+      ${pageButtons}
+      <button type="button" data-movie-page="${nextPage}" ${state.moviePage === totalPages ? "disabled" : ""}>Siguiente</button>
+    </div>
+  `;
+}
+
+function getVisibleMoviePages(totalPages) {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const pages = [1];
+  const start = Math.max(2, state.moviePage - 1);
+  const end = Math.min(totalPages - 1, state.moviePage + 1);
+  if (start > 2) pages.push("…");
+  for (let page = start; page <= end; page += 1) pages.push(page);
+  if (end < totalPages - 1) pages.push("…");
+  pages.push(totalPages);
+  return pages;
 }
 
 function renderMovieRow(movie) {
@@ -286,6 +356,8 @@ function openMovieEditor(movie = null) {
   state.bannerVisibility = normalizeBannerVisibility(movie?.bannerVisibility);
   elements.editorTitle.textContent = movie ? "Editar película" : "Nueva película";
   document.querySelector("#movie-id").value = movie?.id || "";
+  renderCatalogSelectors(movie);
+  renderPeopleSelectors(movie?.directorId || "", movie?.actorIds || []);
 
   if (movie) fillMovieForm(movie);
   else {
@@ -296,7 +368,6 @@ function openMovieEditor(movie = null) {
   renderBannerPreview();
   syncReframeButtons();
   renderEmptyShowtimeMessage();
-  syncFeaturedAvailability();
   elements.editor.removeAttribute("hidden");
   elements.editor.classList.add("is-open");
   window.requestAnimationFrame(() => {
@@ -310,12 +381,6 @@ function fillMovieForm(movie) {
   setValue("movie-short-synopsis", movie.shortSynopsis);
   setValue("movie-full-synopsis", movie.fullSynopsis);
   setValue("movie-duration", movie.durationMinutes);
-  setValue("movie-classification", movie.classification);
-  setValue("movie-genres", (movie.genres || []).join(", "));
-  setValue("movie-language", movie.language);
-  setValue("movie-director", movie.director);
-  setValue("movie-cast", (movie.cast || []).join(", "));
-  setValue("movie-status", movie.status || "cartelera");
   setValue("movie-release-date", movie.releaseDate);
   setValue("movie-trailer", movie.trailerUrl);
   document.querySelector("#movie-active").checked = movie.active !== false;
@@ -355,13 +420,48 @@ function addShowtimeRow(showtime = {}) {
     </label>
     <span class="fixed-room"><small></small><strong>Sala 1</strong></span>
     <button class="remove-showtime" type="button" data-remove-showtime aria-label="Quitar función">×</button>
+    <div class="showtime-promotion-row">
+      <label class="showtime-promotion">
+        <input data-showtime-field="promotion" type="checkbox" ${showtime.promotion === true || showtime.promocion_2x1?.aplica === true ? "checked" : ""}>
+        <span><strong>Aplicar 2x1</strong><small>Solo para esta función.</small></span>
+      </label>
+      <small class="showtime-promotion-message" data-promotion-message></small>
+    </div>
   `;
   elements.showtimeList.append(row);
+  updateShowtimePromotionMessage(row);
 }
 
 function renderEmptyShowtimeMessage() {
   if (elements.showtimeList.querySelector(".showtime-row")) return;
   elements.showtimeList.innerHTML = '<p class="no-showtimes-admin">Todavía no agregaste funciones para esta película.</p>';
+}
+
+function updateShowtimePromotionMessage(row) {
+  const date = row.querySelector('[data-showtime-field="date"]').value;
+  const checkbox = row.querySelector('[data-showtime-field="promotion"]');
+  const message = row.querySelector("[data-promotion-message]");
+  const isAllowed = isPromotionDateAllowed(date);
+
+  row.classList.toggle("promotion-not-allowed", checkbox.checked && Boolean(date) && !isAllowed);
+  if (!checkbox.checked) {
+    message.textContent = "";
+  } else if (!date) {
+    message.textContent = "Selecciona la fecha para validar la promoción.";
+  } else if (isAllowed) {
+    message.textContent = "Día permitido por la regla actual.";
+  } else {
+    message.textContent = `No se puede publicar con 2x1. Días permitidos: ${formatWeekdayNames(state.promotionWeekdays)}.`;
+  }
+}
+
+function isPromotionDateAllowed(date) {
+  return Boolean(date && state.promotionWeekdays.includes(getWeekdayFromISO(date)));
+}
+
+function formatWeekdayNames(weekdays) {
+  const names = { 0: "domingo", 1: "lunes", 2: "martes", 3: "miércoles", 4: "jueves", 5: "viernes", 6: "sábado" };
+  return (weekdays || []).map((day) => names[day]).filter(Boolean).join(", ") || "ninguno";
 }
 
 async function saveMovie(event) {
@@ -370,7 +470,23 @@ async function saveMovie(event) {
   if (!validateMovieForm()) return;
 
   const existingMovie = state.data.movies.find((movie) => movie.id === state.editingMovieId);
-  const movieStatus = document.querySelector("#movie-status").value;
+  const classificationId = normalizeCatalogId(elements.classificationSelect.value);
+  const genreIds = [...state.formSelections.genreIds];
+  const languageId = elements.languageSelect.value
+    ? normalizeCatalogId(elements.languageSelect.value)
+    : "";
+  const directorId = elements.directorSelect.value
+    ? normalizeCatalogId(elements.directorSelect.value)
+    : "";
+  const actorIds = getSelectedActorIds();
+  const classification = findCatalogItem(state.data.classifications, classificationId);
+  const genres = genreIds.map((id) => findCatalogItem(state.data.genres, id)).filter(Boolean);
+  const language = findCatalogItem(state.data.languages, languageId);
+  const director = state.data.directors.find((person) => String(person.id) === String(directorId));
+  const actors = actorIds
+    .map((actorId) => state.data.actors.find((person) => String(person.id) === String(actorId)))
+    .filter(Boolean);
+  const movieStatus = existingMovie?.status || "proximamente";
   const movie = {
     id: existingMovie?.id || createMovieId(document.querySelector("#movie-title").value),
     title: document.querySelector("#movie-title").value.trim(),
@@ -378,13 +494,20 @@ async function saveMovie(event) {
     shortSynopsis: document.querySelector("#movie-short-synopsis").value.trim(),
     fullSynopsis: document.querySelector("#movie-full-synopsis").value.trim() || document.querySelector("#movie-short-synopsis").value.trim(),
     durationMinutes: Number(document.querySelector("#movie-duration").value),
-    classification: document.querySelector("#movie-classification").value,
-    genres: splitCommaList(document.querySelector("#movie-genres").value),
-    language: document.querySelector("#movie-language").value.trim(),
-    director: document.querySelector("#movie-director").value.trim() || "Por confirmar",
-    cast: splitCommaList(document.querySelector("#movie-cast").value, ["Por confirmar"]),
+    classificationId,
+    classification: classification ? getCatalogName(classification) : "",
+    genreIds,
+    genres: genres.map(getCatalogName),
+    languageId,
+    languageIds: languageId ? [languageId] : [],
+    language: language ? getCatalogName(language) : "",
+    directorId,
+    directorIds: directorId ? [directorId] : [],
+    director: director ? getPersonName(director) : "Por confirmar",
+    actorIds,
+    cast: actors.length ? actors.map(getPersonName) : ["Por confirmar"],
     status: movieStatus,
-    featured: movieStatus === "cartelera" && document.querySelector("#movie-featured").checked,
+    featured: document.querySelector("#movie-featured").checked,
     active: document.querySelector("#movie-active").checked,
     accent: existingMovie?.accent || DEFAULT_ACCENT,
     releaseDate: document.querySelector("#movie-release-date").value,
@@ -393,10 +516,14 @@ async function saveMovie(event) {
     bannerImage: state.bannerImage,
     bannerVisibility: state.bannerVisibility,
     funciones: collectFunctions(),
+    createdAt: existingMovie?.createdAt || new Date().toISOString(),
   };
 
   if (existingMovie) Object.assign(existingMovie, movie);
-  else state.data.movies.unshift(movie);
+  else {
+    state.data.movies.unshift(movie);
+    state.moviePage = 1;
+  }
 
   try {
     await persistAndRender();
@@ -414,8 +541,6 @@ function validateMovieForm() {
   const requiredFields = [
     ["movie-title", 2, "Escribe el título de la película."],
     ["movie-short-synopsis", 10, "Agrega una descripción de al menos 10 caracteres."],
-    ["movie-genres", 2, "Escribe al menos un género."],
-    ["movie-language", 2, "Indica el idioma."],
   ];
 
   requiredFields.forEach(([id, minimum, message]) => {
@@ -435,6 +560,16 @@ function validateMovieForm() {
   const classification = document.querySelector("#movie-classification");
   if (!classification.value) {
     setFieldError(classification, "Selecciona la clasificación.");
+    valid = false;
+  }
+
+  if (!state.formSelections.genreIds.length) {
+    setFieldError(elements.genreSelect, "Selecciona al menos un género.");
+    valid = false;
+  }
+
+  if (!elements.languageSelect.value) {
+    setFieldError(elements.languageSelect, "Selecciona un idioma.");
     valid = false;
   }
 
@@ -469,6 +604,18 @@ function validateMovieForm() {
       elements.movieFormStatus.className = "admin-form-status error";
       valid = false;
     }
+
+    const invalidPromotion = [...elements.showtimeList.querySelectorAll(".showtime-row")].find((row) => {
+      const promotion = row.querySelector('[data-showtime-field="promotion"]');
+      const date = row.querySelector('[data-showtime-field="date"]').value;
+      updateShowtimePromotionMessage(row);
+      return promotion.checked && !isPromotionDateAllowed(date);
+    });
+    if (invalidPromotion) {
+      elements.movieFormStatus.textContent = `El 2x1 solo puede publicarse en estos días: ${formatWeekdayNames(state.promotionWeekdays)}.`;
+      elements.movieFormStatus.className = "admin-form-status error";
+      valid = false;
+    }
   }
 
   if (valid && functionsChanged) {
@@ -500,6 +647,7 @@ function collectFunctions() {
       sala: "Sala 1",
       formato: row.querySelector('[data-showtime-field="format"]').value,
       precio: Number(row.querySelector('[data-showtime-field="price"]').value),
+      promotion: row.querySelector('[data-showtime-field="promotion"]').checked,
     }))
     .sort(compareFunctions);
 }
@@ -514,9 +662,336 @@ function buildFunctionsSignature(functions) {
         sala: "Sala 1",
         formato: String(showtime.formato || "2D"),
         precio: Number(showtime.precio) || 0,
+        promotion: showtime.promotion === true || showtime.promocion_2x1?.aplica === true,
       }))
       .sort(compareFunctions)
   );
+}
+
+function prepareMovieCatalogs() {
+  state.data.genres = normalizeMovieCatalog(state.data.genres, "genre");
+  state.data.languages = normalizeMovieCatalog(state.data.languages, "language");
+  state.data.classifications = normalizeMovieCatalog(state.data.classifications, "classification");
+
+  // Los nombres antiguos se conservan para la demostración, pero el formulario ya trabaja con ID.
+  state.data.movies.forEach((movie) => {
+    movie.genreIds = Array.isArray(movie.genreIds) && movie.genreIds.length
+      ? movie.genreIds.map(normalizeCatalogId)
+      : (movie.genres || []).map((name) => addExistingCatalogItem(state.data.genres, name)).filter(Boolean);
+    movie.languageIds = Array.isArray(movie.languageIds) && movie.languageIds.length
+      ? movie.languageIds.map(normalizeCatalogId)
+      : [addExistingCatalogItem(state.data.languages, movie.language)].filter(Boolean);
+    movie.languageId = movie.languageId
+      ? normalizeCatalogId(movie.languageId)
+      : movie.languageIds[0] || "";
+    movie.classificationId = movie.classificationId
+      ? normalizeCatalogId(movie.classificationId)
+      : addExistingCatalogItem(state.data.classifications, movie.classification);
+  });
+}
+
+function normalizeMovieCatalog(catalog) {
+  return catalog.map((item, index) => {
+    if (typeof item === "string") return { id: index + 1, name: item, active: true };
+    return {
+      ...item,
+      id: item.id ?? index + 1,
+      active: item.active !== false && item.activo !== false,
+    };
+  });
+}
+
+function addExistingCatalogItem(catalog, name) {
+  const cleanName = String(name || "").trim();
+  if (!cleanName) return "";
+  const existing = catalog.find((item) => normalizeText(getCatalogName(item)) === normalizeText(cleanName));
+  if (existing) return existing.id;
+
+  const item = { id: getNextNumericId(catalog), name: cleanName, active: true };
+  catalog.push(item);
+  return item.id;
+}
+
+function renderCatalogSelectors(movie) {
+  state.formSelections.genreIds = [...(movie?.genreIds || [])].map(normalizeCatalogId);
+
+  renderCatalogOptions(elements.classificationSelect, state.data.classifications, "Seleccionar");
+  renderCatalogOptions(elements.genreSelect, state.data.genres, "Seleccionar género");
+  renderCatalogOptions(elements.languageSelect, state.data.languages, "Seleccionar idioma");
+  elements.classificationSelect.value = movie?.classificationId ?? "";
+  elements.languageSelect.value = movie?.languageId ?? movie?.languageIds?.[0] ?? "";
+  renderGenreTags();
+}
+
+function renderCatalogOptions(select, catalog, placeholder) {
+  const options = [...catalog]
+    .filter((item) => item.active !== false)
+    .sort((first, second) => getCatalogName(first).localeCompare(getCatalogName(second), "es", { sensitivity: "base" }));
+  select.innerHTML = `<option value="">${placeholder}</option>${options
+    .map((item) => `<option value="${escapeHTML(item.id)}">${escapeHTML(getCatalogName(item))}</option>`)
+    .join("")}`;
+}
+
+function addGenreSelection() {
+  if (!elements.genreSelect.value) return;
+
+  const id = normalizeCatalogId(elements.genreSelect.value);
+  if (!state.formSelections.genreIds.some((selectedId) => String(selectedId) === String(id))) {
+    state.formSelections.genreIds.push(id);
+  }
+  elements.genreSelect.value = "";
+  elements.genreSelect.removeAttribute("aria-invalid");
+  const error = elements.movieForm.querySelector('[data-error-for="movie-genre-select"]');
+  if (error) error.textContent = "";
+  renderGenreTags();
+}
+
+function renderGenreTags() {
+  renderSelectedTags(elements.genreTags, state.formSelections.genreIds, state.data.genres, "genre", "Sin géneros seleccionados");
+}
+
+function renderSelectedTags(container, selectedIds, catalog, type, emptyText) {
+  const items = selectedIds.map((id) => findCatalogItem(catalog, id)).filter(Boolean);
+  container.innerHTML = items.length
+    ? items.map((item) => `
+        <span class="selected-tag">
+          ${escapeHTML(getCatalogName(item))}
+          <button type="button" data-remove-tag="${type}" data-item-id="${escapeHTML(item.id)}" aria-label="Quitar ${escapeHTML(getCatalogName(item))}">×</button>
+        </span>
+      `).join("")
+    : `<small class="selected-tag-empty">${emptyText}</small>`;
+}
+
+function handleSelectedTagRemoval(event) {
+  const button = event.target.closest("[data-remove-tag]");
+  if (!button) return;
+  const id = button.dataset.itemId;
+
+  if (button.dataset.removeTag === "genre") {
+    state.formSelections.genreIds = state.formSelections.genreIds.filter((itemId) => String(itemId) !== id);
+    renderGenreTags();
+  }
+  if (button.dataset.removeTag === "actor") {
+    state.formSelections.actorIds = state.formSelections.actorIds.filter((itemId) => String(itemId) !== id);
+    renderActorTags();
+  }
+}
+
+function normalizeCatalogId(value) {
+  return /^\d+$/.test(String(value)) ? Number(value) : String(value);
+}
+
+function findCatalogItem(catalog, id) {
+  return catalog.find((item) => String(item.id) === String(id));
+}
+
+function getCatalogName(item) {
+  return String(item?.name || item?.nombre || "").trim();
+}
+
+function preparePeopleCatalogs() {
+  // Las películas antiguas guardaban nombres escritos. Los convertimos en personas reutilizables para trabajar después con sus ID.
+  state.data.directors = state.data.directors.map(normalizePerson);
+  state.data.actors = state.data.actors.map(normalizePerson);
+
+  state.data.movies.forEach((movie) => {
+    const directorId = movie.directorId || movie.directorIds?.[0] || addExistingPerson(state.data.directors, movie.director);
+    movie.directorId = directorId ? normalizeCatalogId(directorId) : "";
+    movie.directorIds = movie.directorId ? [movie.directorId] : [];
+
+    if (!Array.isArray(movie.actorIds) || !movie.actorIds.length) {
+      movie.actorIds = (movie.cast || [])
+        .map((name) => addExistingPerson(state.data.actors, name))
+        .filter(Boolean);
+    } else {
+      movie.actorIds = movie.actorIds.map(normalizeCatalogId);
+    }
+  });
+}
+
+function normalizePerson(person, index) {
+  return {
+    ...person,
+    id: person.id !== undefined && person.id !== null
+      ? normalizeCatalogId(person.id)
+      : index + 1,
+    active: person.active !== false && person.activo !== false,
+  };
+}
+
+function addExistingPerson(catalog, name) {
+  const cleanName = String(name || "").trim();
+  if (!cleanName || normalizeText(cleanName) === "por confirmar") return "";
+
+  const existing = catalog.find((person) => normalizeText(getPersonName(person)) === normalizeText(cleanName));
+  if (existing) return existing.id;
+
+  const person = {
+    id: getNextNumericId(catalog),
+    fullName: cleanName,
+    active: true,
+  };
+  catalog.push(person);
+  return person.id;
+}
+
+function renderPeopleSelectors(selectedDirectorId = "", selectedActorIds = []) {
+  const directors = [...state.data.directors]
+    .filter((person) => person.active !== false)
+    .sort(comparePeople);
+  elements.directorSelect.innerHTML = `<option value="">Por confirmar</option>${directors
+    .map((person) => `<option value="${escapeHTML(person.id)}">${escapeHTML(getPersonOptionLabel(person, directors))}</option>`)
+    .join("")}`;
+  elements.directorSelect.value = String(selectedDirectorId || "");
+
+  const actors = [...state.data.actors]
+    .filter((person) => person.active !== false)
+    .sort(comparePeople);
+  elements.actorSelect.innerHTML = `<option value="">Seleccionar actor</option>${actors
+    .map((person) => `<option value="${escapeHTML(person.id)}">${escapeHTML(getPersonOptionLabel(person, actors))}</option>`)
+    .join("")}`;
+  state.formSelections.actorIds = (selectedActorIds || []).map(normalizeCatalogId);
+  renderActorTags();
+}
+
+function addActorSelection() {
+  const actorId = elements.actorSelect.value
+    ? normalizeCatalogId(elements.actorSelect.value)
+    : "";
+  if (!actorId) return;
+  if (!state.formSelections.actorIds.some((selectedId) => String(selectedId) === String(actorId))) {
+    state.formSelections.actorIds.push(actorId);
+  }
+  elements.actorSelect.value = "";
+  renderActorTags();
+}
+
+function renderActorTags() {
+  const actors = state.formSelections.actorIds
+    .map((id) => state.data.actors.find((person) => String(person.id) === String(id)))
+    .filter(Boolean);
+  elements.castTags.innerHTML = actors.length
+    ? actors.map((actor) => {
+      const label = getPersonOptionLabel(actor, state.data.actors);
+      return `
+        <span class="selected-tag">
+          ${escapeHTML(label)}
+          <button type="button" data-remove-tag="actor" data-item-id="${escapeHTML(actor.id)}" aria-label="Quitar ${escapeHTML(label)}">×</button>
+        </span>
+      `;
+    }).join("")
+    : '<small class="selected-tag-empty">Sin actores seleccionados</small>';
+}
+
+function getSelectedActorIds() {
+  return [...state.formSelections.actorIds];
+}
+
+function openPersonModal(type) {
+  state.personModal.type = type;
+  state.personModal.lastFocus = document.activeElement;
+  elements.personForm.reset();
+  elements.personType.value = type;
+  elements.personFormStatus.textContent = "";
+  elements.personFormStatus.className = "admin-form-status";
+  elements.personModalTitle.textContent = type === "director" ? "Agregar director" : "Agregar actor";
+  elements.personForm.querySelectorAll(".actor-only").forEach((field) => {
+    field.hidden = type !== "actor";
+  });
+  elements.personModal.removeAttribute("inert");
+  elements.personModal.setAttribute("aria-hidden", "false");
+  elements.personModal.classList.add("open");
+  document.body.classList.add("admin-modal-open");
+  window.setTimeout(() => elements.personFirstName.focus(), 60);
+}
+
+function closePersonModal() {
+  if (!elements.personModal.classList.contains("open")) return;
+  elements.personModal.classList.remove("open");
+  elements.personModal.setAttribute("aria-hidden", "true");
+  elements.personModal.setAttribute("inert", "");
+  document.body.classList.remove("admin-modal-open");
+  state.personModal.lastFocus?.focus();
+}
+
+async function savePerson(event) {
+  event.preventDefault();
+  const type = elements.personType.value;
+  const firstName = elements.personFirstName.value.trim();
+  const lastName = elements.personLastName.value.trim();
+  const catalog = type === "director" ? state.data.directors : state.data.actors;
+
+  if (firstName.length < 2 || lastName.length < 2) {
+    return showPersonError("Escribe el nombre y el apellido completos.");
+  }
+
+  const person = {
+    id: getNextNumericId(catalog),
+    firstName,
+    lastName,
+    biography: elements.personBiography.value.trim(),
+    active: true,
+  };
+  if (type === "actor") {
+    person.stageName = elements.personStageName.value.trim();
+  }
+
+  catalog.push(person);
+  const selectedDirectorId = type === "director" ? person.id : elements.directorSelect.value;
+  const selectedActorIds = getSelectedActorIds();
+  if (type === "actor") selectedActorIds.push(person.id);
+
+  try {
+    await window.CinemaStore.saveData(state.data);
+    renderPeopleSelectors(selectedDirectorId, selectedActorIds);
+    closePersonModal();
+  } catch (error) {
+    console.error("No fue posible guardar la persona:", error);
+    catalog.pop();
+    showPersonError("No se pudo guardar en esta demostración.");
+  }
+}
+
+function showPersonError(message) {
+  elements.personFormStatus.textContent = message;
+  elements.personFormStatus.className = "admin-form-status error";
+}
+
+function getPersonName(person) {
+  return String(
+    person?.stageName ||
+    person?.nombre_artistico ||
+    getPersonLegalName(person)
+  ).trim();
+}
+
+function getPersonLegalName(person) {
+  return String(
+    person?.fullName ||
+    person?.nombre_completo ||
+    [person?.firstName || person?.nombre, person?.lastName || person?.apellido].filter(Boolean).join(" ")
+  ).trim();
+}
+
+function getPersonOptionLabel(person, catalog) {
+  const visibleName = getPersonName(person);
+  const legalName = getPersonLegalName(person);
+  const repeatedName = legalName && catalog
+    .filter((item) => normalizeText(getPersonLegalName(item)) === normalizeText(legalName))
+    .length > 1;
+  const nameWithDetails = legalName && normalizeText(visibleName) !== normalizeText(legalName)
+    ? `${visibleName} (${legalName})`
+    : visibleName;
+  return repeatedName ? `${nameWithDetails} · ID ${person.id}` : nameWithDetails;
+}
+
+function comparePeople(first, second) {
+  return getPersonName(first).localeCompare(getPersonName(second), "es", { sensitivity: "base" });
+}
+
+function getNextNumericId(catalog) {
+  const ids = catalog.map((item) => Number(item.id)).filter(Number.isFinite);
+  return ids.length ? Math.max(...ids) + 1 : 1;
 }
 
 async function handleImageSelection(input, stateKey) {
@@ -737,258 +1212,14 @@ function syncReframeButtons() {
   elements.reframeBanner.hidden = !getSafeImageUrl(state.bannerImage);
 }
 
-async function savePromotion(event) {
-  event.preventDefault();
-  clearPromotionStatus();
-
-  const movieIds = getCheckedValues('input[name="promotion-movie"]');
-  const allowedWeekdays = getCheckedValues('input[name="promotion-weekday"]').map(Number);
-  const functionIds = getCheckedValues('input[name="promotion-function"]');
-  const enabled = elements.promotionEnabled.checked;
-  const appliesTo = elements.promotionScope.value;
-  const startDate = elements.promotionStartDate.value;
-  const endDate = elements.promotionEndDate.value;
-
-  if (enabled && !movieIds.length) {
-    return showPromotionError("Selecciona al menos una película para activar la promoción.");
-  }
-  if (enabled && (!startDate || !endDate || startDate > endDate)) {
-    return showPromotionError("Selecciona un periodo de fechas válido.");
-  }
-  if (enabled && !allowedWeekdays.length) {
-    return showPromotionError("Selecciona lunes, martes y/o miércoles.");
-  }
-  if (enabled && appliesTo === "especificas" && !functionIds.length) {
-    return showPromotionError("Selecciona al menos una función específica.");
-  }
-
-  const eligibleFunctions = getFunctionsForPromotionRules(movieIds, startDate, endDate, allowedWeekdays);
-  const effectiveFunctions = appliesTo === "especificas"
-    ? eligibleFunctions.filter(({ showtime }) => functionIds.includes(showtime.id))
-    : eligibleFunctions;
-  const effectiveMovieIds = new Set(effectiveFunctions.map(({ movie }) => movie.id));
-  const moviesWithoutFunctions = state.data.movies
-    .filter((movie) => movieIds.includes(movie.id) && !effectiveMovieIds.has(movie.id))
-    .map((movie) => movie.title);
-
-  if (enabled && moviesWithoutFunctions.length) {
-    return showPromotionError(`Estas películas no tienen funciones que cumplan las reglas: ${moviesWithoutFunctions.join(", ")}. Ajusta las fechas, los días o las funciones específicas.`);
-  }
-
-  state.data.promotion = {
-    ...state.data.promotion,
-    enabled,
-    movieIds,
-    startDate,
-    endDate,
-    allowedWeekdays,
-    appliesTo,
-    functionIds: appliesTo === "especificas" ? functionIds : [],
-    description: elements.promotionDescription.value.trim(),
-  };
-  await window.CinemaStore.saveData(state.data);
-  state.promotionEditorOpen = false;
-  renderPromotionSummary();
-  setPromotionEditorVisibility(false);
-  elements.promotionSummaryFeedback.textContent = enabled
-    ? "Promoción guardada. Inicio y Taquilla ya consultan estas condiciones."
-    : "La configuración quedó guardada, pero la promoción está desactivada.";
-  elements.promotionSummaryFeedback.hidden = false;
-}
-
-function renderPromotionForm() {
-  const promotion = state.data.promotion;
-  elements.promotionEnabled.checked = Boolean(promotion.enabled);
-  elements.promotionStartDate.value = promotion.startDate || "";
-  elements.promotionEndDate.value = promotion.endDate || "";
-  elements.promotionScope.value = promotion.appliesTo === "especificas" ? "especificas" : "todas";
-  elements.promotionDescription.value = promotion.description || "";
-
-  document.querySelectorAll('input[name="promotion-weekday"]').forEach((input) => {
-    input.checked = (promotion.allowedWeekdays || []).includes(Number(input.value));
-  });
-
-  const eligibleMovies = state.data.movies.filter(
-    (movie) => movie.status === "cartelera" && movie.active !== false
-  );
-  elements.promotionMovieOptions.innerHTML = eligibleMovies.length
-    ? eligibleMovies.map((movie) => `
-        <label>
-          <input type="checkbox" name="promotion-movie" value="${escapeHTML(movie.id)}" ${(promotion.movieIds || []).includes(movie.id) ? "checked" : ""}>
-          <span><strong>${escapeHTML(movie.title)}</strong><small>${countShowtimes(movie)} funciones guardadas</small></span>
-        </label>
-      `).join("")
-    : '<p class="promotion-empty">Primero agrega y publica una película en cartelera para configurar la promoción.</p>';
-
-  elements.promotionEnabled.disabled = !eligibleMovies.length;
-  renderPromotionFunctionOptions();
-  renderPromotionSummary();
-  setPromotionEditorVisibility(state.promotionEditorOpen || !hasPromotionConfiguration(promotion));
-}
-
-function renderPromotionSummary() {
-  const promotion = state.data.promotion;
-  const configured = hasPromotionConfiguration(promotion);
-  const entries = getSavedPromotionEntries(promotion);
-  const effectiveEntries = entries.filter((entry) => entry.functions.length);
-
-  elements.promotionSummary.classList.toggle("is-active", Boolean(promotion.enabled && effectiveEntries.length));
-  elements.promotionSummary.classList.toggle("is-inactive", Boolean(configured && !promotion.enabled));
-  elements.promotionSummaryState.textContent = promotion.enabled
-    ? effectiveEntries.length ? "Activa" : "Revisar"
-    : configured ? "Desactivada" : "Sin configurar";
-  elements.promotionSummaryTitle.textContent = promotion.enabled
-    ? effectiveEntries.length ? "2x1 activo en estas películas" : "La promoción está activa, pero no tiene funciones válidas"
-    : configured ? "Promoción guardada, pero desactivada" : "Todavía no hay una promoción configurada";
-  elements.promotionSummaryPeriod.textContent = configured
-    ? `Del ${formatDateForDisplay(promotion.startDate)} al ${formatDateForDisplay(promotion.endDate)} · ${formatPromotionWeekdays(promotion.allowedWeekdays)}.`
-    : "Guarda las reglas para ver aquí el resumen permanente.";
-
-  elements.promotionSummaryMovies.innerHTML = configured
-    ? entries.map(({ movie, functions }) => `
-        <div class="promotion-summary-movie${functions.length ? "" : " without-functions"}">
-          <strong>${escapeHTML(movie.title)}</strong>
-          <span>${functions.length ? `${functions.length} ${functions.length === 1 ? "función participante" : "funciones participantes"}` : "Sin funciones que cumplan las reglas"}</span>
-          ${functions.length ? `<small>${functions.slice(0, 3).map((showtime) => escapeHTML(formatFunctionSummary(showtime))).join(" · ")}${functions.length > 3 ? ` · +${functions.length - 3} más` : ""}</small>` : ""}
-        </div>
-      `).join("")
-    : "";
-
-  elements.editPromotionButton.textContent = configured ? "Editar promoción" : "Configurar promoción";
-}
-
-function hasPromotionConfiguration(promotion) {
-  return Boolean(
-    (promotion.movieIds || []).length ||
-    promotion.startDate ||
-    promotion.endDate ||
-    (promotion.functionIds || []).length
-  );
-}
-
-function getFunctionsForPromotionRules(movieIds, startDate, endDate, allowedWeekdays) {
-  return state.data.movies
-    .filter((movie) => movieIds.includes(movie.id))
-    .flatMap((movie) => (movie.funciones || []).map((showtime) => ({ movie, showtime })))
-    .filter(({ showtime }) => {
-      const weekday = getWeekdayFromISO(showtime.fecha);
-      const inPeriod = (!startDate || showtime.fecha >= startDate) && (!endDate || showtime.fecha <= endDate);
-      return inPeriod && (!allowedWeekdays.length || allowedWeekdays.includes(weekday));
-    })
-    .sort((left, right) => compareFunctions(left.showtime, right.showtime));
-}
-
-function getSavedPromotionEntries(promotion) {
-  const selectedMovieIds = Array.isArray(promotion.movieIds) ? promotion.movieIds : [];
-  const eligibleFunctions = getFunctionsForPromotionRules(
-    selectedMovieIds,
-    promotion.startDate || "",
-    promotion.endDate || "",
-    promotion.allowedWeekdays || []
-  );
-  const functionsByMovie = new Map(selectedMovieIds.map((movieId) => [movieId, []]));
-
-  eligibleFunctions.forEach(({ movie, showtime }) => {
-    const isSelected = promotion.appliesTo !== "especificas" || (promotion.functionIds || []).includes(showtime.id);
-    if (isSelected) functionsByMovie.get(movie.id)?.push(showtime);
-  });
-
-  return state.data.movies
-    .filter((movie) => selectedMovieIds.includes(movie.id))
-    .map((movie) => ({ movie, functions: functionsByMovie.get(movie.id) || [] }));
-}
-
-function formatPromotionWeekdays(weekdays) {
-  const names = { 1: "lunes", 2: "martes", 3: "miércoles" };
-  const selected = (weekdays || []).map((day) => names[day]).filter(Boolean);
-  return selected.length ? selected.join(", ") : "sin días seleccionados";
-}
-
-function formatFunctionSummary(showtime) {
-  const [year, month, day] = String(showtime.fecha || "").split("-");
-  return `${day}/${month}/${year} ${formatTimeForDisplay(showtime.hora)} ${showtime.formato}`;
-}
-
-function openPromotionEditor() {
-  state.promotionEditorOpen = true;
-  renderPromotionForm();
-  elements.promotionSummaryFeedback.hidden = true;
-  window.requestAnimationFrame(() => {
-    elements.promotionEditor.scrollIntoView({ behavior: "smooth", block: "start" });
-    elements.promotionEnabled.focus();
-  });
-}
-
-function closePromotionEditor() {
-  state.promotionEditorOpen = false;
-  setPromotionEditorVisibility(false);
-  elements.promotionSummary.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-function setPromotionEditorVisibility(visible) {
-  elements.promotionEditor.hidden = !visible;
-}
-
-function handlePromotionFormChange(event) {
-  if (
-    event.target.matches('input[name="promotion-movie"]') ||
-    event.target === elements.promotionStartDate ||
-    event.target === elements.promotionEndDate ||
-    event.target.matches('input[name="promotion-weekday"]') ||
-    event.target === elements.promotionScope
-  ) {
-    renderPromotionFunctionOptions();
-  }
-  clearPromotionStatus();
-  elements.promotionSummaryFeedback.hidden = true;
-}
-
-function renderPromotionFunctionOptions() {
-  const showSpecific = elements.promotionScope.value === "especificas";
-  elements.promotionFunctionFieldset.hidden = !showSpecific;
-  if (!showSpecific) return;
-
-  const selectedMovieIds = getCheckedValues('input[name="promotion-movie"]');
-  const selectedWeekdays = getCheckedValues('input[name="promotion-weekday"]').map(Number);
-  const startDate = elements.promotionStartDate.value;
-  const endDate = elements.promotionEndDate.value;
-  const savedIds = new Set(state.data.promotion.functionIds || []);
-  const functions = getFunctionsForPromotionRules(selectedMovieIds, startDate, endDate, selectedWeekdays);
-
-  elements.promotionFunctionOptions.innerHTML = functions.length
-    ? functions.map(({ movie, showtime }) => `
-        <label>
-          <input type="checkbox" name="promotion-function" value="${escapeHTML(showtime.id)}" ${savedIds.has(showtime.id) ? "checked" : ""}>
-          <span>
-            <strong>${escapeHTML(movie.title)}</strong>
-            <small>${escapeHTML(formatDateForDisplay(showtime.fecha))} · ${escapeHTML(formatTimeForDisplay(showtime.hora))} · ${escapeHTML(showtime.formato)}</small>
-          </span>
-        </label>
-      `).join("")
-    : '<p class="promotion-empty">No hay funciones que coincidan con las películas, fechas y días seleccionados.</p>';
-}
-
-function getCheckedValues(selector) {
-  return [...elements.promotionForm.querySelectorAll(`${selector}:checked`)].map((input) => input.value);
-}
-
-function showPromotionError(message) {
-  elements.promotionStatus.textContent = message;
-  elements.promotionStatus.className = "admin-form-status error";
-}
-
-function clearPromotionStatus() {
-  elements.promotionStatus.textContent = "";
-  elements.promotionStatus.className = "admin-form-status";
-}
-
 async function resetDemoData() {
-  const confirmed = window.confirm("¿Restablecer las películas y la promoción de demostración? Las pruebas cargadas en este navegador se reemplazarán.");
+  const confirmed = window.confirm("¿Restablecer las películas y los catálogos de demostración? Las pruebas cargadas en este navegador se reemplazarán.");
   if (!confirmed) return;
 
   state.data = await window.CinemaStore.resetData(DATA_URL);
   ensureDataShape();
-  state.promotionEditorOpen = false;
+  state.moviePage = 1;
+  closePersonModal();
   closeMovieEditor();
   renderAll();
 }
@@ -997,14 +1228,6 @@ async function persistAndRender() {
   await window.CinemaStore.saveData(state.data);
   renderMetrics();
   renderMovieList();
-  renderPromotionForm();
-}
-
-function syncFeaturedAvailability() {
-  const isUpcoming = document.querySelector("#movie-status").value === "proximamente";
-  const featured = document.querySelector("#movie-featured");
-  featured.disabled = isUpcoming;
-  if (isUpcoming) featured.checked = false;
 }
 
 function countShowtimes(movie) {
@@ -1075,11 +1298,6 @@ function hideMovieListStatus() {
 
 function setValue(id, value) {
   document.getElementById(id).value = value ?? "";
-}
-
-function splitCommaList(value, fallback = []) {
-  const items = String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
-  return items.length ? items : fallback;
 }
 
 function createMovieId(title) {

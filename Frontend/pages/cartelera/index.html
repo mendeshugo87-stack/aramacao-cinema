@@ -11,6 +11,7 @@
   <script src="../../assets/js/customer-api.js" defer></script>
   <script src="../../assets/js/public-customer-session.js" defer></script>
   <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
+  <script src="../../assets/js/public-cinema-api.js" defer></script>
   <script src="../../assets/js/public-pages.js" defer></script>
 </head>
 <body class="public-page-body" data-cinema-view="cartelera">
@@ -51,7 +52,7 @@
         <div class="page-toolbar">
           <div><h2 id="movies-title">Funciones disponibles</h2><p>La cartelera y los horarios se actualizan desde el panel del administrador.</p></div>
         </div>
-        <!-- BACKEND: Django reemplazará CinemaStore por la API de películas y funciones publicadas. -->
+        <!-- La vista consulta solamente el endpoint público de Cartelera. -->
         <div class="date-tabs" id="public-date-tabs" role="group" aria-label="Seleccionar fecha"></div>
         <div class="movie-grid" id="public-movie-grid" aria-live="polite"><p class="loading-message">Cargando cartelera…</p></div>
       </div>

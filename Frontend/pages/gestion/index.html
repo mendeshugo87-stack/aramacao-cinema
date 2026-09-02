@@ -9,11 +9,11 @@
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/gestion.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/gestion.css?v=11">
   <script src="../../assets/js/staff-api.js?v=8" defer></script>
   <script src="../../assets/js/staff-private.js?v=8" defer></script>
   <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
-  <script src="../../assets/js/gestion-cartelera.js?v=5.2" defer></script>
+  <script src="../../assets/js/gestion-cartelera.js?v=11" defer></script>
 </head>
 <body
   class="admin-body"
@@ -37,7 +37,6 @@
       <a class="active" href="#resumen"><span>▦</span> Resumen</a>
       <a href="#peliculas"><span>▶</span> Películas</a>
       <a href="#funciones"><span>◷</span> Funciones</a>
-      <a href="#promociones"><span>%</span> Promociones</a>
       <a href="personal.html"><span>♙</span> Personal</a>
       <a href="ventas.html"><span>▤</span> Ventas</a>
     </nav>
@@ -100,6 +99,8 @@
         </div>
 
         <div class="admin-movie-list" id="admin-movie-list" aria-live="polite"></div>
+
+        <nav class="movie-pagination" id="movie-pagination" aria-label="Páginas de películas"></nav>
       </section>
 
       <section class="admin-panel movie-editor" id="movie-editor" aria-labelledby="movie-form-title" hidden>
@@ -151,50 +152,57 @@
 
               <label class="admin-field" for="movie-classification">
                 <span>Clasificación *</span>
-                <select id="movie-classification" name="classification" required>
+                <select id="movie-classification" name="classification_id" required>
                   <option value="">Seleccionar</option>
-                  <option>A</option><option>B</option><option>B15</option><option>C</option><option>D</option>
                 </select>
                 <small class="admin-field-error" data-error-for="movie-classification"></small>
               </label>
 
-              <label class="admin-field" for="movie-genres">
-                <span>Géneros *</span>
-                <input id="movie-genres" name="genres" type="text" placeholder="Aventura, Familiar" maxlength="120" required>
-                <small>Separados por comas.</small>
-                <small class="admin-field-error" data-error-for="movie-genres"></small>
-              </label>
+              <div class="admin-field compact-picker">
+                <label for="movie-genre-select">Géneros *</label>
+                <select id="movie-genre-select">
+                  <option value="">Seleccionar género</option>
+                </select>
+                <div class="selected-tag-list" id="movie-genres" aria-live="polite"></div>
+                <small>Selecciona los géneros uno por uno.</small>
+                <small class="admin-field-error" data-error-for="movie-genre-select"></small>
+              </div>
 
-              <label class="admin-field" for="movie-language">
+              <label class="admin-field" for="movie-language-select">
                 <span>Idioma *</span>
-                <input id="movie-language" name="language" type="text" placeholder="Doblada al español" maxlength="80" required>
-                <small class="admin-field-error" data-error-for="movie-language"></small>
+                <select id="movie-language-select" name="language_id">
+                  <option value="">Seleccionar idioma</option>
+                </select>
+                <small class="admin-field-error" data-error-for="movie-language-select"></small>
               </label>
 
-              <label class="admin-field" for="movie-director">
-                <span>Dirección</span>
-                <input id="movie-director" name="director" type="text" maxlength="120">
-              </label>
+              <div class="admin-field person-field">
+                <div class="person-field-heading">
+                  <label for="movie-director">Director</label>
+                  <button class="button button-ghost person-add-button" id="add-director" type="button">+ Nuevo director</button>
+                </div>
+                <select id="movie-director" name="director_id">
+                  <option value="">Por confirmar</option>
+                </select>
+                <small>Selecciona un director ya registrado.</small>
+              </div>
 
-              <label class="admin-field" for="movie-cast">
-                <span>Reparto</span>
-                <input id="movie-cast" name="cast" type="text" placeholder="Actor 1, Actor 2" maxlength="280">
-              </label>
+              <div class="admin-field person-field">
+                <label for="movie-actor-select">Reparto</label>
+                <select id="movie-actor-select">
+                  <option value="">Seleccionar actor</option>
+                </select>
+                <div class="selected-tag-list" id="movie-cast" aria-live="polite"></div>
+                <button class="button button-ghost person-register-button" id="add-actor" type="button">+ Registrar actor nuevo</button>
+                <small>Al seleccionar un actor se añade al reparto.</small>
+              </div>
             </div>
           </fieldset>
 
           <fieldset>
-            <legend>Publicación e imágenes</legend>
+            <legend>Tráiler e imágenes</legend>
             <div class="admin-form-grid">
-              <label class="admin-field" for="movie-status">
-                <span>Sección *</span>
-                <select id="movie-status" name="status" required>
-                  <option value="cartelera">Películas en cartelera</option>
-                  <option value="proximamente">Próximamente</option>
-                </select>
-              </label>
-
-              <label class="admin-field" for="movie-release-date">
+              <label class="admin-field span-2" for="movie-release-date">
                 <span>Fecha de estreno</span>
                 <input id="movie-release-date" name="release_date" type="date">
               </label>
@@ -239,10 +247,10 @@
           <fieldset id="funciones">
             <legend>Funciones y precios</legend>
             <div class="fieldset-heading">
-              <p>Agrega cada función y escribe su hora exacta. Así puedes dejar el tiempo necesario para limpiar y preparar la única sala.</p>
+              <p>Agrega cada función y escribe su hora exacta. Si aplica la promoción, márcala únicamente en esa función.</p>
               <button class="button button-ghost" id="add-showtime" type="button">+ Agregar función</button>
             </div>
-            <p class="timezone-note"><strong>Hora obligatoria:</strong> escribe, por ejemplo, 2:00 p. m. · <strong>Sala única:</strong> Sala 1 · <strong>Zona horaria:</strong> Honduras (UTC−6).</p>
+            <p class="timezone-note"><strong>Hora obligatoria:</strong> escribe, por ejemplo, 2:00 p. m. · <strong>Sala única:</strong> Sala 1 · <strong>2x1:</strong> el backend validará los días permitidos antes de publicar.</p>
             <div class="showtime-editor-list" id="showtime-editor-list"></div>
           </fieldset>
 
@@ -254,85 +262,6 @@
         </form>
       </section>
 
-      <section class="admin-panel promo-admin-panel" id="promociones" aria-labelledby="promotion-title">
-        <div class="promotion-intro">
-          <p class="eyebrow">Regla comercial</p>
-          <h2 id="promotion-title">Promoción 2x1</h2>
-          <p>Administración selecciona las películas, el periodo, los días y las funciones participantes. Taquilla solamente informa el resultado.</p>
-        </div>
-
-        <div class="promotion-workspace">
-          <article class="promotion-summary" id="promotion-summary" aria-labelledby="promotion-summary-title">
-            <div class="promotion-summary-heading">
-              <p class="eyebrow">Configuración guardada</p>
-              <span class="promotion-summary-state" id="promotion-summary-state">Sin configurar</span>
-            </div>
-            <h3 id="promotion-summary-title">Todavía no hay una promoción configurada</h3>
-            <p id="promotion-summary-period">Guarda las reglas para ver aquí el resumen permanente.</p>
-            <div class="promotion-summary-movies" id="promotion-summary-movies"></div>
-            <p class="promotion-summary-feedback" id="promotion-summary-feedback" role="status" aria-live="polite" hidden></p>
-            <button class="button button-ghost" id="edit-promotion-button" type="button">Configurar promoción</button>
-          </article>
-
-          <form id="promotion-form" class="promotion-form promotion-editor" novalidate>
-            <div class="promotion-editor-heading">
-              <strong>Editar configuración</strong>
-              <button class="icon-close" id="close-promotion-editor" type="button" aria-label="Cerrar configuración de promoción">×</button>
-            </div>
-            <label class="switch-control">
-              <input id="promotion-enabled" type="checkbox">
-              <span aria-hidden="true"></span>
-              <strong>Promoción activa</strong>
-            </label>
-
-            <fieldset class="promotion-fieldset">
-              <legend>Películas participantes *</legend>
-              <div class="promotion-option-list" id="promotion-movie-options"></div>
-            </fieldset>
-
-            <div class="promotion-date-grid">
-              <label class="admin-field" for="promotion-start-date">
-                <span>Fecha inicial *</span>
-                <input id="promotion-start-date" type="date">
-              </label>
-              <label class="admin-field" for="promotion-end-date">
-                <span>Fecha final *</span>
-                <input id="promotion-end-date" type="date">
-              </label>
-            </div>
-
-            <fieldset class="promotion-fieldset">
-              <legend>Días permitidos *</legend>
-              <div class="promotion-day-options">
-                <label><input type="checkbox" name="promotion-weekday" value="1"> Lunes</label>
-                <label><input type="checkbox" name="promotion-weekday" value="2"> Martes</label>
-                <label><input type="checkbox" name="promotion-weekday" value="3"> Miércoles</label>
-              </div>
-            </fieldset>
-
-            <label class="admin-field" for="promotion-scope">
-              <span>Funciones participantes *</span>
-              <select id="promotion-scope">
-                <option value="todas">Todas las funciones que cumplan las condiciones</option>
-                <option value="especificas">Solamente funciones específicas</option>
-              </select>
-            </label>
-
-            <fieldset class="promotion-fieldset" id="promotion-function-fieldset" hidden>
-              <legend>Seleccionar funciones *</legend>
-              <div class="promotion-option-list function-options" id="promotion-function-options"></div>
-            </fieldset>
-
-            <label class="admin-field" for="promotion-description">
-              <span>Condiciones visibles</span>
-              <textarea id="promotion-description" rows="3" maxlength="300" placeholder="Ejemplo: Por cada dos admisiones se cobra una en las funciones seleccionadas."></textarea>
-            </label>
-            <button class="button button-primary" type="submit">Guardar promoción</button>
-            <p class="admin-form-status" id="promotion-status" role="status" aria-live="polite"></p>
-          </form>
-        </div>
-      </section>
-
       <section class="admin-panel backend-note">
         <div>
           <p class="eyebrow">Para la integración</p>
@@ -342,6 +271,7 @@
           <li>Autenticación, roles y permisos del administrador.</li>
           <li>Almacenamiento definitivo de imágenes y películas.</li>
           <li>Validación de salas, cruces de horarios y precios.</li>
+          <li>Validación de los días permitidos para 2x1 en cada función.</li>
           <li>Historial de publicaciones, funciones y usuario responsable.</li>
           <li>Sincronización con Inicio, compra en línea y Taquilla.</li>
         </ul>
@@ -378,6 +308,43 @@
         <button class="button button-ghost" type="button" data-cancel-crop>Cancelar</button>
         <button class="button button-primary" id="apply-crop" type="button">Usar este encuadre</button>
       </div>
+    </div>
+  </div>
+
+  <div class="crop-modal" id="person-modal" role="dialog" aria-modal="true" aria-labelledby="person-modal-title" aria-hidden="true" inert>
+    <div class="crop-modal-overlay" data-cancel-person></div>
+    <div class="crop-modal-card person-modal-card">
+      <button class="icon-close crop-close" type="button" data-cancel-person aria-label="Cerrar ventana">×</button>
+      <p class="eyebrow">Registro rápido</p>
+      <h2 id="person-modal-title">Agregar persona</h2>
+      <p>Se guardará una sola vez y después podrá seleccionarse en otras películas.</p>
+
+      <form class="person-form" id="person-form" novalidate>
+        <input id="person-type" type="hidden">
+        <div class="admin-form-grid">
+          <label class="admin-field" for="person-first-name">
+            <span>Nombre *</span>
+            <input id="person-first-name" type="text" maxlength="100" required>
+          </label>
+          <label class="admin-field" for="person-last-name">
+            <span>Apellido *</span>
+            <input id="person-last-name" type="text" maxlength="100" required>
+          </label>
+          <label class="admin-field span-2 actor-only" for="person-stage-name">
+            <span>Nombre artístico</span>
+            <input id="person-stage-name" type="text" maxlength="150">
+          </label>
+          <label class="admin-field span-2" for="person-biography">
+            <span>Biografía</span>
+            <textarea id="person-biography" rows="4" maxlength="1000"></textarea>
+          </label>
+        </div>
+        <p class="admin-form-status" id="person-form-status" role="status" aria-live="polite"></p>
+        <div class="admin-form-actions">
+          <button class="button button-ghost" type="button" data-cancel-person>Cancelar</button>
+          <button class="button button-primary" type="submit">Guardar y seleccionar</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>

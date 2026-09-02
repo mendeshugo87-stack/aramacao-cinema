@@ -546,6 +546,8 @@ function updatePromotion() {
 }
 
 function isPromotionAvailable() {
+  if (state.selectedShowtime?.promotion === true) return true;
+
   const promotion = state.data?.promotion;
   const selectedDate = state.selectedDate;
   const weekday = selectedDate ? parseLocalDate(selectedDate).getDay() : -1;
@@ -639,6 +641,7 @@ function getShowtimes() {
       room: "Sala 1",
       format: showtime.formato || "2D",
       price: Number(showtime.precio || 0),
+      promotion: showtime.promotion === true || showtime.promocion_2x1?.aplica === true,
     }));
 }
 

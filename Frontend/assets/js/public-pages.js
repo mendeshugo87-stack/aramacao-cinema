@@ -1,9 +1,12 @@
 "use strict";
 
 const pageState = {
-  data: null,
+  movies: [],
+  promotion: null,
   selectedDate: new Date(),
 };
+
+const DATA_URL = "../../assets/data/cartelera.json";
 
 document.addEventListener("DOMContentLoaded", initializePublicPage);
 
@@ -17,14 +20,27 @@ async function initializePublicPage() {
   if (!view) return;
 
   try {
-    pageState.data = await window.CinemaStore.getData("../../assets/data/cartelera.json");
-    if (view === "cartelera") renderCarteleraPage();
-    if (view === "proximamente") renderUpcomingPage();
+    if (view === "cartelera") await loadCarteleraPage();
+    if (view === "proximamente") await loadUpcomingPage();
   } catch (error) {
     console.error("No se pudo cargar la información del cine:", error);
     const target = document.querySelector("#public-movie-grid");
     if (target) target.innerHTML = '<p class="error-message">No fue posible cargar las películas. Actualiza la página para intentarlo de nuevo.</p>';
   }
+}
+
+async function loadCarteleraPage() {
+  const fecha = toLocalISODate(pageState.selectedDate);
+  const cartelera = await window.CinemaPublicApi.cargarCartelera(DATA_URL, fecha);
+  pageState.movies = cartelera.peliculas;
+  pageState.promotion = cartelera.promocion;
+  renderCarteleraPage();
+}
+
+async function loadUpcomingPage() {
+  const proximamente = await window.CinemaPublicApi.cargarProximamente(DATA_URL);
+  pageState.movies = proximamente.peliculas;
+  renderUpcomingPage();
 }
 
 function bindNavigation() {
@@ -71,7 +87,7 @@ function renderDateTabs() {
       </button>`;
   }).join("");
 
-  target.addEventListener("click", (event) => {
+  target.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-date]");
     if (!button) return;
     pageState.selectedDate = parseLocalDate(button.dataset.date);
@@ -80,14 +96,32 @@ function renderDateTabs() {
       tab.classList.toggle("active", selected);
       tab.setAttribute("aria-pressed", String(selected));
     });
-    renderCurrentMovies();
+    await updateCarteleraMovies();
   });
+}
+
+async function updateCarteleraMovies() {
+  const target = document.querySelector("#public-movie-grid");
+
+  try {
+    const fecha = toLocalISODate(pageState.selectedDate);
+    const cartelera = await window.CinemaPublicApi.cargarCartelera(DATA_URL, fecha);
+    pageState.movies = cartelera.peliculas;
+    pageState.promotion = cartelera.promocion;
+    renderCurrentMovies();
+  } catch (error) {
+    console.error("No se pudo actualizar la cartelera:", error);
+    if (target) {
+      target.innerHTML =
+        '<p class="error-message">No fue posible consultar las funciones de esta fecha.</p>';
+    }
+  }
 }
 
 function renderCurrentMovies() {
   const target = document.querySelector("#public-movie-grid");
   if (!target) return;
-  const movies = pageState.data.movies.filter((movie) => movie.status === "cartelera" && movie.active !== false);
+  const movies = pageState.movies;
 
   target.innerHTML = movies.length
     ? movies.map((movie) => renderCurrentMovieCard(movie)).join("")
@@ -122,7 +156,7 @@ function renderCurrentMovieCard(movie) {
 function renderUpcomingPage() {
   const target = document.querySelector("#public-movie-grid");
   if (!target) return;
-  const movies = pageState.data.movies.filter((movie) => movie.status === "proximamente" && movie.active !== false);
+  const movies = pageState.movies;
 
   target.innerHTML = movies.length
     ? movies.map((movie) => `
@@ -147,7 +181,7 @@ function renderUpcomingPage() {
 function bindMovieActions(target) {
   target.querySelectorAll("[data-trailer-id]").forEach((button) => {
     button.addEventListener("click", () => {
-      const movie = pageState.data.movies.find((item) => item.id === button.dataset.trailerId);
+      const movie = pageState.movies.find((item) => item.id === button.dataset.trailerId);
       if (movie) openTrailer(movie);
     });
   });
@@ -225,12 +259,14 @@ function getShowtimes(movie, date) {
       room: "Sala 1",
       format: showtime.formato,
       price: Number(showtime.precio),
-      promotion: isFunctionInPromotion(movie.id, showtime, selectedDate),
+      promotion:
+        showtime.promotion === true ||
+        isFunctionInPromotion(movie.id, showtime, selectedDate),
     }));
 }
 
 function isFunctionInPromotion(movieId, showtime, selectedDate) {
-  const promotion = pageState.data?.promotion;
+  const promotion = pageState.promotion;
   const weekday = parseLocalDate(selectedDate).getDay();
   return Boolean(
     promotion?.enabled &&

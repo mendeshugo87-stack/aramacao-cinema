@@ -490,6 +490,8 @@ function updatePromotionAvailability() {
 }
 
 function isPromotionAvailable() {
+  if (state.selectedShowtime?.promotion === true) return true;
+
   const promotion = state.data?.promotion;
   const selectedDate = state.selectedDate ? toLocalISODate(state.selectedDate) : "";
   const correctFunction = promotion?.appliesTo !== "especificas" ||
@@ -645,6 +647,7 @@ function getShowtimes(movie, date) {
       room: "Sala 1",
       format: showtime.formato,
       price: Number(showtime.precio),
+      promotion: showtime.promotion === true || showtime.promocion_2x1?.aplica === true,
     }));
 }
 

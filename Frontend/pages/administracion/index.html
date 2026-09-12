@@ -9,18 +9,24 @@
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/gestion.css?v=11">
-  <script src="../../assets/js/staff-api.js?v=8" defer></script>
-  <script src="../../assets/js/staff-private.js?v=8" defer></script>
-  <script src="../../assets/js/cinema-store.js?v=5.2" defer></script>
-  <script src="../../assets/js/gestion-cartelera.js?v=11" defer></script>
+  <link rel="stylesheet" href="../../assets/css/administracion.css?v=17">
+  <script src="../../assets/js/compartido/utilidades.js?v=22" defer></script>
+  <script src="../../assets/js/compartido/api-cliente.js?v=22" defer></script>
+  <script src="../../assets/js/empleados/staff-api.js?v=22" defer></script>
+  <script src="../../assets/js/empleados/staff-private.js?v=22" defer></script>
+  <script src="../../assets/js/publico/cinema-store.js?v=22" defer></script>
+  <script src="../../assets/js/administracion/peliculas-api.js?v=22" defer></script>
+  <script src="../../assets/js/administracion/funciones-api.js?v=22" defer></script>
+  <script src="../../assets/js/administracion/recortador-imagen.js?v=22" defer></script>
+  <script src="../../assets/js/administracion/administracion-peliculas.js?v=22" defer></script>
+  <script src="../../assets/js/administracion/administracion-funciones.js?v=22" defer></script>
 </head>
 <body
   class="admin-body"
-  data-area-privada="gestion"
+  data-area-privada="administracion"
   data-roles-permitidos="ADMINISTRADOR_OPERATIVO"
   data-permiso-requerido="cartelera.gestionar"
-  data-login-url="/pages/gestion/login.html"
+  data-login-url="/pages/administracion/login.html"
 >
   <a class="skip-link" href="#admin-content">Saltar al contenido</a>
 
@@ -81,7 +87,10 @@
             <h2 id="movies-admin-title">Películas</h2>
             <p>Los cambios guardados aquí se reflejan en Inicio al actualizar la página.</p>
           </div>
-          <button class="button button-primary" id="new-movie-button" type="button">+ Nueva película</button>
+          <div class="movies-toolbar-actions">
+            <button class="button button-ghost" id="reset-demo-data" type="button">Restablecer datos de prueba</button>
+            <button class="button button-primary" id="new-movie-button" type="button">+ Nueva película</button>
+          </div>
         </div>
 
         <p class="admin-list-status" id="movie-list-status" role="status" aria-live="polite" hidden></p>
@@ -244,16 +253,6 @@
             </div>
           </fieldset>
 
-          <fieldset id="funciones">
-            <legend>Funciones y precios</legend>
-            <div class="fieldset-heading">
-              <p>Agrega cada función y escribe su hora exacta. Si aplica la promoción, márcala únicamente en esa función.</p>
-              <button class="button button-ghost" id="add-showtime" type="button">+ Agregar función</button>
-            </div>
-            <p class="timezone-note"><strong>Hora obligatoria:</strong> escribe, por ejemplo, 2:00 p. m. · <strong>Sala única:</strong> Sala 1 · <strong>2x1:</strong> el backend validará los días permitidos antes de publicar.</p>
-            <div class="showtime-editor-list" id="showtime-editor-list"></div>
-          </fieldset>
-
           <p class="admin-form-status" id="movie-form-status" role="status" aria-live="polite"></p>
           <div class="admin-form-actions">
             <button class="button button-ghost" id="cancel-movie-edit" type="button">Cancelar</button>
@@ -262,21 +261,39 @@
         </form>
       </section>
 
-      <section class="admin-panel backend-note">
-        <div>
-          <p class="eyebrow">Para la integración</p>
-          <h2>Qué controlará el backend</h2>
+      <section class="admin-panel" id="funciones" aria-labelledby="functions-admin-title">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="eyebrow">Horarios y precios</p>
+            <h2 id="functions-admin-title">Funciones</h2>
+            <p>Elige una película en cartelera para agregar, editar o quitar sus funciones y aplicar el 2x1.</p>
+          </div>
         </div>
-        <ul>
-          <li>Autenticación, roles y permisos del administrador.</li>
-          <li>Almacenamiento definitivo de imágenes y películas.</li>
-          <li>Validación de salas, cruces de horarios y precios.</li>
-          <li>Validación de los días permitidos para 2x1 en cada función.</li>
-          <li>Historial de publicaciones, funciones y usuario responsable.</li>
-          <li>Sincronización con Inicio, compra en línea y Taquilla.</li>
-        </ul>
-        <button class="admin-reset-button" id="reset-demo-data" type="button">Restablecer datos de prueba</button>
+
+        <div class="admin-field compact-picker functions-movie-picker">
+          <label for="functions-movie-select">Película en cartelera</label>
+          <select id="functions-movie-select">
+            <option value="">Selecciona una película</option>
+          </select>
+        </div>
+
+        <p class="admin-list-status" id="functions-empty-status" role="status">Selecciona una película para ver y editar sus funciones.</p>
+
+        <div id="functions-editor" hidden>
+          <div class="fieldset-heading">
+            <p>Agrega cada función y escribe su hora exacta. Si aplica la promoción, márcala únicamente en esa función.</p>
+            <button class="button button-ghost" id="add-showtime" type="button">+ Agregar función</button>
+          </div>
+          <p class="timezone-note"><strong>Hora obligatoria:</strong> escribe, por ejemplo, 2:00 p. m. · <strong>Sala única:</strong> Sala 1.</p>
+          <div class="showtime-editor-list" id="showtime-editor-list"></div>
+
+          <p class="admin-form-status" id="functions-form-status" role="status" aria-live="polite"></p>
+          <div class="admin-form-actions">
+            <button class="button button-primary" id="save-functions-button" type="button">Guardar funciones</button>
+          </div>
+        </div>
       </section>
+
     </main>
   </div>
 
@@ -334,6 +351,12 @@
             <span>Nombre artístico</span>
             <input id="person-stage-name" type="text" maxlength="150">
           </label>
+          <div class="admin-field person-photo-field">
+            <label for="person-photo"><strong>Foto (opcional)</strong><small>Se muestra pequeña y en círculo.</small></label>
+            <input id="person-photo" type="file" accept="image/png,image/jpeg,image/webp">
+            <div class="image-preview person-photo-preview" id="person-photo-preview"><span>Sin foto</span></div>
+            <button class="reframe-button" id="reframe-person-photo" type="button" hidden>Volver a encuadrar</button>
+          </div>
           <label class="admin-field span-2" for="person-biography">
             <span>Biografía</span>
             <textarea id="person-biography" rows="4" maxlength="1000"></textarea>

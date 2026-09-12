@@ -159,20 +159,20 @@
     setText(elements.metricTotal, summary.total_ventas ?? state.sales.length);
     setText(elements.metricOnline, summary.ventas_online ?? 0);
     setText(elements.metricOffice, summary.ventas_taquilla ?? 0);
-    setText(elements.metricAmount, formatMoney(summary.monto_total));
+    setText(elements.metricAmount, AramacaoUtil.formatearDinero(summary.monto_total));
   }
 
   function renderSales() {
     if (!elements.tableBody || !elements.tableWrap || !elements.empty) return;
     elements.tableBody.innerHTML = state.sales.map((sale) => `
       <tr>
-        <td><span class="sales-primary"><strong>${escapeHTML(sale.numero || sale.referencia || "—")}</strong><small>${escapeHTML(formatDateTime(sale.fecha || sale.creada_en))}</small></span></td>
-        <td><span class="sales-primary"><strong>${escapeHTML(sale.cliente_nombre || "Cliente")}</strong><small>${escapeHTML(sale.pelicula || "Película")}</small></span></td>
-        <td><span class="sales-primary"><strong>${escapeHTML(channelLabel(sale.canal))}</strong><small>${escapeHTML(paymentLabel(sale.metodo_pago))}</small></span></td>
-        <td><span class="sales-primary"><strong>${Number(sale.cantidad_boletos || sale.boletos?.length || 0)}</strong><small>${escapeHTML((sale.asientos || []).join(", ") || "—")}</small></span></td>
-        <td><span class="sales-total">${escapeHTML(formatMoney(sale.total))}</span></td>
+        <td><span class="sales-primary"><strong>${AramacaoUtil.escaparHtml(sale.numero || sale.referencia || "—")}</strong><small>${AramacaoUtil.escaparHtml(formatDateTime(sale.fecha || sale.creada_en))}</small></span></td>
+        <td><span class="sales-primary"><strong>${AramacaoUtil.escaparHtml(sale.cliente_nombre || "Cliente")}</strong><small>${AramacaoUtil.escaparHtml(sale.pelicula || "Película")}</small></span></td>
+        <td><span class="sales-primary"><strong>${AramacaoUtil.escaparHtml(channelLabel(sale.canal))}</strong><small>${AramacaoUtil.escaparHtml(paymentLabel(sale.metodo_pago))}</small></span></td>
+        <td><span class="sales-primary"><strong>${Number(sale.cantidad_boletos || sale.boletos?.length || 0)}</strong><small>${AramacaoUtil.escaparHtml((sale.asientos || []).join(", ") || "—")}</small></span></td>
+        <td><span class="sales-total">${AramacaoUtil.escaparHtml(AramacaoUtil.formatearDinero(sale.total))}</span></td>
         <td>${stateBadge(sale.estado)}</td>
-        <td><button class="sales-view-button" type="button" data-view-sale="${escapeHTML(sale.id)}">Ver detalle</button></td>
+        <td><button class="sales-view-button" type="button" data-view-sale="${AramacaoUtil.escaparHtml(sale.id)}">Ver detalle</button></td>
       </tr>
     `).join("");
     elements.tableWrap.hidden = state.sales.length === 0;
@@ -215,23 +215,23 @@
         ${summaryField("Estado", stateBadge(sale.estado), true)}
         ${summaryField("Fecha", formatDateTime(sale.fecha || sale.creada_en))}
         ${summaryField("Cliente", sale.cliente_nombre || "Cliente")}
-        ${summaryField("Total", formatMoney(sale.total))}
+        ${summaryField("Total", AramacaoUtil.formatearDinero(sale.total))}
         ${summaryField("Película", sale.pelicula || "—")}
         ${summaryField("Función", `${sale.fecha_funcion || "—"} · ${sale.hora_funcion || "—"}`)}
         ${summaryField("Sala y formato", `${sale.sala || "—"} · ${sale.formato || "—"}`)}
         ${summaryField("Canal y método", `${channelLabel(sale.canal)} · ${paymentLabel(sale.metodo_pago)}`)}
         ${summaryField("Vendedor", sale.vendedor_nombre || "No aplica")}
-        ${summaryField("Subtotal", formatMoney(sale.subtotal))}
-        ${summaryField("Descuento", `−${formatMoney(sale.descuento)}`)}
+        ${summaryField("Subtotal", AramacaoUtil.formatearDinero(sale.subtotal))}
+        ${summaryField("Descuento", `−${AramacaoUtil.formatearDinero(sale.descuento)}`)}
         ${summaryField("Boletos", String(sale.boletos?.length || 0))}
       </div>
 
       <div class="sale-detail-heading">
         <h3>Comprobante y estado de la venta</h3>
         <div class="sale-actions">
-          <button class="button button-ghost" type="button" data-download-receipt="${escapeHTML(sale.id)}" ${hasPermission("ventas.reimprimir_comprobante") ? "" : "disabled"}>Reimprimir comprobante</button>
-          <button class="button button-ghost sale-danger-button" type="button" data-sale-action="ANNUL" data-resource-id="${escapeHTML(sale.id)}" ${!paid || usedTickets || !hasPermission("ventas.anular") ? "disabled" : ""}>Anular</button>
-          <button class="button button-ghost sale-warning-button" type="button" data-sale-action="REFUND" data-resource-id="${escapeHTML(sale.id)}" ${!paid || usedTickets || !hasPermission("pagos.reembolsar") ? "disabled" : ""}>Reembolsar</button>
+          <button class="button button-ghost" type="button" data-download-receipt="${AramacaoUtil.escaparHtml(sale.id)}" ${hasPermission("ventas.reimprimir_comprobante") ? "" : "disabled"}>Reimprimir comprobante</button>
+          <button class="button button-ghost sale-danger-button" type="button" data-sale-action="ANNUL" data-resource-id="${AramacaoUtil.escaparHtml(sale.id)}" ${!paid || usedTickets || !hasPermission("ventas.anular") ? "disabled" : ""}>Anular</button>
+          <button class="button button-ghost sale-warning-button" type="button" data-sale-action="REFUND" data-resource-id="${AramacaoUtil.escaparHtml(sale.id)}" ${!paid || usedTickets || !hasPermission("pagos.reembolsar") ? "disabled" : ""}>Reembolsar</button>
         </div>
       </div>
       ${usedTickets ? '<p class="sales-status-message is-error">Esta venta tiene al menos un ingreso registrado. Anulación y reembolso requieren revisión del encargado y del backend.</p>' : ""}
@@ -243,7 +243,7 @@
 
       <div class="sale-detail-heading"><h3>Auditoría de acciones</h3></div>
       ${audit.length ? `<ul class="audit-list">${audit.map((item) => `
-        <li><time>${escapeHTML(formatDateTime(item.fecha))}</time><span><strong>${escapeHTML(auditLabel(item.accion))}:</strong> ${escapeHTML(item.motivo || "Sin detalle")} · ${escapeHTML(item.empleado || "Sistema")}</span></li>
+        <li><time>${AramacaoUtil.escaparHtml(formatDateTime(item.fecha))}</time><span><strong>${AramacaoUtil.escaparHtml(auditLabel(item.accion))}:</strong> ${AramacaoUtil.escaparHtml(item.motivo || "Sin detalle")} · ${AramacaoUtil.escaparHtml(item.empleado || "Sistema")}</span></li>
       `).join("")}</ul>` : '<p class="sales-status-message">Todavía no hay reemisiones, anulaciones ni reembolsos registrados.</p>'}
     `;
   }
@@ -257,12 +257,12 @@
       : ticketStatus === "RESERVADO" ? "" : "El boleto ya no está vigente.";
     return `
       <article class="ticket-admin-card">
-        <span class="ticket-admin-main"><strong>${escapeHTML(ticket.numero || "Boleto")}</strong><small>Asiento ${escapeHTML(ticket.asiento || "—")} · ${escapeHTML(ticket.formato || "—")}</small></span>
+        <span class="ticket-admin-main"><strong>${AramacaoUtil.escaparHtml(ticket.numero || "Boleto")}</strong><small>Asiento ${AramacaoUtil.escaparHtml(ticket.asiento || "—")} · ${AramacaoUtil.escaparHtml(ticket.formato || "—")}</small></span>
         <span>${stateBadge(ticket.estado)}</span>
-        <span class="ticket-admin-main"><strong>${Number(ticket.numero_reemisiones || 0)}</strong><small>${escapeHTML(blockedMessage || "reemisión(es)")}</small></span>
+        <span class="ticket-admin-main"><strong>${Number(ticket.numero_reemisiones || 0)}</strong><small>${AramacaoUtil.escaparHtml(blockedMessage || "reemisión(es)")}</small></span>
         <div class="ticket-admin-actions">
-          <button type="button" data-download-ticket="${escapeHTML(ticket.id)}" ${canPrint ? "" : "disabled"}>Reimprimir</button>
-          <button class="reissue-ticket" type="button" data-sale-action="REISSUE" data-resource-id="${escapeHTML(ticket.id)}" ${canReissue ? "" : "disabled"}>Reemitir QR</button>
+          <button type="button" data-download-ticket="${AramacaoUtil.escaparHtml(ticket.id)}" ${canPrint ? "" : "disabled"}>Reimprimir</button>
+          <button class="reissue-ticket" type="button" data-sale-action="REISSUE" data-resource-id="${AramacaoUtil.escaparHtml(ticket.id)}" ${canReissue ? "" : "disabled"}>Reemitir QR</button>
         </div>
       </article>
     `;
@@ -342,7 +342,7 @@
   }
 
   function summaryField(label, value, raw = false) {
-    return `<div><span>${escapeHTML(label)}</span><strong>${raw ? value : escapeHTML(value)}</strong></div>`;
+    return `<div><span>${AramacaoUtil.escaparHtml(label)}</span><strong>${raw ? value : AramacaoUtil.escaparHtml(value)}</strong></div>`;
   }
 
   function stateBadge(value) {
@@ -350,7 +350,7 @@
     const className = status === "ANULADA" || status === "ANULADO"
       ? "is-anulada"
       : status === "REEMBOLSADA" || status === "REEMBOLSADO" ? "is-reembolsada" : "";
-    return `<span class="sales-state ${className}">${escapeHTML(status)}</span>`;
+    return `<span class="sales-state ${className}">${AramacaoUtil.escaparHtml(status)}</span>`;
   }
 
   function channelLabel(value) {
@@ -376,15 +376,10 @@
     return labels[value] || String(value || "Acción").replaceAll("_", " ");
   }
 
-  function formatMoney(value) {
-    return `L ${(Number(value) || 0).toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
-
+  /* El formato vive en compartido/utilidades.js; aquí solo el texto que
+     esta pantalla muestra cuando la fecha no sirve. */
   function formatDateTime(value) {
-    const date = new Date(value || "");
-    return Number.isNaN(date.getTime()) ? "Fecha no disponible" : new Intl.DateTimeFormat("es-HN", {
-      dateStyle: "medium", timeStyle: "short",
-    }).format(date);
+    return AramacaoUtil.formatearFechaHora(value, { alterno: "Fecha no disponible" });
   }
 
   function setStatus(element, message, type = "") {
@@ -400,14 +395,5 @@
 
   function errorMessage(error) {
     return error?.message || "No fue posible completar la operación.";
-  }
-
-  function escapeHTML(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
   }
 })(window);

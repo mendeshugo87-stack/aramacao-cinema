@@ -107,10 +107,10 @@
   function renderCustomers(customers) {
     elements.customers.innerHTML = customers.map((customer) => `
       <tr>
-        <td><strong>${escapeHTML(customer.nombre_completo || "Cliente")}</strong></td>
-        <td>${escapeHTML(customer.usuario || "—")}</td>
-        <td>${escapeHTML(customer.identificacion_enmascarada || "—")}</td>
-        <td><button type="button" data-recovery-customer="${escapeHTML(customer.id)}">Ver compras</button></td>
+        <td><strong>${AramacaoUtil.escaparHtml(customer.nombre_completo || "Cliente")}</strong></td>
+        <td>${AramacaoUtil.escaparHtml(customer.usuario || "—")}</td>
+        <td>${AramacaoUtil.escaparHtml(customer.identificacion_enmascarada || "—")}</td>
+        <td><button type="button" data-recovery-customer="${AramacaoUtil.escaparHtml(customer.id)}">Ver compras</button></td>
       </tr>
     `).join("");
     elements.results.hidden = customers.length === 0;
@@ -147,10 +147,10 @@
       <article class="ticket-recovery-purchase">
         <div class="ticket-recovery-purchase-header">
           <div>
-            <strong>${escapeHTML(purchase.numero || purchase.referencia || "Compra")}</strong>
-            <span>${escapeHTML(purchase.pelicula || "Película")} · ${escapeHTML(purchase.fecha_funcion || "—")} · ${escapeHTML(purchase.hora_funcion || "—")}</span>
+            <strong>${AramacaoUtil.escaparHtml(purchase.numero || purchase.referencia || "Compra")}</strong>
+            <span>${AramacaoUtil.escaparHtml(purchase.pelicula || "Película")} · ${AramacaoUtil.escaparHtml(purchase.fecha_funcion || "—")} · ${AramacaoUtil.escaparHtml(purchase.hora_funcion || "—")}</span>
           </div>
-          <strong>${escapeHTML(String(purchase.estado || "—").toUpperCase())}</strong>
+          <strong>${AramacaoUtil.escaparHtml(String(purchase.estado || "—").toUpperCase())}</strong>
         </div>
         <div class="ticket-recovery-ticket-list">
           ${(purchase.boletos || []).map((ticket) => ticketRow(purchase, ticket)).join("") || "<p>No hay boletos en esta compra.</p>"}
@@ -166,11 +166,11 @@
       : ticket.motivo_no_recuperable || "El backend no autorizó la recuperación.";
     return `
       <div class="ticket-recovery-ticket">
-        <span><strong>Asiento ${escapeHTML(ticket.asiento || "—")}</strong><small>${escapeHTML(ticket.numero || "Boleto")}</small></span>
-        <span class="ticket-recovery-ticket-state${recoverable ? "" : " is-blocked"}">${escapeHTML(statusMessage)}</span>
+        <span><strong>Asiento ${AramacaoUtil.escaparHtml(ticket.asiento || "—")}</strong><small>${AramacaoUtil.escaparHtml(ticket.numero || "Boleto")}</small></span>
+        <span class="ticket-recovery-ticket-state${recoverable ? "" : " is-blocked"}">${AramacaoUtil.escaparHtml(statusMessage)}</span>
         <button type="button"
-          data-recovery-ticket="${escapeHTML(ticket.id)}"
-          data-recovery-label="${escapeHTML(`${purchase.numero || "Compra"} · asiento ${ticket.asiento || "—"}`)}"
+          data-recovery-ticket="${AramacaoUtil.escaparHtml(ticket.id)}"
+          data-recovery-label="${AramacaoUtil.escaparHtml(`${purchase.numero || "Compra"} · asiento ${ticket.asiento || "—"}`)}"
           ${recoverable ? "" : "disabled"}>Recuperar QR</button>
       </div>
     `;
@@ -317,14 +317,5 @@
     if (/a\.?\s*m\.?/.test(rawTime) && hour === 12) hour = 0;
     const date = new Date(`${dateValue}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00-06:00`);
     return Number.isNaN(date.getTime()) ? Number.MAX_SAFE_INTEGER : date.getTime();
-  }
-
-  function escapeHTML(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
   }
 })(window);

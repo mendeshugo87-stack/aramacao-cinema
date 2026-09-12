@@ -9,7 +9,7 @@
   ],
   "ruta_por_rol": {
     "VENDEDOR_TAQUILLA": "/pages/taquilla/",
-    "ADMINISTRADOR_OPERATIVO": "/pages/gestion/",
+    "ADMINISTRADOR_OPERATIVO": "/pages/administracion/",
     "CONTROL_ACCESO": "/pages/control-entrada/"
   },
   "endpoints": [
@@ -87,7 +87,7 @@
     "403": "CUENTA_INACTIVA, ROL_NO_PERMITIDO o CSRF_INVALIDO",
     "429": "DEMASIADOS_INTENTOS"
   },
-  "regla_administrador_operativo": "Usa este mismo inicio de sesión, pero Django devuelve rol ADMINISTRADOR_OPERATIVO, sus permisos y la ruta /pages/gestion/.",
+  "regla_administrador_operativo": "Usa este mismo inicio de sesión, pero Django devuelve rol ADMINISTRADOR_OPERATIVO, sus permisos y la ruta /pages/administracion/.",
   "permisos_por_rol": {
     "VENDEDOR_TAQUILLA": [
       "ventas.crear_venta",

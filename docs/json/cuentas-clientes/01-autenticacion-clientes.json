@@ -1,7 +1,7 @@
 {
   "modulo": "Autenticación de clientes",
-  "estado": "LISTO_PARA_BACKEND",
-  "sesion": "Cookie segura de Django; no guardar tokens, identificación ni contraseñas en el navegador",
+  "estado": "IMPLEMENTADO_EN_BACKEND_PROPIO",
+  "sesion": "JWT Bearer; access y refresh se guardan únicamente en sessionStorage y se eliminan al cerrar la pestaña",
   "cliente": {
     "id": "uuid interno",
     "nombre_corto": "Hugo",
@@ -31,7 +31,7 @@
       },
       "respuesta_201": {
         "mensaje": "Cuenta creada. Revisa tu correo.",
-        "flujo_verificacion_id": "identificador opaco y temporal",
+        "flujo_verificacion_id": "JWT temporal del flujo; no autentica al cliente",
         "ruta_siguiente": "/pages/cuenta/verificar-correo.html"
       }
     },
@@ -45,6 +45,10 @@
       "respuesta_200": {
         "mensaje": "Correo verificado.",
         "cliente": "objeto_cliente",
+        "tokens": {
+          "access": "JWT de acceso",
+          "refresh": "JWT de renovación"
+        },
         "ruta_siguiente": "/pages/cuenta/mi-cuenta.html"
       }
     },
@@ -55,7 +59,8 @@
         "flujo_verificacion_id": "identificador opaco"
       },
       "respuesta_200": {
-        "mensaje": "Si el flujo sigue vigente, se envió un código nuevo."
+        "mensaje": "Se envió un código de verificación nuevo.",
+        "flujo_verificacion_id": "JWT temporal nuevo; sustituye al anterior"
       }
     },
     {
@@ -67,7 +72,22 @@
       },
       "respuesta_200": {
         "cliente": "objeto_cliente",
+        "tokens": {
+          "access": "JWT de acceso",
+          "refresh": "JWT de renovación"
+        },
         "ruta_siguiente": "/pages/cuenta/mi-cuenta.html"
+      }
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/v1/autenticacion/clientes/renovar-token/",
+      "entrada": {
+        "refresh": "JWT de renovación"
+      },
+      "respuesta_200": {
+        "access": "JWT de acceso nuevo",
+        "refresh": "JWT de renovación rotado"
       }
     },
     {
@@ -81,6 +101,9 @@
     {
       "metodo": "POST",
       "ruta": "/api/v1/autenticacion/clientes/cerrar-sesion/",
+      "entrada": {
+        "refresh": "JWT de renovación que se añadirá a la lista de revocados"
+      },
       "respuesta_200": {
         "mensaje": "Sesión cerrada correctamente."
       }
@@ -93,7 +116,7 @@
       },
       "respuesta_200": {
         "mensaje": "Si existe una cuenta válida, se enviaron instrucciones.",
-        "flujo_recuperacion_id": "identificador opaco, real o simulado",
+        "flujo_recuperacion_id": "JWT temporal real o simulado",
         "ruta_siguiente": "/pages/cuenta/verificar-codigo.html"
       }
     },
@@ -105,7 +128,7 @@
         "codigo": "123456"
       },
       "respuesta_200": {
-        "token_restablecimiento": "token temporal de un solo uso",
+        "token_restablecimiento": "JWT temporal de un solo uso",
         "ruta_siguiente": "/pages/cuenta/nueva-contrasena.html"
       }
     },
@@ -133,6 +156,10 @@
     "Tipo y número de identificación forman una combinación única.",
     "Identidad hondureña se normaliza a 13 dígitos; pasaporte se normaliza en mayúsculas.",
     "Usuario y correo son únicos sin distinguir mayúsculas.",
+    "La cuenta permanece inactiva hasta confirmar el código enviado al correo.",
+    "Los JWT de flujo nunca permiten acceder a rutas protegidas.",
+    "El access JWT dura 45 minutos y el refresh JWT dura 1 día y rota al renovarse.",
+    "El frontend no guarda contraseñas ni identificación; los JWT viven únicamente en sessionStorage.",
     "Los códigos vencen, tienen límite de intentos y son de un solo uso.",
     "La recuperación siempre devuelve un mensaje genérico para no revelar si la cuenta existe.",
     "Al restablecer la contraseña, invalidar todas las sesiones activas del cliente y exigir un nuevo inicio de sesión.",

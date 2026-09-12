@@ -59,7 +59,7 @@ async function initializePersonalManagement() {
 async function loadEmployees() {
   setGlobalStatus("Cargando cuentas…", "info");
   try {
-    const response = await window.AramacaoStaffApi.listarEmpleados();
+    const response = await window.AramacaoPersonalApi.listarEmpleados();
     personalState.empleados = Array.isArray(response?.resultados) ? response.resultados : [];
     setGlobalStatus("", "");
     renderEmployees();
@@ -221,10 +221,10 @@ async function saveEmployee(event) {
     if (personalState.modoDemostracion) {
       savedEmployee = saveDemoEmployee(data);
     } else if (personalState.editandoId) {
-      const response = await window.AramacaoStaffApi.actualizarEmpleado(personalState.editandoId, data);
+      const response = await window.AramacaoPersonalApi.actualizarEmpleado(personalState.editandoId, data);
       savedEmployee = response.empleado;
     } else {
-      const response = await window.AramacaoStaffApi.crearEmpleado(data);
+      const response = await window.AramacaoPersonalApi.crearEmpleado(data);
       savedEmployee = response.empleado;
     }
 
@@ -325,7 +325,7 @@ async function toggleEmployeeStatus(employee, button) {
     if (personalState.modoDemostracion) {
       updated = { ...employee, activo: !employee.activo };
     } else {
-      const response = await window.AramacaoStaffApi.actualizarEmpleado(employee.id, { activo: !employee.activo });
+      const response = await window.AramacaoPersonalApi.actualizarEmpleado(employee.id, { activo: !employee.activo });
       updated = response.empleado;
     }
     upsertEmployee(updated);
@@ -361,7 +361,7 @@ async function saveTemporaryPassword(event) {
 
   try {
     if (!personalState.modoDemostracion) {
-      await window.AramacaoStaffApi.asignarContrasenaTemporal(personalState.editandoId, password.value);
+      await window.AramacaoPersonalApi.asignarContrasenaTemporal(personalState.editandoId, password.value);
     }
 
     const employee = personalState.empleados.find((item) => item.id === personalState.editandoId);
@@ -454,7 +454,7 @@ function getDemoEmployees() {
 }
 
 function applyApiFieldErrors(error) {
-  if (!(error instanceof window.AramacaoStaffApi.StaffApiError) || !error.details) return;
+  if (!(error instanceof window.AramacaoPersonalApi.PersonalApiError) || !error.details) return;
   const fieldMap = {
     nombre_completo: "staff-full-name",
     usuario: "staff-username",
@@ -527,19 +527,18 @@ function getInitials(name) {
     .join("");
 }
 
+/* El formato vive en compartido/utilidades.js; aquí solo los textos que
+   esta pantalla muestra cuando no hay fecha. */
 function formatDateTime(value) {
   if (!value) return "Nunca";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Sin registro";
-  return new Intl.DateTimeFormat("es-HN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "America/Tegucigalpa",
-  }).format(date);
+  return window.AramacaoUtil.formatearFechaHora(value, {
+    alterno: "Sin registro",
+    zonaHoraria: window.AramacaoUtil.ZONA_HONDURAS,
+  });
 }
 
 function getApiMessage(error, fallback) {
-  if (error instanceof window.AramacaoStaffApi.StaffApiError) return error.message || fallback;
+  if (error instanceof window.AramacaoPersonalApi.PersonalApiError) return error.message || fallback;
   return fallback;
 }
 

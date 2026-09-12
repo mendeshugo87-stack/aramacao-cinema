@@ -212,16 +212,16 @@ function renderMovies() {
         <article class="movie-card">
           <div class="movie-art" style="--card-accent: ${sanitizeColor(movie.accent)}">
             ${renderMovieImage(movie.posterImage, movie.title, "movie-art-image")}
-            <span class="classification">${escapeHTML(movie.classification)}</span>
-            <span class="movie-art-label">${escapeHTML(movie.title)}</span>
+            <span class="classification">${AramacaoUtil.escaparHtml(movie.classification)}</span>
+            <span class="movie-art-label">${AramacaoUtil.escaparHtml(movie.title)}</span>
           </div>
           <div class="movie-card-body">
-            <h3>${escapeHTML(movie.title)}</h3>
-            <p class="movie-card-subtitle">${movie.durationMinutes} min · ${escapeHTML(movie.genres.join(" / "))}</p>
+            <h3>${AramacaoUtil.escaparHtml(movie.title)}</h3>
+            <p class="movie-card-subtitle">${movie.durationMinutes} min · ${AramacaoUtil.escaparHtml(movie.genres.join(" / "))}</p>
             <div class="showtimes" aria-label="Horarios disponibles">
               ${
                 showtimes.length
-                  ? showtimes.map((show) => `<span class="showtime${show.promotion ? " has-promotion" : ""}">${escapeHTML(show.time)}${show.promotion ? " <small>2x1</small>" : ""}</span>`).join("")
+                  ? showtimes.map((show) => `<span class="showtime${show.promotion ? " has-promotion" : ""}">${AramacaoUtil.escaparHtml(show.time)}${show.promotion ? " <small>2x1</small>" : ""}</span>`).join("")
                   : '<span class="no-showtimes">Sin funciones este día</span>'
               }
             </div>
@@ -265,12 +265,12 @@ function renderUpcomingMovies() {
             <article class="upcoming-card">
               <div class="upcoming-art" style="--card-accent: ${sanitizeColor(movie.accent)}">
                 ${renderMovieImage(movie.bannerImage || movie.posterImage, movie.title, "movie-art-image")}
-                <span class="movie-art-label">${escapeHTML(movie.title)}</span>
+                <span class="movie-art-label">${AramacaoUtil.escaparHtml(movie.title)}</span>
               </div>
               <div class="upcoming-body">
                 <div>
-                  <h3>${escapeHTML(movie.title)}</h3>
-                  <span class="movie-card-subtitle">${escapeHTML(movie.genres.join(" / "))}</span>
+                  <h3>${AramacaoUtil.escaparHtml(movie.title)}</h3>
+                  <span class="movie-card-subtitle">${AramacaoUtil.escaparHtml(movie.genres.join(" / "))}</span>
                 </div>
                 <span class="release-date">${formatReleaseDate(movie.releaseDate)}</span>
               </div>
@@ -321,7 +321,7 @@ function renderHero() {
     movie.genres.join(" / "),
     movie.language,
   ]
-    .map((item) => `<span class="meta-pill">${escapeHTML(item)}</span>`)
+    .map((item) => `<span class="meta-pill">${AramacaoUtil.escaparHtml(item)}</span>`)
     .join("");
 
   elements.heroPoster.style.setProperty("--poster-accent", sanitizeColor(movie.accent));
@@ -433,11 +433,11 @@ function openMovieModal(movie) {
   elements.modalDescription.textContent = movie.fullSynopsis || movie.shortSynopsis;
   elements.modalDetails.innerHTML = `
     <dt>Duración</dt><dd>${movie.durationMinutes} minutos</dd>
-    <dt>Clasificación</dt><dd>${escapeHTML(movie.classification)}</dd>
-    <dt>Género</dt><dd>${escapeHTML(movie.genres.join(", "))}</dd>
-    <dt>Idioma</dt><dd>${escapeHTML(movie.language)}</dd>
-    <dt>Dirección</dt><dd>${escapeHTML(movie.director)}</dd>
-    <dt>Reparto</dt><dd>${escapeHTML(movie.cast.join(", "))}</dd>
+    <dt>Clasificación</dt><dd>${AramacaoUtil.escaparHtml(movie.classification)}</dd>
+    <dt>Género</dt><dd>${AramacaoUtil.escaparHtml(movie.genres.join(", "))}</dd>
+    <dt>Idioma</dt><dd>${AramacaoUtil.escaparHtml(movie.language)}</dd>
+    <dt>Dirección</dt><dd>${AramacaoUtil.escaparHtml(movie.director)}</dd>
+    <dt>Reparto</dt><dd>${AramacaoUtil.escaparHtml(movie.cast.join(", "))}</dd>
   `;
   elements.modalBuy.href = buildCustomerAccountUrl(movie.id);
   setTrailerButton(elements.modalTrailer, movie);
@@ -636,12 +636,12 @@ function renderMovieImage(value, title, className) {
   const imageUrl = getSafeMediaUrl(value);
   if (!imageUrl) return "";
 
-  return `<img class="${className}" src="${escapeHTML(imageUrl)}" alt="Póster de ${escapeHTML(title)}" loading="lazy">`;
+  return `<img class="${className}" src="${AramacaoUtil.escaparHtml(imageUrl)}" alt="Póster de ${AramacaoUtil.escaparHtml(title)}" loading="lazy">`;
 }
 
 function renderTrailerButton(movie) {
   if (!getYouTubeEmbedUrl(movie.trailerUrl)) return "";
-  return `<button class="card-trailer" type="button" data-movie-trailer="${escapeHTML(movie.id)}">Ver tráiler</button>`;
+  return `<button class="card-trailer" type="button" data-movie-trailer="${AramacaoUtil.escaparHtml(movie.id)}">Ver tráiler</button>`;
 }
 
 function setTrailerButton(button, movie) {
@@ -694,14 +694,4 @@ function buildHeroBannerOverlay(value) {
   const bottom = Math.min(Math.max(shadow + 0.2, 0.4), 0.85);
   const top = Math.min(Math.max(shadow - 0.05, 0.12), 0.65);
   return `linear-gradient(90deg, rgba(3, 8, 16, ${left}) 0%, rgba(3, 8, 16, ${center}) 48%, rgba(3, 8, 16, ${right}) 100%), linear-gradient(0deg, rgba(3, 8, 16, ${bottom}), rgba(3, 8, 16, ${top}) 65%, rgba(3, 8, 16, ${center}))`;
-}
-
-/* Evita insertar etiquetas HTML si un texto recibido de la API contiene caracteres especiales. */
-function escapeHTML(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

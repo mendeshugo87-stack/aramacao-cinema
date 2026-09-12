@@ -83,7 +83,7 @@ function renderDateTabs() {
     return `
       <button class="date-tab${index === 0 ? " active" : ""}" type="button" data-date="${toLocalISODate(date)}" aria-pressed="${index === 0}">
         <strong>${index === 0 ? "Hoy" : capitalize(weekday)}</strong>
-        <span>${escapeHTML(dayAndMonth)}</span>
+        <span>${AramacaoUtil.escaparHtml(dayAndMonth)}</span>
       </button>`;
   }).join("");
 
@@ -136,17 +136,17 @@ function renderCurrentMovieCard(movie) {
     <article class="movie-card">
       <div class="movie-art" style="--card-accent: ${sanitizeColor(movie.accent)}">
         ${renderMovieImage(movie.posterImage, movie.title, "movie-art-image")}
-        <span class="classification">${escapeHTML(movie.classification)}</span>
-        <span class="movie-art-label">${escapeHTML(movie.title)}</span>
+        <span class="classification">${AramacaoUtil.escaparHtml(movie.classification)}</span>
+        <span class="movie-art-label">${AramacaoUtil.escaparHtml(movie.title)}</span>
       </div>
       <div class="movie-card-body">
-        <h3>${escapeHTML(movie.title)}</h3>
-        <p class="movie-card-subtitle">${Number(movie.durationMinutes) || 0} min · ${escapeHTML((movie.genres || []).join(" / "))}</p>
+        <h3>${AramacaoUtil.escaparHtml(movie.title)}</h3>
+        <p class="movie-card-subtitle">${Number(movie.durationMinutes) || 0} min · ${AramacaoUtil.escaparHtml((movie.genres || []).join(" / "))}</p>
         <div class="showtimes" aria-label="Horarios disponibles">
-          ${shows.length ? shows.map((show) => `<span class="showtime${show.promotion ? " has-promotion" : ""}">${escapeHTML(show.time)}${show.promotion ? " <small>2x1</small>" : ""}</span>`).join("") : '<span class="no-showtimes">Sin funciones este día</span>'}
+          ${shows.length ? shows.map((show) => `<span class="showtime${show.promotion ? " has-promotion" : ""}">${AramacaoUtil.escaparHtml(show.time)}${show.promotion ? " <small>2x1</small>" : ""}</span>`).join("") : '<span class="no-showtimes">Sin funciones este día</span>'}
         </div>
         <div class="card-actions">
-          ${getYouTubeEmbedUrl(movie.trailerUrl) ? `<button class="card-trailer" type="button" data-trailer-id="${escapeHTML(movie.id)}">Ver tráiler</button>` : ""}
+          ${getYouTubeEmbedUrl(movie.trailerUrl) ? `<button class="card-trailer" type="button" data-trailer-id="${AramacaoUtil.escaparHtml(movie.id)}">Ver tráiler</button>` : ""}
           ${shows.length ? `<a class="card-link" href="${loginUrl}">Comprar boletos →</a>` : ""}
         </div>
       </div>
@@ -163,16 +163,16 @@ function renderUpcomingPage() {
       <article class="upcoming-card">
         <div class="upcoming-art" style="--card-accent: ${sanitizeColor(movie.accent)}">
           ${renderMovieImage(movie.bannerImage || movie.posterImage, movie.title, "movie-art-image")}
-          <span class="movie-art-label">${escapeHTML(movie.title)}</span>
+          <span class="movie-art-label">${AramacaoUtil.escaparHtml(movie.title)}</span>
         </div>
         <div class="upcoming-body">
           <div>
-            <h3>${escapeHTML(movie.title)}</h3>
-            <span class="movie-card-subtitle">${escapeHTML((movie.genres || []).join(" / "))}</span>
+            <h3>${AramacaoUtil.escaparHtml(movie.title)}</h3>
+            <span class="movie-card-subtitle">${AramacaoUtil.escaparHtml((movie.genres || []).join(" / "))}</span>
           </div>
           <span class="release-date">${formatReleaseDate(movie.releaseDate)}</span>
         </div>
-        ${getYouTubeEmbedUrl(movie.trailerUrl) ? `<div class="movie-card-body"><button class="card-trailer" type="button" data-trailer-id="${escapeHTML(movie.id)}">Ver tráiler</button></div>` : ""}
+        ${getYouTubeEmbedUrl(movie.trailerUrl) ? `<div class="movie-card-body"><button class="card-trailer" type="button" data-trailer-id="${AramacaoUtil.escaparHtml(movie.id)}">Ver tráiler</button></div>` : ""}
       </article>`).join("")
     : '<p class="empty-message">Los próximos estrenos se publicarán pronto.</p>';
   bindMovieActions(target);
@@ -316,7 +316,7 @@ function getYouTubeEmbedUrl(value) {
 
 function renderMovieImage(value, title, className) {
   const url = getSafeMediaUrl(value);
-  return url ? `<img class="${className}" src="${escapeHTML(url)}" alt="Póster de ${escapeHTML(title)}" loading="lazy">` : "";
+  return url ? `<img class="${className}" src="${AramacaoUtil.escaparHtml(url)}" alt="Póster de ${AramacaoUtil.escaparHtml(title)}" loading="lazy">` : "";
 }
 
 function getSafeMediaUrl(value) {
@@ -362,13 +362,4 @@ function parseLocalDate(value) {
 
 function capitalize(value) {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : "";
-}
-
-function escapeHTML(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

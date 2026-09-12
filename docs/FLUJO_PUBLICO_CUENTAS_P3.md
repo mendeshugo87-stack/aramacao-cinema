@@ -22,10 +22,13 @@ Estos parámetros orientan el regreso al flujo. El servidor siempre debe comprob
 - Validar correo y nombre de usuario duplicados.
 - Almacenar contraseñas mediante el sistema seguro de Django.
 - Verificar el correo mediante código con vencimiento.
-- Crear sesiones seguras y proteger las rutas de compra.
+- Emitir JWT de acceso y renovación únicamente después de verificar el correo.
+- Proteger las rutas de compra con `Authorization: Bearer <access>`.
+- Rotar el refresh JWT y revocarlo al cerrar sesión.
 - Aplicar límite de intentos a inicio de sesión y recuperación.
 - Devolver una respuesta neutra en recuperación para no revelar si una cuenta existe.
 - No confiar en validaciones, roles ni parámetros enviados únicamente por JavaScript.
+- No utilizar los JWT de verificación o recuperación como tokens de acceso.
 - Después de autenticar, continuar con función, asientos, pago y boleto digital.
 
 ## Separación de acceso

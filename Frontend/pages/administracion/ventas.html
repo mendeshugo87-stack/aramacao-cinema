@@ -9,20 +9,24 @@
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
   <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/gestion.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/admin-sales.css?v=20260819-ventas-1">
-  <script src="../../assets/js/staff-api.js?v=8" defer></script>
-  <script src="../../assets/js/staff-private.js?v=20260818-separacion-1" defer></script>
+  <link rel="stylesheet" href="../../assets/css/administracion.css?v=8">
+  <link rel="stylesheet" href="../../assets/css/administracion-ventas.css?v=20260819-ventas-1">
+  <script src="../../assets/js/compartido/utilidades.js?v=22" defer></script>
+  <script src="../../assets/js/compartido/api-cliente.js?v=22" defer></script>
+  <script src="../../assets/js/empleados/staff-api.js?v=22" defer></script>
+  <script src="../../assets/js/empleados/staff-private.js?v=22" defer></script>
   <script src="../../assets/vendor/qrcode/qrcode.js" defer></script>
-  <script src="../../assets/js/sales-api.js?v=20260821-imagen-png-1" defer></script>
-  <script src="../../assets/js/admin-sales.js?v=20260820-dialogos-1" defer></script>
+  <script src="../../assets/js/compartido/ventas-demo.js?v=22" defer></script>
+  <script src="../../assets/js/compartido/boleto-documento.js?v=22" defer></script>
+  <script src="../../assets/js/compartido/sales-api.js?v=22" defer></script>
+  <script src="../../assets/js/administracion/administracion-ventas.js?v=22" defer></script>
 </head>
 <body
   class="admin-body"
-  data-area-privada="gestion-ventas"
+  data-area-privada="administracion-ventas"
   data-roles-permitidos="ADMINISTRADOR_OPERATIVO"
   data-permiso-requerido="ventas.consultar"
-  data-login-url="/pages/gestion/login.html"
+  data-login-url="/pages/administracion/login.html"
 >
   <a class="skip-link" href="#admin-content">Saltar al contenido</a>
 
@@ -34,7 +38,6 @@
       <a href="index.html#resumen"><span>▦</span> Resumen</a>
       <a href="index.html#peliculas"><span>▶</span> Películas</a>
       <a href="index.html#funciones"><span>◷</span> Funciones</a>
-      <a href="index.html#promociones"><span>%</span> Promociones</a>
       <a href="personal.html"><span>♙</span> Personal</a>
       <a class="active" href="ventas.html" aria-current="page"><span>▤</span> Ventas</a>
     </nav>

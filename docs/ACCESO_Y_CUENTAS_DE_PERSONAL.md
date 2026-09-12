@@ -24,6 +24,6 @@ La prueba local no crea cuentas reales ni guarda contraseñas. Django debe valid
 
 - `VENDEDOR_TAQUILLA` usa `/pages/taquilla/` para vender e imprimir. Con `clientes.buscar_para_recuperacion` y `boletos.recuperar_cliente` también puede reemplazar el QR perdido después de verificar el documento físico; no accede al historial administrativo global.
 - `CONTROL_ACCESO` usa `/pages/control-entrada/` con `boletos.escanear`.
-- `ADMINISTRADOR_OPERATIVO` usa `/pages/gestion/ventas.html` con permisos separados para consultar, reimprimir, reemitir, anular y reembolsar.
+- `ADMINISTRADOR_OPERATIVO` usa `/pages/administracion/ventas.html` con permisos separados para consultar, reimprimir, reemitir, anular y reembolsar.
 - Taquilla no escanea y Control de entrada no vende ni cobra.
 - Django debe compartir boletos y estados en la misma base de datos para sincronizar computadoras, teléfonos y tabletas.

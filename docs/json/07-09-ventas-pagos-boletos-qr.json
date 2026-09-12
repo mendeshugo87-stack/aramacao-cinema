@@ -278,7 +278,7 @@
     "logo_oficial_reutilizado": "Frontend/assets/images/AraMacao Completo Degradado (3).png",
     "nota": "La demostración local se construyó en el frontend desde cero sobre las pantallas P3; Django sustituirá localStorage y volverá a validar permisos, importes, disponibilidad, pagos y tokens.",
     "seleccion_2x1_taquilla": "Frontend/assets/js/taquilla.js propone parejas contiguas; Django conserva la validación definitiva.",
-    "administracion_ventas": "Frontend/pages/gestion/ventas.html y Frontend/assets/js/admin-sales.js",
+    "administracion_ventas": "Frontend/pages/administracion/ventas.html y Frontend/assets/js/administracion/administracion-ventas.js",
     "recuperacion_taquilla": "Frontend/assets/js/ticket-recovery.js; contrato detallado en docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json",
     "modelo_impresion": "docs/MODELO_COMPROBANTE_BOLETO_QR.md"
   },

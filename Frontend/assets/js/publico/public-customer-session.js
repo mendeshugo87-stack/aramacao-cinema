@@ -78,9 +78,7 @@
     return String(value || "").trim().split(/\s+/)[0] || "";
   }
 
-  function isLocalPreview() {
-    return ["localhost", "127.0.0.1", "[::1]"].includes(global.location.hostname);
-  }
+  const isLocalPreview = global.AramacaoUtil.esVistaLocal;
 
   global.AramacaoPublicCustomerSession = Object.freeze({
     actualizarNavegacion: refreshNavigation,

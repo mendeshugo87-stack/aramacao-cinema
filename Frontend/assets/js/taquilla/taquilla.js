@@ -147,7 +147,7 @@ function populateMovies() {
   );
   elements.movieSelect.innerHTML = [
     '<option value="">Selecciona una película</option>',
-    ...activeMovies.map((movie) => `<option value="${movie.id}">${escapeHTML(movie.title)}</option>`),
+    ...activeMovies.map((movie) => `<option value="${movie.id}">${AramacaoUtil.escaparHtml(movie.title)}</option>`),
   ].join("");
 }
 
@@ -199,8 +199,8 @@ function renderShowtimes(autoSelectFirst) {
     .map(
       (show, index) => `
         <button class="ticket-showtime" type="button" data-showtime-index="${index}">
-          <strong>${escapeHTML(show.time)}</strong>
-          <span>${escapeHTML(show.room)} · ${escapeHTML(show.format)} · ${formatMoney(show.price)}</span>
+          <strong>${AramacaoUtil.escaparHtml(show.time)}</strong>
+          <span>${AramacaoUtil.escaparHtml(show.room)} · ${AramacaoUtil.escaparHtml(show.format)} · ${AramacaoUtil.formatearDineroUnido(show.price)}</span>
         </button>
       `
     )
@@ -381,7 +381,7 @@ function renderSeatMap() {
 }
 
 function renderEmptySeatMap(message) {
-  elements.seatMap.innerHTML = `<p class="seat-map-disabled">${escapeHTML(message)}</p>`;
+  elements.seatMap.innerHTML = `<p class="seat-map-disabled">${AramacaoUtil.escaparHtml(message)}</p>`;
   elements.seatInstruction.textContent = message;
 }
 
@@ -538,12 +538,12 @@ function updateSummary() {
   elements.summaryRoom.textContent = state.selectedShowtime?.room || "—";
   elements.summarySeats.textContent = sortedSeats.length ? sortedSeats.join(", ") : "Ninguno";
   elements.admissionCount.textContent = String(totals.admissions);
-  elements.subtotal.textContent = formatMoney(totals.subtotal);
-  elements.discount.textContent = `−${formatMoney(totals.discount)}`;
-  elements.total.textContent = formatMoney(totals.total);
+  elements.subtotal.textContent = AramacaoUtil.formatearDineroUnido(totals.subtotal);
+  elements.discount.textContent = `−${AramacaoUtil.formatearDineroUnido(totals.discount)}`;
+  elements.total.textContent = AramacaoUtil.formatearDineroUnido(totals.total);
 
   const received = Number(elements.cashReceived.value || 0);
-  elements.change.textContent = formatMoney(Math.max(received - totals.total, 0));
+  elements.change.textContent = AramacaoUtil.formatearDineroUnido(Math.max(received - totals.total, 0));
 }
 
 function updatePaymentUI() {
@@ -582,7 +582,7 @@ async function confirmSale() {
   const cashReceived = Number(elements.cashReceived.value || 0);
 
   if (paymentMethod === "efectivo" && cashReceived < totals.total) {
-    showError(`El efectivo recibido debe ser igual o mayor que ${formatMoney(totals.total)}.`);
+    showError(`El efectivo recibido debe ser igual o mayor que ${AramacaoUtil.formatearDineroUnido(totals.total)}.`);
     elements.cashReceived.focus();
     return;
   }
@@ -666,14 +666,6 @@ function formatTimeForDisplay(value) {
   return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "p. m." : "a. m."}`;
 }
 
-function formatMoney(value) {
-  return new Intl.NumberFormat("es-HN", {
-    style: "currency",
-    currency: "HNL",
-    minimumFractionDigits: 2,
-  }).format(Number(value || 0));
-}
-
 function startOfLocalDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
 }
@@ -698,13 +690,4 @@ function parseLocalDate(value) {
 
 function sortSeats(a, b) {
   return a.localeCompare(b, undefined, { numeric: true });
-}
-
-function escapeHTML(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

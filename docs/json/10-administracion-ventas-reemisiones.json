@@ -7,7 +7,7 @@
   "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
   "acceso": {
     "rol": "ADMINISTRADOR_OPERATIVO",
-    "pagina": "/pages/gestion/ventas.html",
+    "pagina": "/pages/administracion/ventas.html",
     "permiso_pagina": "ventas.consultar",
     "regla": "Django valida además el permiso específico de cada acción; poder consultar no permite reemitir, anular ni reembolsar."
   },
@@ -183,9 +183,9 @@
     {"http": 429, "codigo": "DEMASIADAS_SOLICITUDES", "cuando": "Se excede el límite de acciones sensibles."}
   ],
   "frontend": {
-    "pagina": "Frontend/pages/gestion/ventas.html",
-    "estilos": "Frontend/assets/css/admin-sales.css",
-    "controlador": "Frontend/assets/js/admin-sales.js",
+    "pagina": "Frontend/pages/administracion/ventas.html",
+    "estilos": "Frontend/assets/css/administracion-ventas.css",
+    "controlador": "Frontend/assets/js/administracion/administracion-ventas.js",
     "adaptador_compartido": "Frontend/assets/js/sales-api.js",
     "modo_local": "Usa aramacao-demo-ventas-v1 para QA en un solo navegador; no sustituye Django ni sincroniza dispositivos."
   }

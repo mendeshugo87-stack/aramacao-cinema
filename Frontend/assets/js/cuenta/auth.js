@@ -281,7 +281,7 @@ function getRequestedNext() {
   if (!raw) return "";
   try {
     const destination = new URL(raw, window.location.origin);
-    const forbidden = ["/pages/gestion", "/pages/taquilla", "/pages/empleados"];
+    const forbidden = ["/pages/administracion", "/pages/taquilla", "/pages/empleados"];
     if (destination.origin !== window.location.origin) return "";
     if (forbidden.some((prefix) => destination.pathname.startsWith(prefix))) return "";
     return `${destination.pathname}${destination.search}${destination.hash}`;
@@ -314,6 +314,12 @@ async function resendVerificationCode() {
   button.disabled = true;
   try {
     const response = await window.AramacaoCustomerApi.reenviarCodigo(flowId);
+    if (response?.flujo_verificacion_id) {
+      setHiddenValue("verification-flow-id", response.flujo_verificacion_id);
+      const url = new URL(window.location.href);
+      url.searchParams.set("flujo", response.flujo_verificacion_id);
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
     setStatus(response?.mensaje || "Código reenviado.", "success");
   } catch (error) {
     setStatus(getApiErrorMessage(error), "error");

@@ -58,7 +58,7 @@ async function handleAdminLogin(event) {
 
     const nextPath = response.debe_cambiar_contrasena
       ? "/pages/empleados/cambiar-contrasena.html"
-      : response.ruta_siguiente || "/pages/gestion/";
+      : response.ruta_siguiente || "/pages/administracion/";
     const destination = new URL(nextPath, window.location.origin);
 
     if (destination.origin !== window.location.origin) {

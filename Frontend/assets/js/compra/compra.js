@@ -165,7 +165,7 @@ function populateMovies() {
   elements.movieSelect.innerHTML = [
     '<option value="">Selecciona una película</option>',
     ...movies.map((movie) =>
-      `<option value="${escapeHTML(movie.id)}">${escapeHTML(movie.title || movie.titulo || "Película")}</option>`
+      `<option value="${AramacaoUtil.escaparHtml(movie.id)}">${AramacaoUtil.escaparHtml(movie.title || movie.titulo || "Película")}</option>`
     ),
   ].join("");
 }
@@ -213,10 +213,10 @@ function renderShowtimes(autoSelectRequested = false) {
     <button
       class="purchase-showtime${state.selectedShowtime?.id === showtime.id ? " selected" : ""}"
       type="button"
-      data-showtime-id="${escapeHTML(showtime.id)}"
+      data-showtime-id="${AramacaoUtil.escaparHtml(showtime.id)}"
     >
-      ${escapeHTML(showtime.time)}
-      <small>${escapeHTML(showtime.format)} · ${formatMoney(showtime.price)}</small>
+      ${AramacaoUtil.escaparHtml(showtime.time)}
+      <small>${AramacaoUtil.escaparHtml(showtime.format)} · ${AramacaoUtil.formatearDinero(showtime.price)}</small>
     </button>
   `).join("");
 
@@ -339,7 +339,7 @@ function renderSeatMap() {
 
   const fragments = [];
   state.distribution.forEach(({ row, seats }) => {
-    fragments.push(`<span class="row-label" aria-hidden="true">${escapeHTML(row)}</span>`);
+    fragments.push(`<span class="row-label" aria-hidden="true">${AramacaoUtil.escaparHtml(row)}</span>`);
     seats.forEach((number) => {
       const seat = `${row}${number}`;
       const status = state.statuses.get(seat) || "available";
@@ -351,10 +351,10 @@ function renderSeatMap() {
 
       fragments.push(`
         <button
-          class="purchase-seat ${escapeHTML(status)}${selected && status === "available" ? " selected" : ""}"
+          class="purchase-seat ${AramacaoUtil.escaparHtml(status)}${selected && status === "available" ? " selected" : ""}"
           type="button"
-          data-seat="${escapeHTML(seat)}"
-          aria-label="Asiento ${escapeHTML(seat)}, ${escapeHTML(label)}"
+          data-seat="${AramacaoUtil.escaparHtml(seat)}"
+          aria-label="Asiento ${AramacaoUtil.escaparHtml(seat)}, ${AramacaoUtil.escaparHtml(label)}"
           aria-pressed="${selected}"
           ${unavailable ? "disabled" : ""}
         >${number}</button>
@@ -369,7 +369,7 @@ function renderSeatMap() {
 }
 
 function renderEmptySeatMap(message) {
-  elements.seatMap.innerHTML = `<p class="seat-map-message">${escapeHTML(message)}</p>`;
+  elements.seatMap.innerHTML = `<p class="seat-map-message">${AramacaoUtil.escaparHtml(message)}</p>`;
   elements.seatInstruction.textContent = message;
 }
 
@@ -453,7 +453,7 @@ async function createTemporaryBlock() {
   try {
     const block = await window.AramacaoSeatApi.crearBloqueo(
       state.selectedShowtime.id,
-      [...state.selectedSeats].sort(compareSeats),
+      [...state.selectedSeats].sort(AramacaoUtil.compararAsientos),
       { fecha: state.selectedDate, hora: state.selectedShowtime.rawTime }
     );
     state.currentBlock = block;
@@ -579,7 +579,7 @@ function calculateTotals() {
 
 function updateSummary() {
   const totals = calculateTotals();
-  const seats = [...state.selectedSeats].sort(compareSeats);
+  const seats = [...state.selectedSeats].sort(AramacaoUtil.compararAsientos);
   elements.summaryMovie.textContent = getMovieTitle(state.selectedMovie) || "Sin seleccionar";
   elements.summaryDate.textContent = state.selectedDate ? formatDate(state.selectedDate) : "Sin seleccionar";
   elements.summaryShowtime.textContent = state.selectedShowtime?.time || "Sin seleccionar";
@@ -587,9 +587,9 @@ function updateSummary() {
   elements.summaryFormat.textContent = state.selectedShowtime?.format || "—";
   elements.summarySeats.textContent = seats.length ? seats.join(", ") : "Ninguno";
   elements.summaryAdmissions.textContent = String(totals.admissions);
-  elements.summarySubtotal.textContent = formatMoney(totals.subtotal);
-  elements.summaryDiscount.textContent = `−${formatMoney(totals.discount)}`;
-  elements.summaryTotal.textContent = formatMoney(totals.total);
+  elements.summarySubtotal.textContent = AramacaoUtil.formatearDinero(totals.subtotal);
+  elements.summaryDiscount.textContent = `−${AramacaoUtil.formatearDinero(totals.discount)}`;
+  elements.summaryTotal.textContent = AramacaoUtil.formatearDinero(totals.total);
   elements.seatCount.textContent = `${totals.admissions} seleccionado${totals.admissions === 1 ? "" : "s"}`;
   updateContinueButton();
 }
@@ -700,13 +700,6 @@ function formatTimeForDisplay(value) {
   return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "p. m." : "a. m."}`;
 }
 
-function formatMoney(value) {
-  return `L ${Number(value || 0).toLocaleString("es-HN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 function formatDate(value) {
   const date = parseLocalDate(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -730,13 +723,6 @@ function toLocalISODate(date) {
   return `${year}-${month}-${day}`;
 }
 
-function compareSeats(first, second) {
-  const firstMatch = /^([A-Z]+)(\d+)$/.exec(first) || ["", first, "0"];
-  const secondMatch = /^([A-Z]+)(\d+)$/.exec(second) || ["", second, "0"];
-  return firstMatch[1].localeCompare(secondMatch[1]) ||
-    Number(firstMatch[2]) - Number(secondMatch[2]);
-}
-
 function showError(message) {
   elements.error.textContent = message || "";
 }
@@ -748,13 +734,4 @@ function showStatus(message) {
 function getErrorMessage(error) {
   if (error instanceof window.AramacaoSeatApi.SeatApiError) return error.message;
   return error?.message || "No fue posible completar la operación.";
-}
-
-function escapeHTML(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

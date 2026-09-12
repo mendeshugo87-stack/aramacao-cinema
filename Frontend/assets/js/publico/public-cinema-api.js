@@ -148,6 +148,11 @@ window.CinemaPublicApi = (() => {
     }));
   }
 
+  /* El contrato (docs/API_CARTELERA_FUNCIONES_PROMOCIONES.md) envía los días
+     como texto ("LUNES", "MARTES", "MIERCOLES"); aquí se convierten al número
+     de Date.getDay() que ya usa todo el frontend (Inicio, Taquilla, Compra). */
+  const NUMERO_DE_DIA = { DOMINGO: 0, LUNES: 1, MARTES: 2, MIERCOLES: 3, JUEVES: 4, VIERNES: 5, SABADO: 6 };
+
   function adaptarPromocion(promocion) {
     if (!promocion) return null;
 
@@ -156,7 +161,7 @@ window.CinemaPublicApi = (() => {
       movieIds: (promocion.peliculas_ids || []).map(String),
       startDate: promocion.fecha_inicial || "",
       endDate: promocion.fecha_final || "",
-      allowedWeekdays: promocion.dias_semana_numeros || [],
+      allowedWeekdays: (promocion.dias_semana || []).map((dia) => NUMERO_DE_DIA[dia]).filter((numero) => numero !== undefined),
       appliesTo: promocion.aplica_en === "FUNCIONES_ESPECIFICAS" ? "especificas" : "todas",
       functionIds: (promocion.funciones_ids || []).map(String),
       description: promocion.condiciones_visibles || "",

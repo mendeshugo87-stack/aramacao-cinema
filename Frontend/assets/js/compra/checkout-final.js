@@ -69,7 +69,7 @@ async function approveDemoPayment() {
       sala: state.selectedShowtime.room || "Sala 1",
       formato: state.selectedShowtime.format,
       precio_unitario: state.selectedShowtime.price,
-      asientos: [...state.selectedSeats].sort(compareSeats),
+      asientos: [...state.selectedSeats].sort(AramacaoUtil.compararAsientos),
       promocion_2x1: isPromotionAvailable(),
       subtotal: totals.subtotal,
       descuento: totals.discount,

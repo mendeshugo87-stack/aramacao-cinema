@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-La página privada `Frontend/pages/gestion/ventas.html` permite al administrador operativo consultar ventas en línea y de Taquilla, revisar sus boletos, reimprimir documentos y ejecutar acciones sensibles con motivo y auditoría.
+La página privada `Frontend/pages/administracion/ventas.html` permite al administrador operativo consultar ventas en línea y de Taquilla, revisar sus boletos, reimprimir documentos y ejecutar acciones sensibles con motivo y auditoría.
 
 El contrato técnico completo está en:
 

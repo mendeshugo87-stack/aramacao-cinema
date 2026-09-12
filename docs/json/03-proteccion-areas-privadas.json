@@ -18,19 +18,19 @@
       "sin_sesion_ir_a": "/pages/empleados/login.html"
     },
     {
-      "ruta": "/pages/gestion/",
+      "ruta": "/pages/administracion/",
       "rol": "ADMINISTRADOR_OPERATIVO",
       "permiso": "cartelera.gestionar",
-      "sin_sesion_ir_a": "/pages/gestion/login.html"
+      "sin_sesion_ir_a": "/pages/administracion/login.html"
     },
     {
-      "ruta": "/pages/gestion/personal.html",
+      "ruta": "/pages/administracion/personal.html",
       "rol": "ADMINISTRADOR_OPERATIVO",
       "permiso": "personal.gestionar",
-      "sin_sesion_ir_a": "/pages/gestion/login.html"
+      "sin_sesion_ir_a": "/pages/administracion/login.html"
     },
     {
-      "ruta": "/pages/gestion/ventas.html",
+      "ruta": "/pages/administracion/ventas.html",
       "rol": "ADMINISTRADOR_OPERATIVO",
       "permiso": "ventas.consultar",
       "permisos_por_accion": {
@@ -40,7 +40,7 @@
         "anular_venta": "ventas.anular",
         "reembolsar_pago": "pagos.reembolsar"
       },
-      "sin_sesion_ir_a": "/pages/gestion/login.html"
+      "sin_sesion_ir_a": "/pages/administracion/login.html"
     },
     {
       "ruta": "/pages/empleados/cambiar-contrasena.html",

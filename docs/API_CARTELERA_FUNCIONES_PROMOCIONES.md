@@ -24,11 +24,11 @@ Este contrato define el intercambio entre Administración, el sitio público y T
 
 | Método | Endpoint | Uso |
 |---|---|---|
-| `GET` | `/api/v1/cartelera/peliculas/` | Películas publicadas en cartelera y próximos estrenos. |
-| `GET` | `/api/v1/cartelera/peliculas/{id}/` | Ficha pública de una película. |
-| `GET` | `/api/v1/cartelera/funciones/?fecha=2026-08-10` | Funciones publicadas para una fecha. |
-| `GET` | `/api/v1/cartelera/peliculas/{id}/funciones/?fecha=2026-08-10` | Funciones de una película para una fecha. |
-| `GET` | `/api/v1/cartelera/promociones/activas/?fecha=2026-08-10` | Promociones visibles y funciones participantes. |
+| `GET` | `/api/cartelera/peliculas/` | Películas publicadas en cartelera y próximos estrenos. |
+| `GET` | `/api/cartelera/peliculas/{id}/` | Ficha pública de una película. |
+| `GET` | `/api/cartelera/funciones/?fecha=2026-08-10` | Funciones publicadas para una fecha. |
+| `GET` | `/api/cartelera/peliculas/{id}/funciones/?fecha=2026-08-10` | Funciones de una película para una fecha. |
+| `GET` | `/api/cartelera/promociones/activas/?fecha=2026-08-10` | Promociones visibles y funciones participantes. |
 
 ## 3. Endpoints de Administración
 
@@ -40,9 +40,9 @@ Los tres catálogos usan la misma forma de trabajo: listar, crear, consultar, ed
 
 | Recurso | Listar y crear | Consultar y editar | Cambiar estado |
 |---|---|---|---|
-| Géneros | `/api/v1/administracion/generos/` | `/api/v1/administracion/generos/{id}/` | `/api/v1/administracion/generos/{id}/estado/` |
-| Actores | `/api/v1/administracion/actores/` | `/api/v1/administracion/actores/{id}/` | `/api/v1/administracion/actores/{id}/estado/` |
-| Directores | `/api/v1/administracion/directores/` | `/api/v1/administracion/directores/{id}/` | `/api/v1/administracion/directores/{id}/estado/` |
+| Géneros | `/api/administracion/generos/` | `/api/administracion/generos/{id}/` | `/api/administracion/generos/{id}/estado/` |
+| Actores | `/api/administracion/actores/` | `/api/administracion/actores/{id}/` | `/api/administracion/actores/{id}/estado/` |
+| Directores | `/api/administracion/directores/` | `/api/administracion/directores/{id}/` | `/api/administracion/directores/{id}/estado/` |
 
 - `GET` lista y permite `?buscar=texto&activo=true|false`.
 - `POST` crea un registro.
@@ -67,18 +67,18 @@ Actores y directores pueden agregar `biografia_breve` y `foto_url` como campos o
 
 | Método | Endpoint | Uso |
 |---|---|---|
-| `GET` | `/api/v1/administracion/peliculas/` | Listar películas activas y retiradas. |
-| `POST` | `/api/v1/administracion/peliculas/` | Crear una película. |
-| `GET` | `/api/v1/administracion/peliculas/{id}/` | Consultar una película. |
-| `PATCH` | `/api/v1/administracion/peliculas/{id}/` | Actualizar datos o publicación. |
-| `PATCH` | `/api/v1/administracion/peliculas/{id}/estado/` | Activar, retirar o cambiar publicación. |
-| `POST` | `/api/v1/administracion/peliculas/{id}/imagenes/` | Subir o reemplazar póster y fondo. |
-| `POST` | `/api/v1/administracion/peliculas/{id}/funciones/` | Crear una función. |
-| `GET` | `/api/v1/administracion/funciones/{id}/` | Consultar una función. |
-| `PATCH` | `/api/v1/administracion/funciones/{id}/` | Actualizar una función. |
-| `DELETE` | `/api/v1/administracion/funciones/{id}/` | Retirar una función sin ventas. |
-| `GET` | `/api/v1/administracion/promociones/2x1/` | Consultar la configuración actual. |
-| `PUT` | `/api/v1/administracion/promociones/2x1/` | Guardar la configuración completa. |
+| `GET` | `/api/administracion/peliculas/` | Listar películas activas y retiradas. |
+| `POST` | `/api/administracion/peliculas/` | Crear una película. |
+| `GET` | `/api/administracion/peliculas/{id}/` | Consultar una película. |
+| `PATCH` | `/api/administracion/peliculas/{id}/` | Actualizar datos o publicación. |
+| `PATCH` | `/api/administracion/peliculas/{id}/estado/` | Activar, retirar o cambiar publicación. |
+| `POST` | `/api/administracion/peliculas/{id}/imagenes/` | Subir o reemplazar póster y fondo. |
+| `POST` | `/api/administracion/peliculas/{id}/funciones/` | Crear una función. |
+| `GET` | `/api/administracion/funciones/{id}/` | Consultar una función. |
+| `PATCH` | `/api/administracion/funciones/{id}/` | Actualizar una función. |
+| `DELETE` | `/api/administracion/funciones/{id}/` | Retirar una función sin ventas. |
+| `GET` | `/api/administracion/promociones/2x1/` | Consultar la configuración actual. |
+| `PUT` | `/api/administracion/promociones/2x1/` | Guardar la configuración completa. |
 
 Si una película o función ya tiene ventas, no se elimina físicamente. El backend la retira de publicación y conserva el historial.
 
@@ -157,7 +157,7 @@ Recomendaciones de imágenes:
 Las imágenes se envían después de crear la película:
 
 ```http
-POST /api/v1/administracion/peliculas/{id}/imagenes/
+POST /api/administracion/peliculas/{id}/imagenes/
 Content-Type: multipart/form-data
 ```
 
@@ -188,7 +188,7 @@ Las URLs pueden ser públicas o firmadas según el proveedor elegido. Nunca debe
 Petición:
 
 ```http
-POST /api/v1/administracion/peliculas/8d69005e-4044-4651-b7b6-67df80253e1a/funciones/
+POST /api/administracion/peliculas/8d69005e-4044-4651-b7b6-67df80253e1a/funciones/
 Content-Type: application/json
 ```
 

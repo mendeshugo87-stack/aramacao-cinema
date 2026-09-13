@@ -5,23 +5,23 @@
   "si_no_recuerda_contrasena_actual": {
     "pantalla_origen": "/pages/cuenta/seguridad.html",
     "reutiliza": [
-      "POST /api/v1/autenticacion/clientes/solicitar-recuperacion/",
-      "POST /api/v1/autenticacion/clientes/verificar-codigo/",
-      "POST /api/v1/autenticacion/clientes/restablecer-contrasena/"
+      "POST /api/autenticacion/clientes/solicitar-recuperacion/",
+      "POST /api/autenticacion/clientes/verificar-codigo/",
+      "POST /api/autenticacion/clientes/restablecer-contrasena/"
     ],
     "resultado": "La contraseña anterior no se muestra; se reemplaza después de comprobar el código enviado al correo verificado."
   },
   "endpoints": [
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/",
+      "ruta": "/api/clientes/mi-cuenta/",
       "respuesta_200": {
         "cliente": "objeto_cliente con identificación enmascarada"
       }
     },
     {
       "metodo": "PATCH",
-      "ruta": "/api/v1/clientes/mi-cuenta/",
+      "ruta": "/api/clientes/mi-cuenta/",
       "entrada_posible": {
         "telefono": "+504 9999-9999",
         "usuario": "usuario_nuevo",
@@ -34,7 +34,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/clientes/mi-cuenta/cambiar-contrasena/",
+      "ruta": "/api/clientes/mi-cuenta/cambiar-contrasena/",
       "entrada": {
         "contrasena_actual": "contraseña actual",
         "contrasena_nueva": "contraseña nueva"
@@ -45,7 +45,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/clientes/mi-cuenta/cambiar-correo/",
+      "ruta": "/api/clientes/mi-cuenta/cambiar-correo/",
       "entrada": {
         "correo_nuevo": "nuevo@example.com",
         "contrasena_actual": "contraseña actual"
@@ -57,7 +57,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/clientes/mi-cuenta/verificar-correo/",
+      "ruta": "/api/clientes/mi-cuenta/verificar-correo/",
       "entrada": {
         "flujo_verificacion_id": "identificador opaco",
         "codigo": "123456"

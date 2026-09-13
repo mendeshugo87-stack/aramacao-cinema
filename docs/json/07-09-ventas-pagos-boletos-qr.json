@@ -80,7 +80,7 @@
   "endpoints": [
     {
       "metodo": "POST",
-      "ruta": "/api/v1/compras/ordenes/",
+      "ruta": "/api/compras/ordenes/",
       "autenticacion": "CLIENTE",
       "uso": "Crear una orden desde un bloqueo activo. Django recalcula todos los importes.",
       "cabeceras": {
@@ -103,13 +103,13 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/compras/ordenes/{orden_id}/",
+      "ruta": "/api/compras/ordenes/{orden_id}/",
       "autenticacion": "CLIENTE_DUEÑO",
       "uso": "Consultar estado y totales de la orden."
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/taquilla/ventas/",
+      "ruta": "/api/taquilla/ventas/",
       "autenticacion": "VENDEDOR_TAQUILLA_CON_PERMISO_VENTAS_CREAR_VENTA",
       "uso": "Validar disponibilidad, registrar pago físico, reservar asientos y emitir comprobante y boletos en una sola transacción.",
       "cabeceras": {
@@ -155,7 +155,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/compras/ordenes/{orden_id}/iniciar-pago/",
+      "ruta": "/api/compras/ordenes/{orden_id}/iniciar-pago/",
       "autenticacion": "CLIENTE_DUEÑO",
       "uso": "Crear una sesión con el proveedor que se elija después.",
       "cabeceras": {
@@ -172,25 +172,25 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/pagos/webhooks/{proveedor}/",
+      "ruta": "/api/pagos/webhooks/{proveedor}/",
       "autenticacion": "FIRMA_DEL_PROVEEDOR",
       "uso": "Confirmar el pago de forma idempotente y emitir los boletos. No lo llama el navegador."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/compras/",
+      "ruta": "/api/clientes/mi-cuenta/compras/",
       "autenticacion": "CLIENTE",
       "uso": "Listar únicamente las compras del cliente autenticado."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/compras/{compra_id}/",
+      "ruta": "/api/clientes/mi-cuenta/compras/{compra_id}/",
       "autenticacion": "CLIENTE_DUEÑO",
       "uso": "Consultar comprobante y boletos de una compra propia."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/boletos/{boleto_id}/descargar/",
+      "ruta": "/api/clientes/mi-cuenta/boletos/{boleto_id}/descargar/",
       "autenticacion": "CLIENTE_DUEÑO",
       "uso": "Descargar el boleto individual completo con su QR como imagen PNG.",
       "response_200": {
@@ -200,25 +200,25 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/comprobantes/{comprobante_id}/descargar/",
+      "ruta": "/api/clientes/mi-cuenta/comprobantes/{comprobante_id}/descargar/",
       "autenticacion": "CLIENTE_DUEÑO",
       "uso": "Descargar el comprobante no fiscal de la compra completa."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/taquilla/ventas/{venta_id}/comprobante/descargar/",
+      "ruta": "/api/taquilla/ventas/{venta_id}/comprobante/descargar/",
       "autenticacion": "VENDEDOR_TAQUILLA_CON_PERMISO_VENTAS_IMPRIMIR_COMPROBANTE_PROPIO",
       "uso": "Imprimir o reimprimir el comprobante de una venta física con auditoría."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/taquilla/boletos/{boleto_id}/descargar/",
+      "ruta": "/api/taquilla/boletos/{boleto_id}/descargar/",
       "autenticacion": "VENDEDOR_TAQUILLA_CON_PERMISO_BOLETOS_IMPRIMIR_VENTA_PROPIA",
       "uso": "Imprimir un boleto individual únicamente si está RESERVADO; una reemisión de QR usa el endpoint protegido de recuperación."
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/taquilla/boletos/escanear/",
+      "ruta": "/api/taquilla/boletos/escanear/",
       "autenticacion": "CONTROL_ACCESO_CON_PERMISO_BOLETOS_ESCANEAR",
       "uso": "Validar desde Control de entrada y registrar un solo ingreso de manera atómica.",
       "request": {
@@ -250,7 +250,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/administracion/boletos/{boleto_id}/reemision/",
+      "ruta": "/api/administracion/boletos/{boleto_id}/reemision/",
       "autenticacion": "ADMINISTRADOR_OPERATIVO_CON_PERMISO_BOLETOS_REEMITIR",
       "uso": "Anular el QR anterior y emitir uno nuevo con auditoría.",
       "request": {

@@ -26,7 +26,8 @@
    * Sin eso se usa el mismo origen que la página, igual que las demás áreas.
    */
   const origenConfigurado = String(global.ARAMACAO_API_ORIGIN || "").replace(/\/$/, "");
-  const RUTA_API = `${origenConfigurado}/api/v1`;
+  /* Sin versión en la ruta, igual que compartido/api-cliente.js. */
+  const RUTA_API = `${origenConfigurado}/api`;
 
   const CLAVE_ACCESO = "aramacao.customer.access";
   const CLAVE_RENOVACION = "aramacao.customer.refresh";

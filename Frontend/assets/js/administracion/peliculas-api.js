@@ -18,7 +18,8 @@ window.PeliculasApi = (() => {
   const Util = window.AramacaoUtil;
 
   const DATA_URL = "../../assets/data/cartelera.json";
-  const API_ROOT = "/api/v1/administracion";
+  /* Sin versión en la ruta: el backend pidió /api/... en lugar de /api/v1/... */
+  const API_ROOT = "/api/administracion";
 
   class PeliculasApiError extends ErrorDeApi {
     constructor(mensaje, estado = 0, codigo = "ERROR_CONEXION", detalles = null) {
@@ -45,12 +46,38 @@ window.PeliculasApi = (() => {
   // Películas
   // ---------------------------------------------------------------------
 
+  /*
+   * TRADUCCIÓN DEL ESTADO
+   * ---------------------
+   * Lo único que el backend ya confirmó de la ficha es EstadoCartelera, que
+   * viaja como número. Dentro del frontend la película sigue teniendo
+   * `status: "cartelera" | "proximamente"`, así que el panel, los filtros y
+   * las tarjetas no cambian. Cuando el backend confirme el nombre del resto
+   * de sus campos, la traducción completa se agrega en estas dos funciones.
+   */
+  function aContratoPelicula(pelicula) {
+    if (!pelicula || !("status" in pelicula)) return pelicula;
+
+    const { status, ...resto } = pelicula;
+    return { ...resto, estado: Util.estadoCarteleraParaBackend(status) };
+  }
+
+  function deContratoPelicula(pelicula) {
+    if (!pelicula) return pelicula;
+
+    return {
+      ...pelicula,
+      status: Util.estadoCarteleraDesdeBackend(pelicula.estado ?? pelicula.status),
+    };
+  }
+
   async function obtenerPeliculas() {
     if (isLocalPreview()) {
       const datos = await cargarDatos();
       return { resultados: datos.movies || [] };
     }
-    return solicitar(`${API_ROOT}/peliculas/`);
+    const respuesta = await solicitar(`${API_ROOT}/peliculas/`);
+    return { ...respuesta, resultados: (respuesta?.resultados || []).map(deContratoPelicula) };
   }
 
   async function crearPelicula(pelicula) {
@@ -60,7 +87,10 @@ window.PeliculasApi = (() => {
       await guardarDatos(datos);
       return { pelicula };
     }
-    return solicitar(`${API_ROOT}/peliculas/`, { method: "POST", body: JSON.stringify(pelicula) });
+    return solicitar(`${API_ROOT}/peliculas/`, {
+      method: "POST",
+      body: JSON.stringify(aContratoPelicula(pelicula)),
+    });
   }
 
   async function actualizarPelicula(peliculaId, cambios) {
@@ -74,7 +104,7 @@ window.PeliculasApi = (() => {
     }
     return solicitar(`${API_ROOT}/peliculas/${encodeURIComponent(peliculaId)}/`, {
       method: "PATCH",
-      body: JSON.stringify(cambios),
+      body: JSON.stringify(aContratoPelicula(cambios)),
     });
   }
 

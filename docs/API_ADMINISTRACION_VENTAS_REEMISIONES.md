@@ -20,13 +20,13 @@ docs/json/10-administracion-ventas-reemisiones.json
 ## Endpoints preparados
 
 ```text
-GET  /api/v1/administracion/ventas/
-GET  /api/v1/administracion/ventas/{venta_id}/
-GET  /api/v1/administracion/ventas/{venta_id}/comprobante/descargar/
-GET  /api/v1/administracion/boletos/{boleto_id}/descargar/
-POST /api/v1/administracion/boletos/{boleto_id}/reemision/
-POST /api/v1/administracion/ventas/{venta_id}/anulacion/
-POST /api/v1/administracion/ventas/{venta_id}/reembolso/
+GET  /api/administracion/ventas/
+GET  /api/administracion/ventas/{venta_id}/
+GET  /api/administracion/ventas/{venta_id}/comprobante/descargar/
+GET  /api/administracion/boletos/{boleto_id}/descargar/
+POST /api/administracion/boletos/{boleto_id}/reemision/
+POST /api/administracion/ventas/{venta_id}/anulacion/
+POST /api/administracion/ventas/{venta_id}/reembolso/
 ```
 
 ## Permisos separados
@@ -53,4 +53,4 @@ El permiso `ventas.consultar` abre la página, pero no debe autorizar las demás
 
 ## Integración esperada
 
-`Frontend/assets/js/sales-api.js` ya contiene las rutas y cambia automáticamente entre la demostración local y `/api/v1`. El backend debe respetar los nombres de propiedades del contrato o acordar una adaptación antes de cambiar las respuestas.
+`Frontend/assets/js/sales-api.js` ya contiene las rutas y cambia automáticamente entre la demostración local y `/api`. El backend debe respetar los nombres de propiedades del contrato o acordar una adaptación antes de cambiar las respuestas.

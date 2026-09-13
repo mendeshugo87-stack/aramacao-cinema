@@ -144,73 +144,73 @@
   "endpoints_publicos": [
     {
       "metodo": "GET",
-      "ruta": "/api/v1/cartelera/peliculas/",
+      "ruta": "/api/cartelera/peliculas/",
       "query": "seccion=CARTELERA|PROXIMAMENTE&fecha=YYYY-MM-DD&buscar=texto",
       "respuesta_200": "Lista paginada de pelicula_respuesta; solo contenido activo y publicado."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/cartelera/peliculas/{id}/",
+      "ruta": "/api/cartelera/peliculas/{id}/",
       "respuesta_200": "pelicula_respuesta con sus catalogos relacionados."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/cartelera/funciones/",
+      "ruta": "/api/cartelera/funciones/",
       "query": "fecha=YYYY-MM-DD&pelicula_id={id}",
       "respuesta_200": "Lista de funcion_respuesta publicadas."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/cartelera/peliculas/{id}/funciones/",
+      "ruta": "/api/cartelera/peliculas/{id}/funciones/",
       "query": "fecha=YYYY-MM-DD",
       "respuesta_200": "Funciones publicadas de una pelicula para la fecha."
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/cartelera/promociones/activas/",
+      "ruta": "/api/cartelera/promociones/activas/",
       "query": "fecha=YYYY-MM-DD&pelicula_id={id}",
       "respuesta_200": "Promociones visibles y funciones participantes."
     }
   ],
   "endpoints_administracion": {
     "generos": [
-      {"metodo": "GET", "ruta": "/api/v1/administracion/generos/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.generos.ver"},
-      {"metodo": "POST", "ruta": "/api/v1/administracion/generos/", "body": {"nombre": "Drama"}, "respuesta": "201 catalogo", "permiso": "cartelera.generos.crear"},
-      {"metodo": "GET", "ruta": "/api/v1/administracion/generos/{id}/", "respuesta": "200 catalogo", "permiso": "cartelera.generos.ver"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/generos/{id}/", "body": {"nombre": "Drama y suspenso"}, "respuesta": "200 catalogo", "permiso": "cartelera.generos.editar"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/generos/{id}/estado/", "body": {"activo": false}, "respuesta": "200 catalogo", "permiso": "cartelera.generos.cambiar_estado"}
+      {"metodo": "GET", "ruta": "/api/administracion/generos/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.generos.ver"},
+      {"metodo": "POST", "ruta": "/api/administracion/generos/", "body": {"nombre": "Drama"}, "respuesta": "201 catalogo", "permiso": "cartelera.generos.crear"},
+      {"metodo": "GET", "ruta": "/api/administracion/generos/{id}/", "respuesta": "200 catalogo", "permiso": "cartelera.generos.ver"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/generos/{id}/", "body": {"nombre": "Drama y suspenso"}, "respuesta": "200 catalogo", "permiso": "cartelera.generos.editar"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/generos/{id}/estado/", "body": {"activo": false}, "respuesta": "200 catalogo", "permiso": "cartelera.generos.cambiar_estado"}
     ],
     "actores": [
-      {"metodo": "GET", "ruta": "/api/v1/administracion/actores/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.actores.ver"},
-      {"metodo": "POST", "ruta": "/api/v1/administracion/actores/", "body": {"nombre": "Nombre del actor", "biografia_breve": "", "foto_url": null}, "respuesta": "201 actor", "permiso": "cartelera.actores.crear"},
-      {"metodo": "GET", "ruta": "/api/v1/administracion/actores/{id}/", "respuesta": "200 actor", "permiso": "cartelera.actores.ver"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/actores/{id}/", "body": {"nombre": "Nombre actualizado"}, "respuesta": "200 actor", "permiso": "cartelera.actores.editar"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/actores/{id}/estado/", "body": {"activo": false}, "respuesta": "200 actor", "permiso": "cartelera.actores.cambiar_estado"}
+      {"metodo": "GET", "ruta": "/api/administracion/actores/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.actores.ver"},
+      {"metodo": "POST", "ruta": "/api/administracion/actores/", "body": {"nombre": "Nombre del actor", "biografia_breve": "", "foto_url": null}, "respuesta": "201 actor", "permiso": "cartelera.actores.crear"},
+      {"metodo": "GET", "ruta": "/api/administracion/actores/{id}/", "respuesta": "200 actor", "permiso": "cartelera.actores.ver"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/actores/{id}/", "body": {"nombre": "Nombre actualizado"}, "respuesta": "200 actor", "permiso": "cartelera.actores.editar"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/actores/{id}/estado/", "body": {"activo": false}, "respuesta": "200 actor", "permiso": "cartelera.actores.cambiar_estado"}
     ],
     "directores": [
-      {"metodo": "GET", "ruta": "/api/v1/administracion/directores/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.directores.ver"},
-      {"metodo": "POST", "ruta": "/api/v1/administracion/directores/", "body": {"nombre": "Nombre del director", "biografia_breve": "", "foto_url": null}, "respuesta": "201 director", "permiso": "cartelera.directores.crear"},
-      {"metodo": "GET", "ruta": "/api/v1/administracion/directores/{id}/", "respuesta": "200 director", "permiso": "cartelera.directores.ver"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/directores/{id}/", "body": {"nombre": "Nombre actualizado"}, "respuesta": "200 director", "permiso": "cartelera.directores.editar"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/directores/{id}/estado/", "body": {"activo": false}, "respuesta": "200 director", "permiso": "cartelera.directores.cambiar_estado"}
+      {"metodo": "GET", "ruta": "/api/administracion/directores/", "query": "buscar=texto&activo=true|false", "permiso": "cartelera.directores.ver"},
+      {"metodo": "POST", "ruta": "/api/administracion/directores/", "body": {"nombre": "Nombre del director", "biografia_breve": "", "foto_url": null}, "respuesta": "201 director", "permiso": "cartelera.directores.crear"},
+      {"metodo": "GET", "ruta": "/api/administracion/directores/{id}/", "respuesta": "200 director", "permiso": "cartelera.directores.ver"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/directores/{id}/", "body": {"nombre": "Nombre actualizado"}, "respuesta": "200 director", "permiso": "cartelera.directores.editar"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/directores/{id}/estado/", "body": {"activo": false}, "respuesta": "200 director", "permiso": "cartelera.directores.cambiar_estado"}
     ],
     "peliculas": [
-      {"metodo": "GET", "ruta": "/api/v1/administracion/peliculas/", "query": "buscar=texto&seccion=CARTELERA|PROXIMAMENTE|RETIRADA&activa=true|false", "permiso": "cartelera.peliculas.ver"},
-      {"metodo": "POST", "ruta": "/api/v1/administracion/peliculas/", "content_type": "application/json", "body": "pelicula_peticion", "respuesta": "201 pelicula_respuesta", "permiso": "cartelera.peliculas.crear"},
-      {"metodo": "GET", "ruta": "/api/v1/administracion/peliculas/{id}/", "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.ver"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/peliculas/{id}/", "content_type": "application/json", "body": "Campos parciales de pelicula_peticion", "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.editar"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/peliculas/{id}/estado/", "body": {"activa": false, "publicada": false}, "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.cambiar_estado"},
-      {"metodo": "POST", "ruta": "/api/v1/administracion/peliculas/{id}/imagenes/", "content_type": "multipart/form-data", "body": "imagenes_pelicula_multipart", "respuesta": {"poster_url": "url-o-null", "fondo_inicio_url": "url-o-null", "visibilidad_fondo_porcentaje": 65}, "permiso": "cartelera.peliculas.editar_imagenes"}
+      {"metodo": "GET", "ruta": "/api/administracion/peliculas/", "query": "buscar=texto&seccion=CARTELERA|PROXIMAMENTE|RETIRADA&activa=true|false", "permiso": "cartelera.peliculas.ver"},
+      {"metodo": "POST", "ruta": "/api/administracion/peliculas/", "content_type": "application/json", "body": "pelicula_peticion", "respuesta": "201 pelicula_respuesta", "permiso": "cartelera.peliculas.crear"},
+      {"metodo": "GET", "ruta": "/api/administracion/peliculas/{id}/", "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.ver"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/peliculas/{id}/", "content_type": "application/json", "body": "Campos parciales de pelicula_peticion", "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.editar"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/peliculas/{id}/estado/", "body": {"activa": false, "publicada": false}, "respuesta": "200 pelicula_respuesta", "permiso": "cartelera.peliculas.cambiar_estado"},
+      {"metodo": "POST", "ruta": "/api/administracion/peliculas/{id}/imagenes/", "content_type": "multipart/form-data", "body": "imagenes_pelicula_multipart", "respuesta": {"poster_url": "url-o-null", "fondo_inicio_url": "url-o-null", "visibilidad_fondo_porcentaje": 65}, "permiso": "cartelera.peliculas.editar_imagenes"}
     ],
     "funciones": [
-      {"metodo": "POST", "ruta": "/api/v1/administracion/peliculas/{id}/funciones/", "body": "funcion_peticion", "respuesta": "201 funcion_respuesta", "permiso": "cartelera.funciones.crear"},
-      {"metodo": "GET", "ruta": "/api/v1/administracion/funciones/{id}/", "respuesta": "200 funcion_respuesta", "permiso": "cartelera.funciones.ver"},
-      {"metodo": "PATCH", "ruta": "/api/v1/administracion/funciones/{id}/", "body": "Campos parciales de funcion_peticion", "respuesta": "200 funcion_respuesta", "permiso": "cartelera.funciones.editar"},
-      {"metodo": "DELETE", "ruta": "/api/v1/administracion/funciones/{id}/", "respuesta": "204 si no tiene ventas; 409 FUNCION_CON_VENTAS si ya tiene historial", "permiso": "cartelera.funciones.retirar"}
+      {"metodo": "POST", "ruta": "/api/administracion/peliculas/{id}/funciones/", "body": "funcion_peticion", "respuesta": "201 funcion_respuesta", "permiso": "cartelera.funciones.crear"},
+      {"metodo": "GET", "ruta": "/api/administracion/funciones/{id}/", "respuesta": "200 funcion_respuesta", "permiso": "cartelera.funciones.ver"},
+      {"metodo": "PATCH", "ruta": "/api/administracion/funciones/{id}/", "body": "Campos parciales de funcion_peticion", "respuesta": "200 funcion_respuesta", "permiso": "cartelera.funciones.editar"},
+      {"metodo": "DELETE", "ruta": "/api/administracion/funciones/{id}/", "respuesta": "204 si no tiene ventas; 409 FUNCION_CON_VENTAS si ya tiene historial", "permiso": "cartelera.funciones.retirar"}
     ],
     "promocion_2x1": [
-      {"metodo": "GET", "ruta": "/api/v1/administracion/promociones/2x1/", "respuesta": "200 promocion_2x1_peticion", "permiso": "cartelera.promociones.ver"},
-      {"metodo": "PUT", "ruta": "/api/v1/administracion/promociones/2x1/", "body": "promocion_2x1_peticion", "respuesta": "200 configuracion validada con funciones efectivas", "permiso": "cartelera.promociones.editar"}
+      {"metodo": "GET", "ruta": "/api/administracion/promociones/2x1/", "respuesta": "200 promocion_2x1_peticion", "permiso": "cartelera.promociones.ver"},
+      {"metodo": "PUT", "ruta": "/api/administracion/promociones/2x1/", "body": "promocion_2x1_peticion", "respuesta": "200 configuracion validada con funciones efectivas", "permiso": "cartelera.promociones.editar"}
     ]
   },
   "validaciones": {

@@ -6,10 +6,13 @@
  * Lo usan Compra en línea y Taquilla. Las dos pantallas piden el mapa de la
  * sala aquí, así que siempre ven los mismos asientos ocupados.
  *
- * Contrato: docs/json/07-09-ventas-pagos-boletos-qr.json
- *   GET    /cartelera/funciones/{id}/asientos/
- *   POST   /compras/bloqueos/
- *   DELETE /compras/bloqueos/{id}/
+ * Contrato: docs/json/05-asientos-bloqueos.json
+ *   GET    /api/asiento/disponibilidad/{funcion_id}/
+ *   POST   /api/asiento/bloquear/
+ *   DELETE /api/asiento/liberar/{bloqueo_id}/
+ *
+ * Las tres rutas dicen en la propia dirección qué hacen (consultar, bloquear,
+ * liberar), para que al leerlas no haga falta abrir este archivo.
  *
  * En vista local el bloqueo de 10 minutos se simula en sessionStorage. Esa
  * parte es corta y va al final de este archivo; en ventas, donde la
@@ -29,9 +32,9 @@
   const ASIENTO_ANTES_DEL_PASILLO = 7;
 
   const rutas = Object.freeze({
-    disponibilidad: (funcionId) => `${RUTA_API}/cartelera/funciones/${encodeURIComponent(funcionId)}/asientos/`,
-    crearBloqueo: () => `${RUTA_API}/compras/bloqueos/`,
-    liberarBloqueo: (bloqueoId) => `${RUTA_API}/compras/bloqueos/${encodeURIComponent(bloqueoId)}/`,
+    disponibilidad: (funcionId) => `${RUTA_API}/asiento/disponibilidad/${encodeURIComponent(funcionId)}/`,
+    bloquear: () => `${RUTA_API}/asiento/bloquear/`,
+    liberar: (bloqueoId) => `${RUTA_API}/asiento/liberar/${encodeURIComponent(bloqueoId)}/`,
   });
 
   class SeatApiError extends ErrorDeApi {
@@ -66,7 +69,7 @@
     }
 
     if (Util.esVistaLocal()) return crearBloqueoDemo(funcionId, asientosNormalizados, contexto);
-    return enviar(rutas.crearBloqueo(), {
+    return enviar(rutas.bloquear(), {
       method: "POST",
       body: JSON.stringify({ funcion_id: funcionId, asientos: asientosNormalizados }),
     });
@@ -78,7 +81,7 @@
       borrarBloqueoDemo(bloqueoId);
       return { liberado: true };
     }
-    return enviar(rutas.liberarBloqueo(bloqueoId), { method: "DELETE" });
+    return enviar(rutas.liberar(bloqueoId), { method: "DELETE" });
   }
 
   // -------------------------------------------------------------------

@@ -17,7 +17,7 @@
   "endpoints": [
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/crear-cuenta/",
+      "ruta": "/api/autenticacion/clientes/crear-cuenta/",
       "entrada": {
         "nombre_completo": "Hugo Méndez",
         "tipo_identificacion": "IDENTIDAD_HN",
@@ -37,7 +37,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/verificar-correo/",
+      "ruta": "/api/autenticacion/clientes/verificar-correo/",
       "entrada": {
         "flujo_verificacion_id": "identificador opaco",
         "codigo": "123456"
@@ -54,7 +54,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/reenviar-codigo/",
+      "ruta": "/api/autenticacion/clientes/reenviar-codigo/",
       "entrada": {
         "flujo_verificacion_id": "identificador opaco"
       },
@@ -65,7 +65,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/iniciar-sesion/",
+      "ruta": "/api/autenticacion/clientes/iniciar-sesion/",
       "entrada": {
         "identidad": "correo o usuario",
         "contrasena": "solo_por_https"
@@ -81,7 +81,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/renovar-token/",
+      "ruta": "/api/autenticacion/clientes/renovar-token/",
       "entrada": {
         "refresh": "JWT de renovación"
       },
@@ -92,7 +92,7 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/autenticacion/clientes/sesion-actual/",
+      "ruta": "/api/autenticacion/clientes/sesion-actual/",
       "respuesta_200": {
         "autenticado": true,
         "cliente": "objeto_cliente"
@@ -100,7 +100,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/cerrar-sesion/",
+      "ruta": "/api/autenticacion/clientes/cerrar-sesion/",
       "entrada": {
         "refresh": "JWT de renovación que se añadirá a la lista de revocados"
       },
@@ -110,7 +110,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/solicitar-recuperacion/",
+      "ruta": "/api/autenticacion/clientes/solicitar-recuperacion/",
       "entrada": {
         "identidad": "correo o usuario"
       },
@@ -122,7 +122,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/verificar-codigo/",
+      "ruta": "/api/autenticacion/clientes/verificar-codigo/",
       "entrada": {
         "flujo_recuperacion_id": "identificador opaco",
         "codigo": "123456"
@@ -134,7 +134,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/clientes/restablecer-contrasena/",
+      "ruta": "/api/autenticacion/clientes/restablecer-contrasena/",
       "entrada": {
         "token_restablecimiento": "token temporal",
         "contrasena_nueva": "solo_por_https"

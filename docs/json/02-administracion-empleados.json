@@ -25,7 +25,7 @@
   "endpoints": [
     {
       "metodo": "GET",
-      "ruta": "/api/v1/administracion/empleados/?buscar=&estado=ACTIVO",
+      "ruta": "/api/administracion/empleados/?buscar=&estado=ACTIVO",
       "hace": "Lista y filtra personal operativo de Taquilla y Control de entrada.",
       "respuesta_200": {
         "total": 1,
@@ -36,7 +36,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/administracion/empleados/",
+      "ruta": "/api/administracion/empleados/",
       "hace": "Crea una cuenta operativa sin permitir el rol administrador.",
       "entrada": {
         "nombre_completo": "Hugo Méndez",
@@ -55,7 +55,7 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/administracion/empleados/{id}/",
+      "ruta": "/api/administracion/empleados/{id}/",
       "hace": "Consulta una cuenta.",
       "respuesta_200": {
         "empleado": "objeto_empleado"
@@ -63,7 +63,7 @@
     },
     {
       "metodo": "PATCH",
-      "ruta": "/api/v1/administracion/empleados/{id}/",
+      "ruta": "/api/administracion/empleados/{id}/",
       "hace": "Edita datos o activa y desactiva la cuenta.",
       "entrada_posible": {
         "nombre_completo": "Nombre actualizado",
@@ -80,7 +80,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/administracion/empleados/{id}/contrasena-temporal/",
+      "ruta": "/api/administracion/empleados/{id}/contrasena-temporal/",
       "hace": "Invalida la contraseña anterior y asigna una temporal.",
       "entrada": {
         "contrasena_temporal": "solo_por_https"

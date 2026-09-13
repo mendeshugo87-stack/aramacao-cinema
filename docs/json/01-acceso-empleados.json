@@ -1,6 +1,6 @@
 {
   "modulo": "Acceso de empleados",
-  "prefijo": "/api/v1",
+  "prefijo": "/api",
   "sesion": "Cookie segura de Django con HttpOnly, Secure en producción y SameSite=Lax",
   "roles": [
     "VENDEDOR_TAQUILLA",
@@ -15,14 +15,14 @@
   "endpoints": [
     {
       "metodo": "GET",
-      "ruta": "/api/v1/autenticacion/csrf/",
+      "ruta": "/api/autenticacion/csrf/",
       "requiere_sesion": false,
       "hace": "Prepara la cookie CSRF.",
       "respuesta_correcta": "204 Sin contenido"
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/empleados/iniciar-sesion/",
+      "ruta": "/api/autenticacion/empleados/iniciar-sesion/",
       "requiere_sesion": false,
       "entrada": {
         "usuario": "hugo69",
@@ -51,7 +51,7 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/autenticacion/empleados/sesion-actual/",
+      "ruta": "/api/autenticacion/empleados/sesion-actual/",
       "requiere_sesion": true,
       "respuesta_200": {
         "autenticado": true,
@@ -61,7 +61,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/empleados/cambiar-contrasena/",
+      "ruta": "/api/autenticacion/empleados/cambiar-contrasena/",
       "requiere_sesion": true,
       "entrada": {
         "contrasena_actual": "contraseña_temporal",
@@ -74,7 +74,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/autenticacion/empleados/cerrar-sesion/",
+      "ruta": "/api/autenticacion/empleados/cerrar-sesion/",
       "requiere_sesion": true,
       "respuesta_200": {
         "mensaje": "Sesión cerrada correctamente."

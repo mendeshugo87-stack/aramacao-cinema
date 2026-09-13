@@ -22,17 +22,17 @@
   "endpoints": [
     {
       "metodo": "GET",
-      "ruta": "/api/v1/funciones/{funcion_id}/asientos/",
+      "ruta": "/api/asiento/disponibilidad/{funcion_id}/",
       "uso": "Consultar distribución y disponibilidad de la función."
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/funciones/{funcion_id}/bloqueos-asientos/",
+      "ruta": "/api/asiento/bloquear/",
       "uso": "Bloquear temporalmente los asientos antes del pago."
     },
     {
       "metodo": "DELETE",
-      "ruta": "/api/v1/bloqueos-asientos/{bloqueo_id}/",
+      "ruta": "/api/asiento/liberar/{bloqueo_id}/",
       "uso": "Liberar voluntariamente un bloqueo activo."
     }
   ],

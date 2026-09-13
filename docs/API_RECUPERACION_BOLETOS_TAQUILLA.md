@@ -24,10 +24,10 @@ boletos.recuperar_cliente
 ## Endpoints
 
 ```text
-POST /api/v1/taquilla/clientes/buscar/
-GET  /api/v1/taquilla/clientes/{cliente_id}/compras-recuperables/
-POST /api/v1/taquilla/boletos/{boleto_id}/recuperacion/
-GET  /api/v1/taquilla/boletos/{boleto_id}/descargar/
+POST /api/taquilla/clientes/buscar/
+GET  /api/taquilla/clientes/{cliente_id}/compras-recuperables/
+POST /api/taquilla/boletos/{boleto_id}/recuperacion/
+GET  /api/taquilla/boletos/{boleto_id}/descargar/
 ```
 
 El contrato de propiedades, respuestas y errores está en:

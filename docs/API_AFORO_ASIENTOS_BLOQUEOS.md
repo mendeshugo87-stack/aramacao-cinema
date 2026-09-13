@@ -30,9 +30,9 @@ La disponibilidad pertenece a una función específica. Por ejemplo, `A1` puede 
 
 | Método | Ruta | Uso |
 | --- | --- | --- |
-| `GET` | `/api/v1/funciones/{funcion_id}/asientos/` | Consultar distribución y disponibilidad. |
-| `POST` | `/api/v1/funciones/{funcion_id}/bloqueos-asientos/` | Bloquear temporalmente los asientos antes del pago. |
-| `DELETE` | `/api/v1/bloqueos-asientos/{bloqueo_id}/` | Liberar voluntariamente un bloqueo activo. |
+| `GET` | `/api/asiento/disponibilidad/{funcion_id}/` | Consultar distribución y disponibilidad. |
+| `POST` | `/api/asiento/bloquear/` | Bloquear temporalmente los asientos antes del pago. |
+| `DELETE` | `/api/asiento/liberar/{bloqueo_id}/` | Liberar voluntariamente un bloqueo activo. |
 
 Los endpoints requieren una sesión válida de cliente o una sesión de empleado con permiso de Taquilla. Django identifica la persona y el canal mediante la sesión; el navegador no asigna roles.
 
@@ -83,7 +83,7 @@ La confirmación futura del pago debe ejecutarse como una operación segura: val
 
 Compra en línea y Taquilla vuelven a consultar la disponibilidad de la función seleccionada cada 5 segundos y también cuando la pestaña recupera el foco. En la demostración local, el evento de cambio de `localStorage` permite actualizar inmediatamente las otras pestañas después de una venta o un escaneo.
 
-El `GET /api/v1/funciones/{funcion_id}/asientos/` debe devolver siempre el estado transaccional más reciente y usar `Cache-Control: no-store`. Cuando el primer escaneo cambia un boleto a utilizado y el asiento a `OCUPADO`, la siguiente consulta debe reflejarlo sin que el empleado vuelva a seleccionar la película o recargue la página.
+El `GET /api/asiento/disponibilidad/{funcion_id}/` debe devolver siempre el estado transaccional más reciente y usar `Cache-Control: no-store`. Cuando el primer escaneo cambia un boleto a utilizado y el asiento a `OCUPADO`, la siguiente consulta debe reflejarlo sin que el empleado vuelva a seleccionar la película o recargue la página.
 
 La consulta periódica mejora la interfaz, pero no sustituye la protección contra doble venta. Django sigue obligado a revalidar y bloquear las filas dentro de la transacción de venta. Más adelante se puede sustituir la consulta periódica por WebSocket o eventos del servidor sin cambiar el mapa de asientos.
 

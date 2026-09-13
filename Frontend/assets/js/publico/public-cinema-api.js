@@ -122,7 +122,9 @@ window.CinemaPublicApi = (() => {
       language: obtenerNombres(pelicula.idiomas).join(" / ") || "Por confirmar",
       director: obtenerNombres(pelicula.directores).join(", ") || "Por confirmar",
       cast: obtenerNombres(pelicula.actores),
-      status: pelicula.seccion === "PROXIMAMENTE" ? "proximamente" : "cartelera",
+      /* El backend envía EstadoCartelera como número (1 ESTRENADA,
+         2 CARTELERA, 3 PROXIMAMENTE). La tabla está en utilidades.js. */
+      status: window.AramacaoUtil.estadoCarteleraDesdeBackend(pelicula.estado ?? pelicula.seccion),
       featured: pelicula.destacada_inicio === true,
       active: pelicula.activa !== false,
       trailerUrl: pelicula.trailer_url || "",

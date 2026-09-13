@@ -30,7 +30,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/v1/cartelera/peliculas/?seccion=CARTELERA&fecha=2026-08-27"
+            "url": "{{base_url}}/api/cartelera/peliculas/?seccion=CARTELERA&fecha=2026-08-27"
           }
         },
         {
@@ -38,7 +38,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/v1/cartelera/peliculas/{{pelicula_id}}/"
+            "url": "{{base_url}}/api/cartelera/peliculas/{{pelicula_id}}/"
           }
         },
         {
@@ -46,7 +46,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/v1/cartelera/funciones/?fecha=2026-08-27&pelicula_id={{pelicula_id}}"
+            "url": "{{base_url}}/api/cartelera/funciones/?fecha=2026-08-27&pelicula_id={{pelicula_id}}"
           }
         },
         {
@@ -54,7 +54,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{base_url}}/api/v1/cartelera/promociones/activas/?fecha=2026-08-27&pelicula_id={{pelicula_id}}"
+            "url": "{{base_url}}/api/cartelera/promociones/activas/?fecha=2026-08-27&pelicula_id={{pelicula_id}}"
           }
         }
       ]
@@ -64,7 +64,7 @@
       "item": [
         {
           "name": "Listar generos",
-          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/generos/?activo=true"}
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/administracion/generos/?activo=true"}
         },
         {
           "name": "Crear genero",
@@ -73,7 +73,7 @@
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Aventura\"\n}"},
-            "url": "{{base_url}}/api/v1/administracion/generos/"
+            "url": "{{base_url}}/api/administracion/generos/"
           }
         },
         {
@@ -82,7 +82,7 @@
             "method": "PATCH",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Aventura familiar\"\n}"},
-            "url": "{{base_url}}/api/v1/administracion/generos/{{genero_id}}/"
+            "url": "{{base_url}}/api/administracion/generos/{{genero_id}}/"
           }
         },
         {
@@ -91,7 +91,7 @@
             "method": "PATCH",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"activo\": false\n}"},
-            "url": "{{base_url}}/api/v1/administracion/generos/{{genero_id}}/estado/"
+            "url": "{{base_url}}/api/administracion/generos/{{genero_id}}/estado/"
           }
         }
       ]
@@ -106,12 +106,12 @@
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Actor de prueba\",\n  \"biografia_breve\": \"\"\n}"},
-            "url": "{{base_url}}/api/v1/administracion/actores/"
+            "url": "{{base_url}}/api/administracion/actores/"
           }
         },
         {
           "name": "Listar actores",
-          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/actores/?activo=true"}
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/administracion/actores/?activo=true"}
         },
         {
           "name": "Crear director",
@@ -120,12 +120,12 @@
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"nombre\": \"Director de prueba\",\n  \"biografia_breve\": \"\"\n}"},
-            "url": "{{base_url}}/api/v1/administracion/directores/"
+            "url": "{{base_url}}/api/administracion/directores/"
           }
         },
         {
           "name": "Listar directores",
-          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/directores/?activo=true"}
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/administracion/directores/?activo=true"}
         }
       ]
     },
@@ -142,12 +142,12 @@
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Horizonte Perdido\",\n  \"descripcion_breve\": \"Una expedicion cruza los limites de lo conocido.\",\n  \"sinopsis\": \"Descripcion completa de la pelicula.\",\n  \"duracion_minutos\": 118,\n  \"clasificacion\": \"B\",\n  \"generos_ids\": [\"{{genero_id}}\"],\n  \"idioma\": \"Doblada al español\",\n  \"director_id\": \"{{director_id}}\",\n  \"actores_ids\": [\"{{actor_id}}\"],\n  \"seccion\": \"CARTELERA\",\n  \"publicada\": true,\n  \"destacada_inicio\": true,\n  \"fecha_estreno\": \"2026-08-27\",\n  \"trailer_url\": \"https://www.youtube.com/watch?v=video\",\n  \"visibilidad_fondo_porcentaje\": 65\n}"
             },
-            "url": "{{base_url}}/api/v1/administracion/peliculas/"
+            "url": "{{base_url}}/api/administracion/peliculas/"
           }
         },
         {
           "name": "Listar peliculas administrativas",
-          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/peliculas/?seccion=CARTELERA"}
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/administracion/peliculas/?seccion=CARTELERA"}
         },
         {
           "name": "Editar pelicula",
@@ -155,7 +155,7 @@
             "method": "PATCH",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"descripcion_breve\": \"Descripcion actualizada.\",\n  \"destacada_inicio\": false\n}"},
-            "url": "{{base_url}}/api/v1/administracion/peliculas/{{pelicula_id}}/"
+            "url": "{{base_url}}/api/administracion/peliculas/{{pelicula_id}}/"
           }
         },
         {
@@ -171,7 +171,7 @@
                 {"key": "visibilidad_fondo_porcentaje", "value": "65", "type": "text"}
               ]
             },
-            "url": "{{base_url}}/api/v1/administracion/peliculas/{{pelicula_id}}/imagenes/"
+            "url": "{{base_url}}/api/administracion/peliculas/{{pelicula_id}}/imagenes/"
           }
         }
       ]
@@ -186,7 +186,7 @@
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"fecha\": \"2026-08-27\",\n  \"hora\": \"14:00\",\n  \"formato\": \"2D\",\n  \"precio\": \"120.00\",\n  \"publicada\": true\n}"},
-            "url": "{{base_url}}/api/v1/administracion/peliculas/{{pelicula_id}}/funciones/"
+            "url": "{{base_url}}/api/administracion/peliculas/{{pelicula_id}}/funciones/"
           }
         },
         {
@@ -195,12 +195,12 @@
             "method": "PATCH",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {"mode": "raw", "raw": "{\n  \"hora\": \"16:00\",\n  \"precio\": \"130.00\"\n}"},
-            "url": "{{base_url}}/api/v1/administracion/funciones/{{funcion_id}}/"
+            "url": "{{base_url}}/api/administracion/funciones/{{funcion_id}}/"
           }
         },
         {
           "name": "Consultar promocion 2x1",
-          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/administracion/promociones/2x1/"}
+          "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/administracion/promociones/2x1/"}
         },
         {
           "name": "Guardar promocion 2x1",
@@ -211,7 +211,7 @@
               "mode": "raw",
               "raw": "{\n  \"activa\": true,\n  \"peliculas_ids\": [\"{{pelicula_id}}\"],\n  \"fecha_inicial\": \"2026-08-24\",\n  \"fecha_final\": \"2026-09-30\",\n  \"dias_semana\": [\"LUNES\", \"MARTES\", \"MIERCOLES\"],\n  \"aplica_en\": \"FUNCIONES_ESPECIFICAS\",\n  \"funciones_ids\": [\"{{funcion_id}}\"],\n  \"condiciones_visibles\": \"Por cada dos admisiones se cobra una en las funciones seleccionadas.\"\n}"
             },
-            "url": "{{base_url}}/api/v1/administracion/promociones/2x1/"
+            "url": "{{base_url}}/api/administracion/promociones/2x1/"
           }
         }
       ]

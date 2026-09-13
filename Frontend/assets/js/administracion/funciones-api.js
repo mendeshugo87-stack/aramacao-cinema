@@ -17,7 +17,8 @@ window.FuncionesApi = (() => {
   const Util = window.AramacaoUtil;
 
   const DATA_URL = "../../assets/data/cartelera.json";
-  const API_ROOT = "/api/v1/administracion";
+  /* Sin versión en la ruta: el backend pidió /api/... en lugar de /api/v1/... */
+  const API_ROOT = "/api/administracion";
 
   class FuncionesApiError extends ErrorDeApi {
     constructor(mensaje, estado = 0, codigo = "ERROR_CONEXION", detalles = null) {
@@ -187,6 +188,10 @@ window.FuncionesApi = (() => {
     });
     fechas.sort();
     return {
+      /* La promocion esta activa cuando al menos una funcion la usa. Se deriva
+         en vez de recibirse para que nunca se envie al backend un 2x1 con
+         "activa: true" y ninguna funcion, ni al reves. */
+      enabled: functionIds.length > 0,
       movieIds,
       functionIds,
       appliesTo: "especificas",

@@ -41,7 +41,7 @@
   "endpoints": [
     {
       "metodo": "POST",
-      "ruta": "/api/v1/taquilla/clientes/buscar/",
+      "ruta": "/api/taquilla/clientes/buscar/",
       "permiso": "clientes.buscar_para_recuperacion",
       "request": {
         "criterio": "IDENTIFICACION | NOMBRE | USUARIO",
@@ -68,7 +68,7 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/taquilla/clientes/{cliente_id}/compras-recuperables/",
+      "ruta": "/api/taquilla/clientes/{cliente_id}/compras-recuperables/",
       "permiso": "clientes.buscar_para_recuperacion",
       "uso": "Consultar únicamente compras con función de hoy o futura del cliente seleccionado, ordenarlas por función ascendente y calcular en servidor si cada boleto es recuperable.",
       "filtro_servidor_obligatorio": {
@@ -105,7 +105,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/taquilla/boletos/{boleto_id}/recuperacion/",
+      "ruta": "/api/taquilla/boletos/{boleto_id}/recuperacion/",
       "permiso": "boletos.recuperar_cliente",
       "cabeceras": {
         "Idempotency-Key": "UUID obligatorio"
@@ -125,7 +125,7 @@
           "estado": "RESERVADO",
           "numero_reemisiones": 1
         },
-        "descarga_url": "/api/v1/taquilla/boletos/{boleto_id}/descargar/"
+        "descarga_url": "/api/taquilla/boletos/{boleto_id}/descargar/"
       }
     }
   ],

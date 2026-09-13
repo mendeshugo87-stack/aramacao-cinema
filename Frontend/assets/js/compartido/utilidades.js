@@ -14,6 +14,48 @@
   const SERVIDORES_LOCALES = ["localhost", "127.0.0.1", "[::1]"];
   const ZONA_HONDURAS = "America/Tegucigalpa";
 
+  /*
+   * ESTADO DE LA PELÍCULA EN CARTELERA
+   * ----------------------------------
+   * El backend lo maneja como número (core/constants/domain_constants.py):
+   *   1 = ESTRENADA   2 = CARTELERA   3 = PROXIMAMENTE
+   *
+   * El frontend trabaja internamente con los textos "cartelera" y
+   * "proximamente": son los que usan el filtro del panel, las tarjetas y las
+   * páginas públicas. La traducción vive aquí para que ningún archivo tenga
+   * que repetir la tabla, y para que la pantalla no cambie.
+   *
+   * PENDIENTE CON EL BACKEND: qué debe mostrarse cuando el estado sea
+   * ESTRENADA. Hoy se lee como "cartelera" (es una película ya estrenada que
+   * sigue publicándose) y el frontend nunca lo envía, así que el panel sigue
+   * teniendo exactamente las mismas opciones que antes.
+   */
+  const ESTADO_CARTELERA = Object.freeze({
+    ESTRENADA: 1,
+    CARTELERA: 2,
+    PROXIMAMENTE: 3,
+  });
+
+  /* Del backend (número) al texto interno del frontend. Acepta también el
+     texto suelto que usan los datos de demostración y la versión anterior
+     del contrato ("PROXIMAMENTE"), para no romper la vista local. */
+  function estadoCarteleraDesdeBackend(valor) {
+    const numero = Number(valor);
+    if (numero === ESTADO_CARTELERA.PROXIMAMENTE) return "proximamente";
+    if (numero === ESTADO_CARTELERA.CARTELERA) return "cartelera";
+    if (numero === ESTADO_CARTELERA.ESTRENADA) return "cartelera";
+
+    return normalizarTexto(valor) === "proximamente" ? "proximamente" : "cartelera";
+  }
+
+  /* Del texto interno al número que espera el backend. No devuelve ESTRENADA
+     mientras no se confirme qué significa en pantalla. */
+  function estadoCarteleraParaBackend(estado) {
+    return normalizarTexto(estado) === "proximamente"
+      ? ESTADO_CARTELERA.PROXIMAMENTE
+      : ESTADO_CARTELERA.CARTELERA;
+  }
+
   /* Vista local = el frontend abierto sin Django detrás. Cada *-api.js la usa
      para decidir si responde con datos de demostración o llama al servidor. */
   function esVistaLocal() {
@@ -139,6 +181,9 @@
 
   global.AramacaoUtil = Object.freeze({
     ZONA_HONDURAS,
+    ESTADO_CARTELERA,
+    estadoCarteleraDesdeBackend,
+    estadoCarteleraParaBackend,
     esVistaLocal,
     escaparHtml,
     numeroDinero,

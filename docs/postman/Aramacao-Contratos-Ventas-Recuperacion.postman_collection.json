@@ -22,7 +22,7 @@
     }
   ],
   "variable": [
-    {"key": "baseUrl", "value": "http://localhost:8000/api/v1"},
+    {"key": "baseUrl", "value": "http://localhost:8000/api"},
     {"key": "clienteId", "value": "1"},
     {"key": "ventaId", "value": "1"},
     {"key": "boletoId", "value": "1"},

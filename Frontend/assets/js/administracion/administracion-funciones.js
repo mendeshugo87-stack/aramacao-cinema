@@ -141,6 +141,11 @@
       await sincronizarFunciones(state.peliculaSeleccionadaId, funcionesActuales);
       const { resultados: funciones } = await global.FuncionesApi.obtenerFunciones(state.peliculaSeleccionadaId);
       state.funcionesOriginales = structuredClone(funciones || []);
+      /* Marcar o desmarcar "Aplicar 2x1" cambia que peliculas y funciones
+         participan en la promocion. Se vuelve a guardar para que el resumen
+         que recibe el backend (peliculas_ids, funciones_ids, fechas y si esta
+         activa) coincida con lo que se acaba de guardar. */
+      await actualizarResumenPromocion();
       mostrarEstadoFormulario("Las funciones se guardaron correctamente. Revisa el cambio en Inicio.", "success");
     } catch (error) {
       mostrarEstadoFormulario(error?.message || "No fue posible guardar las funciones.", "error");
@@ -167,6 +172,16 @@
         await global.FuncionesApi.eliminarFuncion(original.id);
       }
     }
+  }
+
+  /* Recalcula el alcance del 2x1 a partir de las funciones marcadas. No toca
+   * los dias permitidos: esos los elige el administrador con las pastillas. */
+  async function actualizarResumenPromocion() {
+    const { promocion } = await global.FuncionesApi.obtenerPromocion();
+    await global.FuncionesApi.guardarPromocion({
+      ...promocion,
+      allowedWeekdays: state.diasPermitidos,
+    });
   }
 
   /* El administrador activa/desactiva un día directamente desde cualquier

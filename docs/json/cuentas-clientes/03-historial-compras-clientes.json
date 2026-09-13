@@ -5,7 +5,7 @@
   "endpoints": [
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/compras/?pagina=1&estado=PAGADA",
+      "ruta": "/api/clientes/mi-cuenta/compras/?pagina=1&estado=PAGADA",
       "respuesta_200": {
         "total": 0,
         "pagina": 1,
@@ -14,14 +14,14 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/compras/{id}/",
+      "ruta": "/api/clientes/mi-cuenta/compras/{id}/",
       "respuesta_200": {
         "compra": "orden del cliente con funciones, asientos, productos, pago y boletos"
       }
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/clientes/mi-cuenta/boletos/{id}/descargar/",
+      "ruta": "/api/clientes/mi-cuenta/boletos/{id}/descargar/",
       "respuesta_200": "PDF del boleto si sigue vigente y pertenece al cliente"
     }
   ],

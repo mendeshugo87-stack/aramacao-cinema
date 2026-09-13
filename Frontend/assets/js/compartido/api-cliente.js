@@ -18,7 +18,11 @@
  * reutilizan ErrorDeApi y leerRespuesta de este archivo.
  */
 (function crearClienteApi(global) {
-  const RUTA_API = "/api/v1";
+  /* Ruta base de todos los endpoints. El backend pidió que NO lleve versión
+     (antes era "/api/v1"): las rutas quedan como /api/pelicula/inicio/.
+     Cambiarla aquí mueve todas las áreas menos Cuentas de clientes, que tiene
+     su propia copia en cuenta/customer-api.js porque admite otro origen. */
+  const RUTA_API = "/api";
   const METODOS_SIN_CSRF = ["GET", "HEAD", "OPTIONS"];
 
   class ErrorDeApi extends Error {

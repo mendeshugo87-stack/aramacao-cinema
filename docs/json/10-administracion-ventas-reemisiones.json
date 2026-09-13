@@ -2,7 +2,7 @@
   "proyecto": "Aramacao Cinema",
   "modulo": "Administración de ventas y reemisión de boletos",
   "version": "1.0",
-  "prefijo": "/api/v1/administracion",
+  "prefijo": "/api/administracion",
   "zona_horaria": "America/Tegucigalpa",
   "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
   "acceso": {
@@ -63,7 +63,7 @@
   "endpoints": [
     {
       "metodo": "GET",
-      "ruta": "/api/v1/administracion/ventas/?buscar=&fecha_desde=&fecha_hasta=&estado=&canal=&metodo_pago=&pagina=1",
+      "ruta": "/api/administracion/ventas/?buscar=&fecha_desde=&fecha_hasta=&estado=&canal=&metodo_pago=&pagina=1",
       "permiso": "ventas.consultar",
       "uso": "Listar ventas en línea y de Taquilla con filtros combinables y paginación.",
       "filtros": {
@@ -90,7 +90,7 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/administracion/ventas/{venta_id}/",
+      "ruta": "/api/administracion/ventas/{venta_id}/",
       "permiso": "ventas.consultar",
       "uso": "Consultar datos completos, pago, comprobante, boletos y auditoría sin exponer tokens QR.",
       "respuesta_200": {
@@ -109,7 +109,7 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/administracion/ventas/{venta_id}/comprobante/descargar/",
+      "ruta": "/api/administracion/ventas/{venta_id}/comprobante/descargar/",
       "permiso": "ventas.reimprimir_comprobante",
       "uso": "Reimprimir el comprobante no fiscal sin cambiar venta, pago ni boletos.",
       "respuesta_200": "Archivo HTML o PDF con Content-Disposition attachment; sin datos de tarjeta.",
@@ -117,7 +117,7 @@
     },
     {
       "metodo": "GET",
-      "ruta": "/api/v1/administracion/boletos/{boleto_id}/descargar/",
+      "ruta": "/api/administracion/boletos/{boleto_id}/descargar/",
       "permiso": "boletos.reimprimir",
       "uso": "Reimprimir el boleto actual con su QR vigente, sin generar un token nuevo. Solo acepta estado RESERVADO.",
       "respuesta_200": "Archivo HTML o PDF con Content-Disposition attachment.",
@@ -125,7 +125,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/administracion/boletos/{boleto_id}/reemision/",
+      "ruta": "/api/administracion/boletos/{boleto_id}/reemision/",
       "permiso": "boletos.reemitir",
       "cabeceras": {"Idempotency-Key": "UUID obligatorio"},
       "request": {"motivo": "El cliente perdió el boleto impreso."},
@@ -134,12 +134,12 @@
         "codigo": "BOLETO_REEMITIDO",
         "mensaje": "El QR anterior quedó invalidado y se generó uno nuevo.",
         "boleto": "objeto_boleto_administrativo con numero_reemisiones actualizado",
-        "descarga_url": "/api/v1/administracion/boletos/{boleto_id}/descargar/"
+        "descarga_url": "/api/administracion/boletos/{boleto_id}/descargar/"
       }
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/administracion/ventas/{venta_id}/anulacion/",
+      "ruta": "/api/administracion/ventas/{venta_id}/anulacion/",
       "permiso": "ventas.anular",
       "cabeceras": {"Idempotency-Key": "UUID obligatorio"},
       "request": {"motivo": "Venta duplicada detectada antes de la función."},
@@ -154,7 +154,7 @@
     },
     {
       "metodo": "POST",
-      "ruta": "/api/v1/administracion/ventas/{venta_id}/reembolso/",
+      "ruta": "/api/administracion/ventas/{venta_id}/reembolso/",
       "permiso": "pagos.reembolsar",
       "cabeceras": {"Idempotency-Key": "UUID obligatorio"},
       "request": {"motivo": "Función cancelada por el cine."},

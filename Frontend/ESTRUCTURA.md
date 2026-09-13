@@ -36,7 +36,18 @@ Estos dos archivos se cargan **primero en todas las páginas**:
 
 **Para conectar Django, empieza por `api-cliente.js`.** Ahí está el manejo de
 CSRF, el formato de error que se espera del backend
-(`{ mensaje, codigo, errores }`) y la ruta base `/api/v1`.
+(`{ mensaje, codigo, errores }`) y la ruta base `/api`.
+
+La ruta base **no lleva versión**: el backend pidió `/api/...` y no `/api/v1/...`.
+Las películas públicas siguen el mismo estilo (`/api/pelicula/inicio/`) y los
+asientos nombran la acción en la propia dirección
+(`/api/asiento/disponibilidad/{funcion_id}/`, `/api/asiento/bloquear/`,
+`/api/asiento/liberar/{bloqueo_id}/`).
+
+El estado de una película viaja como número (`1` estrenada, `2` en cartelera,
+`3` próximamente). La tabla de traducción está en `compartido/utilidades.js`
+(`estadoCarteleraDesdeBackend` y `estadoCarteleraParaBackend`); dentro del
+frontend la película conserva `status: "cartelera" | "proximamente"`.
 
 El resto de `compartido/` es el área de ventas, que atraviesa varias pantallas:
 
@@ -63,7 +74,7 @@ espera a que `administracion-peliculas.js` termine de cargar los catálogos
 **después** en el HTML.
 
 Al editar un `.js`, **sube el número de `?v=` en los HTML** que lo cargan, o el
-navegador seguirá usando la versión vieja de su caché. Hoy todos van en `?v=22`.
+navegador seguirá usando la versión vieja de su caché. Hoy todos van en `?v=24`.
 
 ---
 

@@ -40,3 +40,8 @@ Thumbs.db
 # Documentos internos locales
 AGENTS.md
 /LEEME_*.md
+
+# Carpetas locales excluidas del repositorio
+/Backend/
+/.claude/
+/.rmv/

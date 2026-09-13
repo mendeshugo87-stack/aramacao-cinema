@@ -306,27 +306,34 @@
   gap: 6px;
 }
 
+/* Los colores salen de styles.css para que Taquilla y Compra en linea
+   muestren siempre lo mismo. Ver el comentario alli. */
 .legend-box {
   width: 13px;
   height: 13px;
-  background: #12253d;
-  border: 1px solid #496078;
+  background: var(--asiento-disponible);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 4px 4px 2px 2px;
 }
 
 .legend-box.selected {
-  background: var(--color-yellow);
-  border-color: var(--color-yellow);
+  background: var(--asiento-seleccionado);
+  border-color: var(--asiento-borde-seleccionado);
+}
+
+.legend-box.blocked {
+  background: var(--asiento-en-proceso);
+  border-color: var(--asiento-en-proceso);
 }
 
 .legend-box.reserved {
-  background: #ff9f2f;
-  border-color: #ffd08a;
+  background: var(--asiento-reservado);
+  border-color: var(--asiento-borde-reservado);
 }
 
 .legend-box.occupied {
-  background: #ef2948;
-  border-color: #ff8a9c;
+  background: var(--asiento-ocupado);
+  border-color: var(--asiento-borde-ocupado);
 }
 
 .screen-wrap {
@@ -396,9 +403,9 @@
   position: relative;
   min-height: 39px;
   padding: 4px;
-  color: #9eb1c4;
-  background: #12253d;
-  border: 1px solid #3b536b;
+  color: #ffffff;
+  background: var(--asiento-disponible);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 9px 9px 5px 5px;
   cursor: pointer;
   font-size: 0.7rem;
@@ -423,28 +430,43 @@
 
 .seat.selected {
   color: #07111e;
-  background: var(--color-yellow);
-  border-color: var(--color-yellow);
+  background: var(--asiento-seleccionado);
+  border-color: var(--asiento-borde-seleccionado);
+}
+
+/* Asiento que un cliente esta comprando en linea ahora mismo. Se libera solo
+   a los 10 minutos, por eso no se pinta igual que uno ya pagado. */
+.seat.blocked {
+  color: #ffffff;
+  background: var(--asiento-en-proceso);
+  border-color: var(--asiento-en-proceso);
 }
 
 .seat.reserved {
   color: #241300;
-  background: #ff9f2f;
-  border-color: #ffd08a;
+  background: var(--asiento-reservado);
+  border-color: var(--asiento-borde-reservado);
 }
 
 .seat:disabled,
 .seat.occupied {
   color: #ffffff;
-  background: #ef2948;
-  border-color: #ff8a9c;
+  background: var(--asiento-ocupado);
+  border-color: var(--asiento-borde-ocupado);
   cursor: not-allowed;
 }
 
 .seat.reserved:disabled {
   color: #241300;
-  background: #ff9f2f;
-  border-color: #ffd08a;
+  background: var(--asiento-reservado);
+  border-color: var(--asiento-borde-reservado);
+  opacity: 1;
+}
+
+.seat.blocked:disabled {
+  color: #ffffff;
+  background: var(--asiento-en-proceso);
+  border-color: var(--asiento-en-proceso);
   opacity: 1;
 }
 

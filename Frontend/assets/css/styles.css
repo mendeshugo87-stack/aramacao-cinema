@@ -16,6 +16,28 @@
   --radius-lg: 34px;
   --container: 1180px;
   --header-height: 84px;
+
+  /*
+   * ESTADOS DE LOS ASIENTOS
+   * -----------------------
+   * Definidos aqui una sola vez porque los usan DOS pantallas: Compra en
+   * linea (compra.css) y Taquilla (taquilla.css). Antes cada una traia su
+   * propia copia y se desincronizaron: el mismo asiento se veia morado en
+   * Compra y naranja en Taquilla. Si hay que cambiar un color, se cambia
+   * aqui y las dos pantallas quedan iguales.
+   *
+   * "En proceso" y "Reservado" NO son lo mismo: el primero es un asiento que
+   * alguien esta comprando ahora y se libera solo a los 10 minutos; el
+   * segundo ya esta pagado y no se libera.
+   */
+  --asiento-disponible: #168ae2;
+  --asiento-seleccionado: #ffd21f;
+  --asiento-en-proceso: #805ec5;
+  --asiento-reservado: #ff9f2f;
+  --asiento-ocupado: #ef2948;
+  --asiento-borde-seleccionado: #ffe987;
+  --asiento-borde-reservado: #ffd08a;
+  --asiento-borde-ocupado: #ff8a9c;
 }
 
 *,

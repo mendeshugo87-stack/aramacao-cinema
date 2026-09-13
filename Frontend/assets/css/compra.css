@@ -5,12 +5,12 @@
   --checkout-border: rgba(160, 190, 220, 0.22);
   --checkout-text: #f7f9fc;
   --checkout-muted: #9eb1c7;
-  --checkout-yellow: #ffd21f;
+  --checkout-yellow: var(--asiento-seleccionado);
   --checkout-red: #ed1c2f;
-  --checkout-blue: #168ae2;
-  --checkout-blocked: #805ec5;
-  --checkout-reserved: #ff9f2f;
-  --checkout-occupied: #ef2948;
+  --checkout-blue: var(--asiento-disponible);
+  --checkout-blocked: var(--asiento-en-proceso);
+  --checkout-reserved: var(--asiento-reservado);
+  --checkout-occupied: var(--asiento-ocupado);
 }
 
 [hidden] {
@@ -450,7 +450,7 @@
 
 .purchase-seat.selected {
   color: #07101b;
-  border-color: #ffe987;
+  border-color: var(--asiento-borde-seleccionado);
   background: var(--checkout-yellow);
 }
 
@@ -461,12 +461,12 @@
 
 .purchase-seat.reserved {
   color: #241300;
-  border-color: #ffd08a;
+  border-color: var(--asiento-borde-reservado);
   background: var(--checkout-reserved);
 }
 
 .purchase-seat.occupied {
-  border-color: #ff8a9c;
+  border-color: var(--asiento-borde-ocupado);
   color: #ffffff;
   background: var(--checkout-occupied);
 }

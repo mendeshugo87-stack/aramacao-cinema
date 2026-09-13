@@ -11,11 +11,17 @@
     localNotice: document.querySelector("[data-local-preview]"),
     filterForm: document.querySelector("#sales-filter-form"),
     clearFilters: document.querySelector("#sales-clear-filters"),
+    dateFrom: document.querySelector("#sales-date-from"),
+    dateTo: document.querySelector("#sales-date-to"),
     refreshButton: document.querySelector("#sales-refresh-button"),
     listStatus: document.querySelector("#sales-list-status"),
     tableWrap: document.querySelector("#sales-table-wrap"),
     tableBody: document.querySelector("#sales-table-body"),
     empty: document.querySelector("#sales-empty"),
+    pagination: document.querySelector("#sales-pagination"),
+    prevPage: document.querySelector("#sales-prev-page"),
+    nextPage: document.querySelector("#sales-next-page"),
+    pageIndicator: document.querySelector("#sales-page-indicator"),
     detailPanel: document.querySelector("#sale-detail-panel"),
     detailTitle: document.querySelector("#sale-detail-title"),
     detailStatus: document.querySelector("#sale-detail-status"),
@@ -38,6 +44,8 @@
   };
 
   const state = {
+    pagina: 1,
+    paginas: 1,
     sales: [],
     selectedSaleId: "",
     loading: false,
@@ -77,6 +85,7 @@
       if (access?.permitido === false) return;
       state.localAccess = Boolean(access?.vista_local);
       state.permissions = new Set(access?.empleado?.permisos || []);
+      aplicarMesActual();
       await loadSales();
     } catch (error) {
       setStatus(elements.listStatus, errorMessage(error), "error");
@@ -84,15 +93,21 @@
   }
 
   function bindEvents() {
+    /* Al cambiar los filtros se vuelve a la primera pagina: quedarse en la 4
+       con un filtro nuevo mostraria una pagina vacia sin explicacion. */
     elements.filterForm?.addEventListener("submit", (event) => {
       event.preventDefault();
+      state.pagina = 1;
       loadSales();
     });
     elements.clearFilters?.addEventListener("click", () => {
       elements.filterForm?.reset();
+      state.pagina = 1;
       loadSales();
     });
     elements.refreshButton?.addEventListener("click", () => loadSales());
+    elements.prevPage?.addEventListener("click", () => irAPagina(state.pagina - 1));
+    elements.nextPage?.addEventListener("click", () => irAPagina(state.pagina + 1));
     elements.tableBody?.addEventListener("click", handleTableClick);
     elements.detailContent?.addEventListener("click", handleDetailClick);
     elements.closeDetail?.addEventListener("click", closeDetail);
@@ -128,12 +143,16 @@
     setStatus(elements.listStatus, "Consultando ventas…");
     elements.refreshButton && (elements.refreshButton.disabled = true);
     try {
-      const response = await api.listarVentasAdministracion(readFilters());
+      const response = await api.listarVentasAdministracion({ ...readFilters(), pagina: state.pagina });
       state.sales = Array.isArray(response?.resultados) ? response.resultados : [];
+      state.paginas = Math.max(1, Number(response?.paginas) || 1);
+      state.pagina = Math.min(Math.max(1, Number(response?.pagina) || 1), state.paginas);
+      renderPaginacion(Number(response?.total) || state.sales.length);
       renderMetrics(response?.resumen || {});
       renderSales();
+      const totalVentas = Number(response?.total) || state.sales.length;
       setStatus(elements.listStatus, state.sales.length
-        ? `${state.sales.length} venta(s) encontrada(s).`
+        ? `Mostrando ${state.sales.length} de ${totalVentas} venta(s).`
         : "No se encontraron ventas con estos filtros.");
       if (state.selectedSaleId) {
         const stillVisible = state.sales.some((sale) => sale.id === state.selectedSaleId);
@@ -144,11 +163,30 @@
       state.sales = [];
       renderSales();
       renderMetrics({});
+      renderPaginacion(0);
       setStatus(elements.listStatus, errorMessage(error), "error");
     } finally {
       state.loading = false;
       elements.refreshButton && (elements.refreshButton.disabled = false);
     }
+  }
+
+  /*
+   * La pantalla abre mostrando solo el mes en curso, asi que el dia 1 de cada
+   * mes se ve limpia sola. No se borra nada: los meses anteriores siguen
+   * disponibles cambiando las fechas, o con "Limpiar" para ver todo el
+   * historial. Las ventas viejas se siguen necesitando para reembolsos,
+   * reimpresiones y auditoria, por eso no se ocultan de forma definitiva.
+   */
+  function aplicarMesActual() {
+    if (!elements.dateFrom || !elements.dateTo) return;
+    if (elements.dateFrom.value || elements.dateTo.value) return;
+
+    const hoy = new Date();
+    const primero = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const ultimo = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+    elements.dateFrom.value = AramacaoUtil.aFechaIso(primero);
+    elements.dateTo.value = AramacaoUtil.aFechaIso(ultimo);
   }
 
   function readFilters() {
@@ -177,6 +215,29 @@
     `).join("");
     elements.tableWrap.hidden = state.sales.length === 0;
     elements.empty.hidden = state.sales.length !== 0;
+  }
+
+  /* Solo se ven 10 ventas por pagina: la lista crece cada dia y sin esto la
+     pantalla se vuelve un scroll interminable. Los totales de arriba siguen
+     contando TODAS las ventas del filtro, no solo las de esta pagina. */
+  function renderPaginacion(totalVentas) {
+    if (!elements.pagination) return;
+
+    const hayVarias = state.paginas > 1;
+    elements.pagination.hidden = !hayVarias;
+    if (!hayVarias) return;
+
+    elements.prevPage.disabled = state.pagina <= 1;
+    elements.nextPage.disabled = state.pagina >= state.paginas;
+    setText(elements.pageIndicator, `Página ${state.pagina} de ${state.paginas} · ${totalVentas} venta(s)`);
+  }
+
+  async function irAPagina(pagina) {
+    const destino = Math.min(Math.max(1, pagina), state.paginas);
+    if (destino === state.pagina) return;
+    state.pagina = destino;
+    await loadSales();
+    elements.tableWrap?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function handleTableClick(event) {

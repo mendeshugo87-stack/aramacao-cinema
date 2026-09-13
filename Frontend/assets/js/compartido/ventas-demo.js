@@ -20,6 +20,7 @@
 
   const CLAVE_ALMACEN = "aramacao-demo-ventas-v1";
   const MINUTOS_LIMITE_RECUPERACION = 20;
+  const VENTAS_POR_PAGINA = 10;
 
   /* Cliente ficticio usado por Taquilla para probar la recuperación de boletos. */
   const CLIENTE_DEMO = Object.freeze({
@@ -260,17 +261,34 @@
     });
 
     const pagadas = compras.filter((compra) => compra.estado === "PAGADA");
+
+    /* El resumen cuenta TODAS las ventas del filtro, no solo la pagina que se
+       esta viendo: son los totales del periodo, no de la pantalla. */
+    const resumen = {
+      total_ventas: compras.length,
+      ventas_online: compras.filter(esCompraEnLinea).length,
+      ventas_taquilla: compras.filter((compra) => !esCompraEnLinea(compra)).length,
+      monto_total: Util.numeroDinero(
+        pagadas.reduce((suma, compra) => suma + Util.numeroDinero(compra.total), 0)
+      ).toFixed(2),
+    };
+
+    /* Paginacion igual a la del contrato documentado
+       (docs/json/10-administracion-ventas-reemisiones.json): la pantalla pide
+       ?pagina=N y recibe total, pagina y paginas. Se imita aqui para que al
+       conectar Django la pantalla no tenga que cambiar. */
+    const porPagina = Math.max(1, Number(filtros.por_pagina) || VENTAS_POR_PAGINA);
+    const paginas = Math.max(1, Math.ceil(compras.length / porPagina));
+    const pagina = Math.min(Math.max(1, Number(filtros.pagina) || 1), paginas);
+    const desdeIndice = (pagina - 1) * porPagina;
+
     return {
       total: compras.length,
-      resumen: {
-        total_ventas: compras.length,
-        ventas_online: compras.filter(esCompraEnLinea).length,
-        ventas_taquilla: compras.filter((compra) => !esCompraEnLinea(compra)).length,
-        monto_total: Util.numeroDinero(
-          pagadas.reduce((suma, compra) => suma + Util.numeroDinero(compra.total), 0)
-        ).toFixed(2),
-      },
-      resultados: structuredClone(compras),
+      pagina,
+      paginas,
+      por_pagina: porPagina,
+      resumen,
+      resultados: structuredClone(compras.slice(desdeIndice, desdeIndice + porPagina)),
     };
   }
 

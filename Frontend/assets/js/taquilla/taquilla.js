@@ -218,16 +218,9 @@ function selectShowtime(showtime) {
   state.seatPairs.clear();
   state.seatStatuses.clear();
   state.availabilitySignature = "";
-  if (window.AramacaoSalesApi?.esVistaLocal()) {
-    const paidStates = window.AramacaoSalesApi.obtenerEstadosAsientosDemo(showtime.id);
-    paidStates.reservados.forEach((seat) => state.seatStatuses.set(seat, "reserved"));
-    paidStates.ocupados.forEach((seat) => state.seatStatuses.set(seat, "occupied"));
-  }
 
-  /*
-   * BACKEND: al elegir una función, consultar aquí la disponibilidad real.
-   * El servidor devolverá cada asiento como disponible, reservado u ocupado.
-   */
+  /* La disponibilidad real se pide unas lineas mas abajo, en
+     refreshSelectedShowtimeAvailability. Aqui solo se limpia lo anterior. */
 
   const shows = getShowtimes(state.selectedMovie, state.selectedDate);
   elements.showtimes.querySelectorAll("[data-showtime-index]").forEach((button) => {
@@ -286,14 +279,15 @@ async function refreshSelectedShowtimeAvailability({ force = false } = {}) {
   }
 }
 
+/*
+ * Taquilla y Compra en linea preguntan por los asientos al MISMO sitio
+ * (seat-api.js), tambien en vista local. Antes Taquilla tenia aqui un atajo
+ * que solo miraba las ventas ya pagadas: por eso el vendedor no veia los
+ * asientos que un cliente estaba comprando en linea en ese momento, y las dos
+ * pantallas mostraban cosas distintas de la misma funcion.
+ */
 async function fetchSelectedShowtimeStatuses(showtime) {
   const statuses = new Map();
-  if (window.AramacaoSalesApi?.esVistaLocal()) {
-    const paidStates = window.AramacaoSalesApi.obtenerEstadosAsientosDemo(showtime.id);
-    paidStates.reservados.forEach((seat) => statuses.set(String(seat).toUpperCase(), "reserved"));
-    paidStates.ocupados.forEach((seat) => statuses.set(String(seat).toUpperCase(), "occupied"));
-    return statuses;
-  }
 
   if (!window.AramacaoSeatApi?.consultarDisponibilidad) {
     throw new Error("No se cargó el adaptador de disponibilidad.");
@@ -302,7 +296,10 @@ async function fetchSelectedShowtimeStatuses(showtime) {
     fecha: toLocalISODate(state.selectedDate),
     hora: showtime.rawTime,
   });
-  addSeatStatuses(statuses, availability?.asientos_bloqueados_temporalmente, "reserved");
+  /* "blocked" = alguien lo esta comprando en linea y se libera solo a los 10
+     minutos. Antes se pintaba igual que "reserved" (ya pagado) y el vendedor
+     no podia distinguirlos. Compra en linea ya los separaba. */
+  addSeatStatuses(statuses, availability?.asientos_bloqueados_temporalmente, "blocked");
   addSeatStatuses(statuses, availability?.asientos_reservados, "reserved");
   addSeatStatuses(statuses, availability?.asientos_ocupados, "occupied");
   return statuses;
@@ -351,7 +348,7 @@ function renderSeatMap() {
     for (let number = 1; number <= seatsPerRow; number += 1) {
       const seat = `${row}${number}`;
       const status = state.seatStatuses.get(seat) || "available";
-      const unavailable = status === "reserved" || status === "occupied";
+      const unavailable = ["blocked", "reserved", "occupied"].includes(status);
       const selected = state.selectedSeats.has(seat);
       const statusLabel = {
         available: "disponible",

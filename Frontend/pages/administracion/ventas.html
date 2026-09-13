@@ -8,18 +8,18 @@
   <title>Ventas y boletos | Aramacao Cinema</title>
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
-  <link rel="stylesheet" href="../../assets/css/styles.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/administracion.css?v=8">
-  <link rel="stylesheet" href="../../assets/css/administracion-ventas.css?v=20260819-ventas-1">
-  <script src="../../assets/js/compartido/utilidades.js?v=24" defer></script>
-  <script src="../../assets/js/compartido/api-cliente.js?v=24" defer></script>
-  <script src="../../assets/js/empleados/staff-api.js?v=24" defer></script>
-  <script src="../../assets/js/empleados/staff-private.js?v=24" defer></script>
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=25">
+  <link rel="stylesheet" href="../../assets/css/administracion.css?v=25">
+  <link rel="stylesheet" href="../../assets/css/administracion-ventas.css?v=25">
+  <script src="../../assets/js/compartido/utilidades.js?v=25" defer></script>
+  <script src="../../assets/js/compartido/api-cliente.js?v=25" defer></script>
+  <script src="../../assets/js/empleados/staff-api.js?v=25" defer></script>
+  <script src="../../assets/js/empleados/staff-private.js?v=25" defer></script>
   <script src="../../assets/vendor/qrcode/qrcode.js" defer></script>
-  <script src="../../assets/js/compartido/ventas-demo.js?v=24" defer></script>
-  <script src="../../assets/js/compartido/boleto-documento.js?v=24" defer></script>
-  <script src="../../assets/js/compartido/sales-api.js?v=24" defer></script>
-  <script src="../../assets/js/administracion/administracion-ventas.js?v=24" defer></script>
+  <script src="../../assets/js/compartido/ventas-demo.js?v=25" defer></script>
+  <script src="../../assets/js/compartido/boleto-documento.js?v=25" defer></script>
+  <script src="../../assets/js/compartido/sales-api.js?v=25" defer></script>
+  <script src="../../assets/js/administracion/administracion-ventas.js?v=25" defer></script>
 </head>
 <body
   class="admin-body"
@@ -152,6 +152,11 @@
             <tbody id="sales-table-body"></tbody>
           </table>
         </div>
+        <nav class="sales-pagination" id="sales-pagination" aria-label="Páginas de ventas" hidden>
+          <button class="sales-page-button" type="button" id="sales-prev-page">&larr; Anteriores</button>
+          <p class="sales-page-indicator" id="sales-page-indicator" role="status" aria-live="polite"></p>
+          <button class="sales-page-button" type="button" id="sales-next-page">Siguientes &rarr;</button>
+        </nav>
         <div class="sales-empty" id="sales-empty" hidden>
           <span aria-hidden="true">🎟️</span>
           <h3>No hay ventas que coincidan</h3>

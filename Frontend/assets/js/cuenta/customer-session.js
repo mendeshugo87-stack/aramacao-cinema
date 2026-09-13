@@ -356,10 +356,20 @@ function createPurchaseCard(purchase) {
   return article;
 }
 
+/* Quita el "Cargando la compra…" y deja a la vista la tarjeta que explica
+   por que no hay detalle. Sin esto la pantalla mostraba el error y el
+   "cargando" al mismo tiempo, como si siguiera trabajando. */
+function mostrarDetalleNoDisponible(mensaje) {
+  document.querySelector("#purchase-detail-loading")?.setAttribute("hidden", "");
+  document.querySelector("#purchase-detail-content")?.setAttribute("hidden", "");
+  document.querySelector("#purchase-detail-unavailable")?.removeAttribute("hidden");
+  setPageStatus(mensaje, "error");
+}
+
 async function initializePurchaseDetailView() {
   const purchaseId = new URLSearchParams(window.location.search).get("id") || "";
   if (!purchaseId || purchaseId.length > 100) {
-    setPageStatus("La compra solicitada no es válida.", "error");
+    mostrarDetalleNoDisponible("La compra solicitada no es válida.");
     return;
   }
   try {
@@ -368,14 +378,12 @@ async function initializePurchaseDetailView() {
       : await window.AramacaoCustomerApi.obtenerCompra(purchaseId);
     renderPurchaseDetail(response?.compra);
   } catch (error) {
-    document.querySelector("#purchase-detail-loading")?.setAttribute("hidden", "");
-    document.querySelector("#purchase-detail-unavailable")?.removeAttribute("hidden");
-    setPageStatus(getCustomerErrorMessage(error), "error");
+    mostrarDetalleNoDisponible(getCustomerErrorMessage(error));
   }
 }
 function renderPurchaseDetail(purchase) {
   if (!purchase) {
-    setPageStatus("No fue posible cargar la compra.", "error");
+    mostrarDetalleNoDisponible("No fue posible cargar la compra.");
     return;
   }
   document.querySelector("#purchase-detail-loading")?.setAttribute("hidden", "");

@@ -219,6 +219,28 @@
   }
 
   /* Le dice a seat-api qué asientos ya están vendidos en una función. */
+  /* Cuantas funciones futuras ya tienen vendido ese asiento. Lo usa el panel
+     "Sala" para avisar antes de marcar una butaca como rota: los boletos ya
+     emitidos siguen valiendo y hay que reubicar a esa gente. */
+  function contarBoletosFuturosDeAsiento(codigo) {
+    const buscado = String(codigo || "").toUpperCase();
+    const hoy = Util.fechaDeHoyEnHonduras();
+    const funciones = new Set();
+
+    leerAlmacen().compras.forEach((compra) => {
+      if (String(compra.estado || "").toUpperCase() !== "PAGADA") return;
+      if (String(compra.fecha_funcion || "") < hoy) return;
+
+      (compra.boletos || []).forEach((boleto) => {
+        const vigente = boleto.estado === "RESERVADO" || boleto.estado === "OCUPADO";
+        if (vigente && String(boleto.asiento || "").toUpperCase() === buscado) {
+          funciones.add(String(boleto.funcion_id));
+        }
+      });
+    });
+    return funciones.size;
+  }
+
   function obtenerEstadosAsientos(funcionId) {
     const reservados = [];
     const ocupados = [];
@@ -679,6 +701,7 @@
     obtenerBoleto,
     obtenerBoletoImprimible,
     obtenerEstadosAsientos,
+    contarBoletosFuturosDeAsiento,
     listarVentasAdministracion,
     buscarClientesRecuperacion,
     listarComprasRecuperables,

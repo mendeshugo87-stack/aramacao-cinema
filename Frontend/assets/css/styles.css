@@ -35,6 +35,9 @@
   --asiento-en-proceso: #805ec5;
   --asiento-reservado: #ff9f2f;
   --asiento-ocupado: #ef2948;
+  /* Butaca rota: gris apagado, para que se lea como "no cuenta" y no se
+     confunda con los estados de venta, que son de color. */
+  --asiento-fuera-servicio: #46566b;
   --asiento-borde-seleccionado: #ffe987;
   --asiento-borde-reservado: #ffd08a;
   --asiento-borde-ocupado: #ff8a9c;

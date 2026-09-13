@@ -25,6 +25,7 @@
   const SEGUNDOS_DE_BLOQUEO = 600;
   const PREFIJO_ALMACEN_DEMO = "aramacao-demo-bloqueo:";
   const MINUTOS_CIERRE_VENTA = 20;
+  const RUTA_CARTELERA_DEMO = "../../assets/data/cartelera.json";
 
   /* Sala 1 (la única): filas A–H, 14 butacas cada una, pasillo tras la 7. */
   const FILAS_SALA_1 = ["A", "B", "C", "D", "E", "F", "G", "H"];
@@ -54,7 +55,7 @@
 
   async function consultarDisponibilidad(funcionId, contexto = {}) {
     exigirFuncion(funcionId);
-    if (Util.esVistaLocal()) return armarDisponibilidadDemo(funcionId, contexto);
+    if (Util.esVistaLocal()) return await armarDisponibilidadDemo(funcionId, contexto);
     return enviar(rutas.disponibilidad(funcionId));
   }
 
@@ -68,7 +69,7 @@
       });
     }
 
-    if (Util.esVistaLocal()) return crearBloqueoDemo(funcionId, asientosNormalizados, contexto);
+    if (Util.esVistaLocal()) return await crearBloqueoDemo(funcionId, asientosNormalizados, contexto);
     return enviar(rutas.bloquear(), {
       method: "POST",
       body: JSON.stringify({ funcion_id: funcionId, asientos: asientosNormalizados }),
@@ -110,8 +111,9 @@
   // Vista local: bloqueo simulado en sessionStorage
   // -------------------------------------------------------------------
 
-  function armarDisponibilidadDemo(funcionId, contexto) {
+  async function armarDisponibilidadDemo(funcionId, contexto) {
     const miBloqueo = leerBloqueoDemo(funcionId);
+    const fueraDeServicio = await leerAsientosFueraDeServicioDemo();
     /* Los asientos ya vendidos vienen del almacén de ventas de demostración,
        así Compra y Taquilla no se pisan entre ellas. */
     const vendidos = global.AramacaoSalesApi?.obtenerEstadosAsientosDemo(funcionId)
@@ -136,8 +138,24 @@
       asientos_bloqueados_temporalmente: ["B8", "B9"],
       asientos_reservados: [...new Set(["C1", "C2", ...vendidos.reservados])],
       asientos_ocupados: [...new Set(["D1", ...vendidos.ocupados])],
+      /* Butacas rotas. Son de la sala, no de la funcion: valen para todas.
+         Las marca el administrador en el panel "Sala". */
+      asientos_fuera_de_servicio: fueraDeServicio,
       mi_bloqueo: miBloqueo,
     };
+  }
+
+  /* En vista local los asientos rotos viven en el mismo almacen que la
+     cartelera, donde los guarda el panel "Sala" de Administracion. Con Django
+     vendran dentro de la respuesta de disponibilidad y esto se borra. */
+  async function leerAsientosFueraDeServicioDemo() {
+    try {
+      const datos = await global.CinemaStore.getData(RUTA_CARTELERA_DEMO);
+      const lista = datos?.sala?.asientos_fuera_de_servicio;
+      return Array.isArray(lista) ? lista.map((item) => item.codigo) : [];
+    } catch {
+      return [];
+    }
   }
 
   function armarDistribucionSala1() {
@@ -147,12 +165,13 @@
     }));
   }
 
-  function crearBloqueoDemo(funcionId, asientos, contexto) {
-    const disponibilidad = armarDisponibilidadDemo(funcionId, contexto);
+  async function crearBloqueoDemo(funcionId, asientos, contexto) {
+    const disponibilidad = await armarDisponibilidadDemo(funcionId, contexto);
     const noDisponibles = new Set([
       ...disponibilidad.asientos_bloqueados_temporalmente,
       ...disponibilidad.asientos_reservados,
       ...disponibilidad.asientos_ocupados,
+      ...disponibilidad.asientos_fuera_de_servicio,
     ]);
 
     const asientoInvalido = asientos.find((asiento) => !esAsientoDeSala1(asiento));

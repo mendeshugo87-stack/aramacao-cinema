@@ -371,6 +371,7 @@
 .legend-seat.blocked { background: var(--checkout-blocked); }
 .legend-seat.reserved { background: var(--checkout-reserved); }
 .legend-seat.occupied { background: var(--checkout-occupied); }
+.legend-seat.out-of-service { background: var(--asiento-fuera-servicio); }
 
 .screen-wrap {
   width: min(620px, 92%);
@@ -469,6 +470,14 @@
   border-color: var(--asiento-borde-ocupado);
   color: #ffffff;
   background: var(--checkout-occupied);
+}
+
+/* Butaca rota: gris apagado y tachada. No es un estado de venta. */
+.purchase-seat.out-of-service {
+  color: #c3cedb;
+  background: var(--asiento-fuera-servicio);
+  border-color: var(--asiento-fuera-servicio);
+  text-decoration: line-through;
 }
 
 .purchase-seat:disabled {

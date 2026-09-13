@@ -299,6 +299,8 @@ async function fetchSelectedShowtimeStatuses(showtime) {
   /* "blocked" = alguien lo esta comprando en linea y se libera solo a los 10
      minutos. Antes se pintaba igual que "reserved" (ya pagado) y el vendedor
      no podia distinguirlos. Compra en linea ya los separaba. */
+  /* Butacas rotas: las marca Administracion y valen para todas las funciones. */
+  addSeatStatuses(statuses, availability?.asientos_fuera_de_servicio, "out-of-service");
   addSeatStatuses(statuses, availability?.asientos_bloqueados_temporalmente, "blocked");
   addSeatStatuses(statuses, availability?.asientos_reservados, "reserved");
   addSeatStatuses(statuses, availability?.asientos_ocupados, "occupied");
@@ -348,7 +350,7 @@ function renderSeatMap() {
     for (let number = 1; number <= seatsPerRow; number += 1) {
       const seat = `${row}${number}`;
       const status = state.seatStatuses.get(seat) || "available";
-      const unavailable = ["blocked", "reserved", "occupied"].includes(status);
+      const unavailable = ["out-of-service", "blocked", "reserved", "occupied"].includes(status);
       const selected = state.selectedSeats.has(seat);
       const statusLabel = {
         available: "disponible",

@@ -279,12 +279,14 @@ function applyAvailability(availability) {
   state.distribution = normalizeDistribution(availability?.sala?.distribucion);
   state.statuses.clear();
 
+  /* Butacas rotas: las marca Administracion y valen para todas las funciones. */
+  addStatuses(availability?.asientos_fuera_de_servicio, "out-of-service");
   addStatuses(availability?.asientos_bloqueados_temporalmente, "blocked");
   addStatuses(availability?.asientos_reservados, "reserved");
   addStatuses(availability?.asientos_ocupados, "occupied");
 
   const conflicts = [...state.selectedSeats].filter((seat) =>
-    ["blocked", "reserved", "occupied"].includes(state.statuses.get(seat))
+    ["out-of-service", "blocked", "reserved", "occupied"].includes(state.statuses.get(seat))
   );
 
   const ownBlock = availability?.mi_bloqueo;
@@ -344,7 +346,7 @@ function renderSeatMap() {
       const seat = `${row}${number}`;
       const status = state.statuses.get(seat) || "available";
       const selected = state.selectedSeats.has(seat);
-      const unavailable = ["blocked", "reserved", "occupied", "mine"].includes(status);
+      const unavailable = ["out-of-service", "blocked", "reserved", "occupied", "mine"].includes(status);
       const label = getSeatStatusLabel(status, selected);
 
       if (number === 8) fragments.push('<span class="seat-aisle" aria-hidden="true"></span>');
@@ -672,6 +674,7 @@ function copyPurchaseParameters(target) {
 
 function getSeatStatusLabel(status, selected) {
   if (status === "mine") return "apartado para esta compra";
+  if (status === "out-of-service") return "fuera de servicio, no disponible";
   if (status === "blocked") return "en proceso de compra, apartado temporalmente";
   if (status === "reserved") return "reservado, pago confirmado";
   if (status === "occupied") return "ocupado, boleto escaneado";

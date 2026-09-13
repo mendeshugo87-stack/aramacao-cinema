@@ -336,6 +336,11 @@
   border-color: var(--asiento-borde-ocupado);
 }
 
+.legend-box.out-of-service {
+  background: var(--asiento-fuera-servicio);
+  border-color: var(--asiento-fuera-servicio);
+}
+
 .screen-wrap {
   display: grid;
   justify-items: center;
@@ -440,6 +445,16 @@
   color: #ffffff;
   background: var(--asiento-en-proceso);
   border-color: var(--asiento-en-proceso);
+}
+
+/* Butaca rota: gris apagado y tachada. No es un estado de venta. */
+.seat.out-of-service,
+.seat.out-of-service:disabled {
+  color: #c3cedb;
+  background: var(--asiento-fuera-servicio);
+  border-color: var(--asiento-fuera-servicio);
+  text-decoration: line-through;
+  opacity: 1;
 }
 
 .seat.reserved {

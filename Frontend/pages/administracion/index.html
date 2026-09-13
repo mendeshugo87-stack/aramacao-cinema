@@ -8,18 +8,21 @@
   <title>Administración de cartelera | Aramacao Cinema</title>
 
   <link rel="icon" href="../../assets/images/PFP%20AraMacao%20Contorno%20(1).png" type="image/png">
-  <link rel="stylesheet" href="../../assets/css/styles.css?v=25">
-  <link rel="stylesheet" href="../../assets/css/administracion.css?v=25">
-  <script src="../../assets/js/compartido/utilidades.js?v=25" defer></script>
-  <script src="../../assets/js/compartido/api-cliente.js?v=25" defer></script>
-  <script src="../../assets/js/empleados/staff-api.js?v=25" defer></script>
-  <script src="../../assets/js/empleados/staff-private.js?v=25" defer></script>
-  <script src="../../assets/js/publico/cinema-store.js?v=25" defer></script>
-  <script src="../../assets/js/administracion/peliculas-api.js?v=25" defer></script>
-  <script src="../../assets/js/administracion/funciones-api.js?v=25" defer></script>
-  <script src="../../assets/js/administracion/recortador-imagen.js?v=25" defer></script>
-  <script src="../../assets/js/administracion/administracion-peliculas.js?v=25" defer></script>
-  <script src="../../assets/js/administracion/administracion-funciones.js?v=25" defer></script>
+  <link rel="stylesheet" href="../../assets/css/styles.css?v=26">
+  <link rel="stylesheet" href="../../assets/css/administracion.css?v=26">
+  <script src="../../assets/js/compartido/utilidades.js?v=26" defer></script>
+  <script src="../../assets/js/compartido/api-cliente.js?v=26" defer></script>
+  <script src="../../assets/js/empleados/staff-api.js?v=26" defer></script>
+  <script src="../../assets/js/empleados/staff-private.js?v=26" defer></script>
+  <script src="../../assets/js/publico/cinema-store.js?v=26" defer></script>
+  <script src="../../assets/js/administracion/peliculas-api.js?v=26" defer></script>
+  <script src="../../assets/js/administracion/funciones-api.js?v=26" defer></script>
+  <script src="../../assets/js/administracion/sala-api.js?v=26" defer></script>
+  <script src="../../assets/js/compartido/ventas-demo.js?v=26" defer></script>
+  <script src="../../assets/js/administracion/recortador-imagen.js?v=26" defer></script>
+  <script src="../../assets/js/administracion/administracion-peliculas.js?v=26" defer></script>
+  <script src="../../assets/js/administracion/administracion-funciones.js?v=26" defer></script>
+  <script src="../../assets/js/administracion/administracion-sala.js?v=26" defer></script>
 </head>
 <body
   class="admin-body"
@@ -43,6 +46,7 @@
       <a class="active" href="#resumen"><span>▦</span> Resumen</a>
       <a href="#peliculas"><span>▶</span> Películas</a>
       <a href="#funciones"><span>◷</span> Funciones</a>
+      <a href="#sala"><span>▦</span> Sala</a>
       <a href="personal.html"><span>♙</span> Personal</a>
       <a href="ventas.html"><span>▤</span> Ventas</a>
     </nav>
@@ -293,6 +297,36 @@
           </div>
         </div>
       </section>
+
+      <section class="admin-panel" id="sala" aria-labelledby="sala-admin-title">
+        <p class="admin-eyebrow">Estado de la sala</p>
+        <h2 id="sala-admin-title">Sala 1</h2>
+        <p class="admin-help">
+          Marca aqu&iacute; las butacas rotas. El cambio vale para <strong>todas</strong> las funciones,
+          porque el da&ntilde;o es de la sala y no de una pel&iacute;cula. Compra en l&iacute;nea y Taquilla dejan
+          de ofrecerlas de inmediato.
+        </p>
+
+        <div class="sala-resumen">
+          <div><small>Aforo f&iacute;sico</small><strong id="sala-aforo-fisico">&mdash;</strong></div>
+          <div><small>Disponibles</small><strong id="sala-aforo-disponible">&mdash;</strong></div>
+          <div><small>Fuera de servicio</small><strong id="sala-fuera-servicio">&mdash;</strong></div>
+        </div>
+
+        <div class="seat-legend sala-legend" role="group" aria-label="Estados de las butacas">
+          <span><i class="legend-box available"></i>En servicio</span>
+          <span><i class="legend-box out-of-service"></i>Fuera de servicio</span>
+        </div>
+
+        <div class="screen-wrap" aria-hidden="true"><div class="screen"></div><p>Pantalla</p></div>
+
+        <div class="sala-mapa" id="sala-mapa" role="group" aria-label="Butacas de Sala 1"></div>
+
+        <p class="form-status" id="sala-status" role="status" aria-live="polite"></p>
+
+        <ul class="sala-lista" id="sala-lista"></ul>
+      </section>
+
 
     </main>
   </div>

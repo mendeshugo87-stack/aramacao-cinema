@@ -911,3 +911,168 @@ body.admin-modal-open {
   .crop-actions { flex-direction: column-reverse; }
   .crop-actions .button { width: 100%; }
 }
+
+/* ---------------------------------------------------------------------
+   PANEL "SALA": BUTACAS FUERA DE SERVICIO
+   Los colores salen de styles.css, los mismos que usan Compra y Taquilla.
+   --------------------------------------------------------------------- */
+
+.sala-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 560px;
+  margin: 20px 0 24px;
+}
+
+.sala-resumen div {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  background: #081421;
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+}
+
+.sala-resumen small {
+  color: #7f98b0;
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sala-resumen strong {
+  color: #fff;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.sala-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.sala-legend span {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.sala-legend .legend-box {
+  width: 13px;
+  height: 13px;
+  background: var(--asiento-disponible);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 4px 4px 2px 2px;
+}
+
+.sala-legend .legend-box.out-of-service {
+  background: var(--asiento-fuera-servicio);
+  border-color: var(--asiento-fuera-servicio);
+}
+
+.sala-mapa {
+  display: grid;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.sala-fila {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sala-fila-letra {
+  width: 18px;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.sala-pasillo {
+  width: 18px;
+}
+
+.sala-butaca {
+  width: 36px;
+  min-height: 34px;
+  padding: 0;
+  color: #fff;
+  background: var(--asiento-disponible);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px 8px 11px 11px;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition: transform 140ms ease, background 140ms ease;
+}
+
+.sala-butaca:hover {
+  transform: translateY(-2px);
+}
+
+/* La butaca rota se ve apagada y tachada: no es un estado de venta. */
+.sala-butaca.out-of-service {
+  color: #c3cedb;
+  background: var(--asiento-fuera-servicio);
+  border-color: var(--asiento-fuera-servicio);
+  text-decoration: line-through;
+}
+
+.sala-lista {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sala-lista li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 14px;
+  background: #081421;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.sala-lista strong {
+  min-width: 38px;
+  color: var(--color-yellow);
+}
+
+.sala-lista span {
+  flex: 1 1 200px;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.sala-reactivar {
+  padding: 7px 12px;
+  color: #fff;
+  background: transparent;
+  border: 1px solid #405469;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sala-reactivar:hover {
+  border-color: var(--color-blue-light);
+}
+
+@media (max-width: 720px) {
+  .sala-resumen { grid-template-columns: 1fr; }
+  .sala-butaca { width: 30px; min-height: 30px; font-size: 0.6rem; }
+}

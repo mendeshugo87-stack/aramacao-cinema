@@ -1,105 +1,111 @@
 {
-    "proyecto":  "Aramacao Cinema",
-    "idioma":  "español",
-    "zona_horaria":  "America/Tegucigalpa",
-    "reglas_generales":  [
-                             "Django decide el rol y los permisos; el navegador nunca los asigna.",
-                             "Las contraseñas se cifran y nunca se devuelven en JSON.",
-                             "Las áreas privadas requieren JWT válido, cuenta activa y permiso en cada solicitud.",
-                             "Los clientes no pueden entrar a Gestión, Taquilla ni Django Admin.",
-                             "Los JSON describen los endpoints; cada responsable programa en Django únicamente los módulos asignados."
-                         ],
-    "bloques":  [
-                    {
-                        "orden":  1,
-                        "modulo":  "Acceso de empleados",
-                        "estado":  "LISTO_PARA_BACKEND",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/01-acceso-empleados.json"
-                    },
-                    {
-                        "orden":  2,
-                        "modulo":  "Administración de empleados y áreas privadas",
-                        "estado":  "LISTO_PARA_BACKEND",
-                        "se_sube_en_esta_version":  true,
-                        "contratos":  [
-                                          "docs/json/02-administracion-empleados.json",
-                                          "docs/json/03-proteccion-areas-privadas.json"
-                                      ]
-                    },
-                    {
-                        "orden":  3,
-                        "modulo":  "Cuentas de clientes",
-                        "estado":  "AUTENTICACION_JWT_IMPLEMENTADA_RESTO_DE_CUENTA_PENDIENTE",
-                        "se_sube_en_esta_version":  true,
-                        "contratos":  [
-                                          "docs/json/cuentas-clientes/01-autenticacion-clientes.json",
-                                          "docs/json/cuentas-clientes/02-mi-cuenta-clientes.json",
-                                          "docs/json/cuentas-clientes/03-historial-compras-clientes.json",
-                                          "docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json"
-                                      ]
-                    },
-                    {
-                        "orden":  4,
-                        "modulo":  "Catálogos, películas, imágenes, funciones, precios y promoción 2x1",
-                        "estado":  "LISTO_PARA_BACKEND",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/04-cartelera-catalogos-funciones-promociones.json",
-                        "documentacion":  "docs/API_CARTELERA_FUNCIONES_PROMOCIONES.md",
-                        "postman":  "docs/postman/Aramacao-Cartelera-Catalogos-Funciones.postman_collection.json"
-                    },
-                    {
-                        "orden":  5,
-                        "modulo":  "Aforo, asientos y bloqueos por función",
-                        "estado":  "CONTRATO_PREPARADO_SIN_DJANGO",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/05-asientos-bloqueos.json",
-                        "documentacion":  "docs/API_AFORO_ASIENTOS_BLOQUEOS.md"
-                    },
-                    {
-                        "orden":  6,
-                        "modulo":  "Dulcería e inventario",
-                        "estado":  "APLAZADO_POR_DECISION_DEL_CLIENTE",
-                        "se_sube_en_esta_version":  false,
-                        "nota":  "Se desarrollará cuando el cliente lo solicite."
-                    },
-                    {
-                        "orden":  7,
-                        "modulo":  "Carrito de compras",
-                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/07-09-ventas-pagos-boletos-qr.json"
-                    },
-                    {
-                        "orden":  8,
-                        "modulo":  "Ventas, pagos y órdenes",
-                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/07-09-ventas-pagos-boletos-qr.json"
-                    },
-                    {
-                        "orden":  9,
-                        "modulo":  "Boletos, historial, reemisión y QR",
-                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/07-09-ventas-pagos-boletos-qr.json"
-                    },
-                    {
-                        "orden":  10,
-                        "modulo":  "Administración de ventas, reimpresión, reemisión, anulación y reembolso",
-                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/10-administracion-ventas-reemisiones.json",
-                        "documentacion":  "docs/API_ADMINISTRACION_VENTAS_REEMISIONES.md"
-                    },
-                    {
-                        "orden":  11,
-                        "modulo":  "Búsqueda de clientes y recuperación de boletos en Taquilla",
-                        "estado":  "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
-                        "se_sube_en_esta_version":  true,
-                        "contrato":  "docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json",
-                        "documentacion":  "docs/API_RECUPERACION_BOLETOS_TAQUILLA.md",
-                        "integracion_db":  "docs/INTEGRACION_DB_BACKEND_VENTAS_CLIENTES.md"
-                    }
-                ]
+  "proyecto": "Aramacao Cinema",
+  "idioma": "español",
+  "zona_horaria": "America/Tegucigalpa",
+  "reglas_generales": [
+    "Django decide el rol y los permisos; el navegador nunca los asigna.",
+    "Las contraseñas se cifran y nunca se devuelven en JSON.",
+    "Las áreas privadas requieren JWT válido, cuenta activa y permiso en cada solicitud.",
+    "Los clientes no pueden entrar a Gestión, Taquilla ni Django Admin.",
+    "Los JSON describen los endpoints; cada responsable programa en Django únicamente los módulos asignados."
+  ],
+  "bloques": [
+    {
+      "orden": 1,
+      "modulo": "Acceso de empleados",
+      "estado": "LISTO_PARA_BACKEND",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/01-acceso-empleados.json"
+    },
+    {
+      "orden": 2,
+      "modulo": "Administración de empleados y áreas privadas",
+      "estado": "LISTO_PARA_BACKEND",
+      "se_sube_en_esta_version": true,
+      "contratos": [
+        "docs/json/02-administracion-empleados.json",
+        "docs/json/03-proteccion-areas-privadas.json"
+      ]
+    },
+    {
+      "orden": 3,
+      "modulo": "Cuentas de clientes",
+      "estado": "AUTENTICACION_JWT_IMPLEMENTADA_RESTO_DE_CUENTA_PENDIENTE",
+      "se_sube_en_esta_version": true,
+      "contratos": [
+        "docs/json/cuentas-clientes/01-autenticacion-clientes.json",
+        "docs/json/cuentas-clientes/02-mi-cuenta-clientes.json",
+        "docs/json/cuentas-clientes/03-historial-compras-clientes.json",
+        "docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json"
+      ]
+    },
+    {
+      "orden": 4,
+      "modulo": "Catálogos, películas, imágenes, funciones, precios y promoción 2x1",
+      "estado": "LISTO_PARA_BACKEND",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/04-cartelera-catalogos-funciones-promociones.json",
+      "documentacion": "docs/API_CARTELERA_FUNCIONES_PROMOCIONES.md",
+      "postman": "docs/postman/Aramacao-Cartelera-Catalogos-Funciones.postman_collection.json"
+    },
+    {
+      "orden": 5,
+      "modulo": "Aforo, asientos, bloqueos por función y butacas fuera de servicio",
+      "estado": "CONTRATO_PREPARADO_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contratos": [
+        "docs/json/05-asientos-bloqueos.json",
+        "docs/json/05-sala-asientos-fuera-servicio.json"
+      ],
+      "documentacion": [
+        "docs/API_AFORO_ASIENTOS_BLOQUEOS.md",
+        "docs/PROPUESTA_SALA_ASIENTOS.md"
+      ]
+    },
+    {
+      "orden": 6,
+      "modulo": "Dulcería e inventario",
+      "estado": "APLAZADO_POR_DECISION_DEL_CLIENTE",
+      "se_sube_en_esta_version": false,
+      "nota": "Se desarrollará cuando el cliente lo solicite."
+    },
+    {
+      "orden": 7,
+      "modulo": "Carrito de compras",
+      "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/07-09-ventas-pagos-boletos-qr.json"
+    },
+    {
+      "orden": 8,
+      "modulo": "Ventas, pagos y órdenes",
+      "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/07-09-ventas-pagos-boletos-qr.json"
+    },
+    {
+      "orden": 9,
+      "modulo": "Boletos, historial, reemisión y QR",
+      "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/07-09-ventas-pagos-boletos-qr.json"
+    },
+    {
+      "orden": 10,
+      "modulo": "Administración de ventas, reimpresión, reemisión, anulación y reembolso",
+      "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/10-administracion-ventas-reemisiones.json",
+      "documentacion": "docs/API_ADMINISTRACION_VENTAS_REEMISIONES.md"
+    },
+    {
+      "orden": 11,
+      "modulo": "Búsqueda de clientes y recuperación de boletos en Taquilla",
+      "estado": "FRONTEND_Y_CONTRATO_PREPARADOS_SIN_DJANGO",
+      "se_sube_en_esta_version": true,
+      "contrato": "docs/json/cuentas-clientes/04-consulta-taquilla-clientes-futuro.json",
+      "documentacion": "docs/API_RECUPERACION_BOLETOS_TAQUILLA.md",
+      "integracion_db": "docs/INTEGRACION_DB_BACKEND_VENTAS_CLIENTES.md"
+    }
+  ]
 }

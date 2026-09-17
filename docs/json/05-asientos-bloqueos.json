@@ -1,20 +1,11 @@
 {
   "modulo": "Aforo, asientos y bloqueos por función",
-  "version": "1.1",
+  "version": "1.2",
   "estado": "CONTRATO_PREPARADO_SIN_DJANGO",
   "sala": {
     "nombre": "Sala 1",
     "aforo_total": 112,
-    "filas": [
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-      "G",
-      "H"
-    ],
+    "filas": ["A", "B", "C", "D", "E", "F", "G", "H"],
     "asientos_por_fila": 14,
     "pasillo_despues_del_asiento": 7
   },
@@ -23,12 +14,12 @@
     {
       "metodo": "GET",
       "ruta": "/api/asiento/disponibilidad/{funcion_id}/",
-      "uso": "Consultar distribución y disponibilidad de la función."
+      "uso": "Consultar distribución y disponibilidad de la función, incluyendo butacas fuera de servicio."
     },
     {
       "metodo": "POST",
       "ruta": "/api/asiento/bloquear/",
-      "uso": "Bloquear temporalmente los asientos antes del pago."
+      "uso": "Bloquear temporalmente los asientos antes del pago. Debe rechazar asientos fuera de servicio."
     },
     {
       "metodo": "DELETE",
@@ -40,10 +31,17 @@
     "DISPONIBLE",
     "BLOQUEADO_TEMPORALMENTE",
     "RESERVADO",
-    "OCUPADO"
+    "OCUPADO",
+    "FUERA_DE_SERVICIO"
   ],
+  "respuesta_disponibilidad_debe_incluir": {
+    "asientos_bloqueados_temporalmente": ["B8", "B9"],
+    "asientos_reservados": ["C1", "C2"],
+    "asientos_ocupados": ["D1"],
+    "asientos_fuera_de_servicio": ["F7", "G5"]
+  },
   "reglas": [
-    "La disponibilidad es independiente para cada función.",
+    "La disponibilidad por venta es independiente para cada función, excepto FUERA_DE_SERVICIO, que representa un daño físico de la sala y aplica a todas las funciones.",
     "Seleccionar en pantalla no reserva; el bloqueo comienza al continuar al pago.",
     "Solo la sesión que creó el bloqueo puede utilizarlo o liberarlo.",
     "El bloqueo vence automáticamente después de 600 segundos o antes si llega venta_hasta.",
@@ -54,8 +52,10 @@
     "Cada asiento genera un boleto individual; el 2x1 genera dos boletos y ocupa dos asientos.",
     "La venta en línea y Taquilla comparten la misma disponibilidad.",
     "Compra en línea y Taquilla consultan automáticamente la función seleccionada cada 5 segundos y al recuperar el foco.",
-    "La respuesta de disponibilidad usa Cache-Control: no-store y refleja ventas y escaneos ya confirmados.",
-    "La actualización visual no sustituye la revalidación transaccional que impide vender dos veces el mismo asiento.",
+    "La respuesta de disponibilidad usa Cache-Control: no-store y refleja ventas, escaneos confirmados y butacas fuera de servicio.",
+    "La actualización visual no sustituye la revalidación transaccional que impide vender dos veces el mismo asiento o vender uno fuera de servicio.",
+    "POST /api/asiento/bloquear/ debe rechazar con HTTP 409 un asiento FUERA_DE_SERVICIO.",
+    "Marcar una butaca fuera de servicio no invalida boletos ya vendidos; solo impide ventas nuevas.",
     "venta_hasta corresponde a 20 minutos después de hora_inicio; después de ese límite no se crean bloqueos."
   ],
   "sincronizacion_frontend": {
@@ -67,6 +67,7 @@
     ],
     "mejora_futura_opcional": "WebSocket o Server-Sent Events puede reemplazar la consulta periódica sin cambiar el contrato de estados."
   },
+  "contrato_sala_fuera_de_servicio": "docs/json/05-sala-asientos-fuera-servicio.json",
   "fuera_de_este_bloque": [
     "Procesamiento del pago.",
     "Emisión de comprobantes o facturas.",
